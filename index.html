@@ -891,32 +891,39 @@
         }
 
         function compartirEnlaceReferido() {
-            const camp = appState.campañaActivaLocal;
-            if(!camp) return;
+    const camp = appState.campañaActivaLocal;
+    if(!camp) return;
 
-            const botUsername = tg.initDataUnsafe?.receiver?.username || "BombaViralSaaSBot";
-            const payload = {
-                title: camp.titulo,
-                description: camp.desc,
-                secret_url: camp.secreto,
-                type: camp.tipo,
-                req_slots: camp.requeridos,
-                tg_target: camp.tgTarget,
-                ad_val: camp.adValue,
-                ad_dur: camp.adDuration,
-                s_date: camp.startDate,
-                e_date: camp.endDate,
-                owner: camp.ownerId,
-                referrer: appState.userId,
-                origin_chat: appState.chatInstance
-            };
+    // Forzamos siempre el nombre de usuario a minúsculas para evitar fallos de enrutamiento en Telegram
+    let botRaw = tg.initDataUnsafe?.receiver?.username || "ImagesAi_TLG_Bot";
+    const botUsername = botRaw.toLowerCase();
+    
+    const payload = {
+        title: camp.titulo,
+        description: camp.desc,
+        secret_url: camp.secreto,
+        type: camp.tipo,
+        req_slots: camp.requeridos,
+        tg_target: camp.tgTarget,
+        ad_val: camp.adValue,
+        ad_dur: camp.adDuration,
+        s_date: camp.startDate,
+        e_date: camp.endDate,
+        owner: camp.ownerId,
+        referrer: appState.userId,
+        origin_chat: appState.chatInstance
+    };
 
-            const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-            const deepLinkFinal = `https://t.me/${botUsername}/app?startapp=${b64}`;
-
-            let mensajeCompartir = `🔥 *¡ATENCIÓN!* 🔥\n\nEstán regalando: *${camp.titulo}*.\n📥 Entra aquí para reclamar de inmediato:`;
-            tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(deepLinkFinal)}&text=${encodeURIComponent(mensajeCompartir)}`);
-        }
+    // Serialización limpia a Base64 URL Safe
+    const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload))))
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=/g, '');
+        
+    const deepLinkFinal = `https://t.me/${botUsername}/app?startapp=${b64}`;
+    let mensajeCompartir = `🔥 *¡ATENCIÓN!* 🔥\n\nEstán regalando: *${camp.titulo}*.\n📥 Entra aquí para reclamar de inmediato:`;
+    tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(deepLinkFinal)}&text=${encodeURIComponent(mensajeCompartir)}`);
+}
 
         function reclamarRecompensaFinal() {
             tg.showPopup({
