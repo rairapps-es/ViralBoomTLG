@@ -18,10 +18,101 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-        body { background-color: var(--bg-dark); color: var(--text-main); padding: 16px; padding-bottom: 160px; overflow-x: hidden; }
+        body { background-color: var(--bg-dark); color: var(--text-main); padding: 16px; padding-top: 85px; padding-bottom: 160px; overflow-x: hidden; }
 
         .app-container { max-width: 460px; margin: auto; }
         
+        /* BARRA SUPERIOR PEGAJOSA */
+        .sticky-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: #07080e;
+            padding: 10px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .header-card {
+            background: var(--bg-surface);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        .user-avatar-container {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            position: relative;
+            background: #1e2230;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: var(--text-main);
+            overflow: hidden;
+            border: 2px solid var(--text-muted);
+        }
+        .user-avatar-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .avatar-glow-indicator {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            border: 2px solid #0f111a;
+            z-index: 2;
+        }
+
+        /* MODAL DE PERFIL */
+        .profile-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .profile-modal.active { display: flex; }
+        .profile-card {
+            background: var(--bg-surface);
+            border: 1px solid #252836;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 380px;
+            padding: 24px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            text-align: center;
+            position: relative;
+        }
+        .close-modal {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
         /* Tarjetas de Interfaz */
         .card { background: var(--bg-surface); border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); position: relative; }
         .card.premium { border-color: var(--neon-gold); box-shadow: 0 0 15px rgba(255,183,0,0.1); }
@@ -82,25 +173,56 @@
 </head>
 <body>
 
-    <div class="app-container">
-        
-        <!-- HEADER DE ESTADO DE LICENCIA -->
-        <div class="card" style="padding: 12px 20px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <div id="user-avatar-glow" style="width: 10px; height: 10px; background: var(--text-muted); border-radius: 50%;"></div>
-                <span id="user-display-name" style="font-weight: bold; font-size: 0.85rem;">Usuario</span>
+    <div class="sticky-header">
+        <div class="header-card" onclick="abrirModalPerfil()">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div class="user-avatar-container" id="user-avatar-box">
+                    <span id="avatar-fallback">U</span>
+                    <div id="user-avatar-glow" class="avatar-glow-indicator"></div>
+                </div>
+                <div>
+                    <div id="user-display-name" style="font-weight: bold; font-size: 0.9rem;">Usuario</div>
+                    <div id="header-campaign-counter" style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">Campañas activas: 0</div>
+                </div>
             </div>
             <span id="status-badge" class="badge" style="background: rgba(108,117,125,0.1); color: var(--text-muted);">Plan Gratis</span>
         </div>
+    </div>
 
-        <!-- SECCIÓN 1: CLIENTE -->
+    <div id="modal-perfil-usuario" class="profile-modal">
+        <div class="profile-card">
+            <button class="close-modal" onclick="cerrarModalPerfil(event)">&times;</button>
+            <div class="user-avatar-container" id="modal-avatar-box" style="width: 70px; height: 70px; margin: 0 auto 12px; font-size: 1.5rem;">
+                <span id="modal-avatar-fallback">U</span>
+            </div>
+            <h3 id="modal-user-title" style="font-size: 1.2rem; font-weight: bold; margin-bottom: 4px;">Usuario</h3>
+            <p id="modal-user-id" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 16px;">ID: -</p>
+            
+            <div style="background: #0b0c13; border: 1px solid #252836; border-radius: 12px; padding: 14px; text-align: left; font-size: 0.8rem;">
+                <div style="margin-bottom: 8px;">
+                    <span style="color: var(--text-muted); font-weight: bold; display: block; font-size: 0.65rem; text-transform: uppercase;">Estado del Plan:</span>
+                    <span id="profile-plan-status" style="font-weight: bold; color: var(--text-main);">Plan Gratis</span>
+                </div>
+                <div style="margin-bottom: 8px;">
+                    <span style="color: var(--text-muted); font-weight: bold; display: block; font-size: 0.65rem; text-transform: uppercase;">Fecha de Inicio:</span>
+                    <span id="profile-plan-start" style="color: #b2bec3;">-</span>
+                </div>
+                <div>
+                    <span style="color: var(--text-muted); font-weight: bold; display: block; font-size: 0.65rem; text-transform: uppercase;">Fecha de Vencimiento:</span>
+                    <span id="profile-plan-end" style="color: #b2bec3;">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container">
+
         <div id="view-client" class="view-section active">
             <div id="card-no-campaign" class="card">
                 <h2>🎯 Sin campaña activa</h2>
                 <p>Abre esta Mini App usando un enlace de desbloqueo viral desde cualquier canal de Telegram afiliado o crea una en la Consola Admin.</p>
             </div>
 
-            <!-- CAMPAÑA FUERA DE RANGO / TEMPORALIDAD -->
             <div id="card-campaign-status-msg" class="card" style="display:none; border-color: #ff4d4d;">
                 <h2 id="status-msg-title">⏳ Campaña no disponible</h2>
                 <p id="status-msg-desc">Esta campaña aún no ha comenzado o ya ha expirado de forma automática.</p>
@@ -113,7 +235,6 @@
                 </div>
                 <p id="viral-desc">Completa la acción requerida por el creador para liberar tu recompensa segura.</p>
                 
-                <!-- PASO ADICIONAL: ANUNCIO DINÁMICO CON CONTADOR -->
                 <div id="step-dynamic-ad" class="dynamic-ad-container" style="display: none;">
                     <span class="input-label" style="color: var(--neon-gold);">Contenido Patrocinado Requerido</span>
                     <div id="ad-content-render" style="margin: 8px 0; font-size: 0.85rem;">Cargando...</div>
@@ -123,14 +244,12 @@
                     </div>
                 </div>
 
-                <!-- PASO TELEGRAM: CANAL O GRUPO -->
                 <div id="step-channel" class="input-group" style="background: rgba(0,0,0,0.15); padding: 12px; border-radius: 10px; margin-bottom: 10px; display:none;">
                     <span class="input-label" id="tg-step-label" style="color: var(--neon-purple);">Requisito de Comunidad</span>
                     <p id="tg-step-desc" style="font-size: 0.75rem; margin-bottom: 8px;">Debes unirte a este espacio para calificar.</p>
                     <button id="btn-join-channel" onclick="abrirEspacioRequisito()" class="btn btn-purple" style="padding: 6px 12px; font-size: 0.75rem;">Unirse al Espacio</button>
                 </div>
 
-                <!-- PASO VIRALIZACIÓN P2P -->
                 <div id="step-referrals" class="input-group" style="background: rgba(0,0,0,0.15); padding: 12px; border-radius: 10px; display: none;">
                     <span class="input-label" style="color: var(--neon-green);">Viralización P2P</span>
                     <p style="font-size: 0.75rem; margin-bottom: 4px;">Invita amigos usando tu link. Deben ingresar a la app.</p>
@@ -150,7 +269,6 @@
             </div>
         </div>
 
-        <!-- SECCIÓN 2: ADMINISTRADOR -->
         <div id="view-admin" class="view-section">
             <div class="card" id="admin-creator-card">
                 <h2>⚡ Creador de Campañas</h2>
@@ -169,7 +287,6 @@
                     <input type="text" id="setup-secret" class="input-field" placeholder="Ej: https://mega.nz/file/xyz...">
                 </div>
 
-                <!-- CONFIGURACIÓN DE CRONOGRAMA -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;" class="input-group">
                     <div>
                         <label class="input-label">Fecha Inicio Programada</label>
@@ -181,7 +298,6 @@
                     </div>
                 </div>
 
-                <!-- TIPO DE CAMPAÑA -->
                 <div class="input-group">
                     <label class="input-label">Tipo de Campaña / Conversión</label>
                     <select id="setup-campaign-type" class="input-field" onchange="actualizarFormularioPorTipoCam()">
@@ -194,7 +310,6 @@
                     </select>
                 </div>
 
-                <!-- OPCIONES CONDICIONALES BASADAS EN TIPO -->
                 <div id="group-opt-invitation" class="input-group border-opt-group">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <label class="input-label">Número de Invitados Requeridos</label>
@@ -221,7 +336,6 @@
                 <button onclick="guardarCampanaAdmin()" class="btn btn-purple">🚀 Lanzar Configuración</button>
             </div>
 
-            <!-- ANALÍTICAS DE CAMPAÑA -->
             <div class="card" id="analytics-box">
                 <h2>📊 Analíticas de Propagación (Local)</h2>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
@@ -245,11 +359,10 @@
             </div>
         </div>
 
-        <!-- SECCIÓN 3: FACTURACIÓN / PREMIUM -->
         <div id="view-billing" class="view-section">
             <div class="card premium">
                 <h2>👑 Membresía SaaS Ultra VIP</h2>
-                <p>Rompe las limitaciones estructurales y activa todos los modelos de conversión dinámicos (Anuncios y Telegram Actions).</p>
+                <p>Rompe las limitations estructurales y activa todos los modelos de conversión dinámicos (Anuncios y Telegram Actions).</p>
                 
                 <ul style="font-size: 0.8rem; color: #b2bec3; list-style: none; margin-bottom: 15px;">
                     <li style="margin-bottom: 6px;">✅ Desbloqueo de todos los tipos de campaña (Anuncios, Canales, Grupos).</li>
@@ -269,19 +382,17 @@
                 <button onclick="solicitarPremiumAirdayz()" class="btn btn-gold">💳 Solicitar Acceso Pro a @Airdayz</button>
             </div>
 
-            <div class="card" style="border-color: var(--neon-purple);">
+            <div class="card" id="premium-activation-key-card" style="border-color: var(--neon-purple);">
                 <div class="input-label" style="color: var(--neon-purple);">🔑 Activar Llave de Licencia Cifrada</div>
                 <input type="text" id="licence-key-input" class="input-field" placeholder="Introduce la firma SHA/Clave entregada...">
                 <button onclick="inyectarLlaveLicenciaLocal()" class="btn btn-purple" style="margin-top: 10px; border-radius: 10px; padding: 8px;">Validar Clave</button>
             </div>
         </div>
 
-        <!-- MARCA DE AGUA FREEMIUM AUTOMÁTICA -->
         <div id="saas-watermark" class="watermark">
             Potenciado por <a href="javascript:void(0);" onclick="cambiarPestaña('billing')">Bomba Viral SaaS Premium</a>
         </div>
 
-        <!-- CARRUSEL DE ANUNCIOS AUTOMÁTICO DE ANCHO COMPLETO Y CONTROL DESLIZANTE -->
         <div id="premium-carousel-wrapper" class="adv-carousel-wrapper">
             <div id="adv-carousel-inner" class="adv-carousel-inner">
                 <div class="adv-slide" style="border-left: 4px solid #ff4d4d;">🔥 ¡Gana $50 USDT diarios en nuestro Bot de Trading! Desliza para ver más.</div>
@@ -290,7 +401,6 @@
             </div>
         </div>
 
-        <!-- MENÚ DE NAVEGACIÓN INFERIOR -->
         <nav class="nav-bar">
             <button onclick="cambiarPestaña('client')" id="nav-client" class="nav-item active">
                 <span>🎯</span>Campañas
@@ -310,14 +420,16 @@
         tg.ready();
         tg.expand();
 
+        // LISTA DE USUARIOS PREMIUM GESTIONADA MANUALMENTE (Añadidas fechas de inicio y fin con objetos de comparación estables)
         const LICENCIAS_VERIFICADAS_PRO = {
-            "17829292": { premium_ok: true, clave: "2739922jskw29292615sjwkw" },
-            "55667788": { premium_ok: true, clave: "vip_cloudflare_edge_2026" }
+            "17829292": { premium_ok: true, clave: "2739922jskw29292615sjwkw", start_date: "25/05/2026", end_date: "25/08/2026 (Periodo 3 Meses)", expiryDate: new Date(2026, 7, 25, 23, 59, 59) }, // Mes 7 es Agosto en JS indexes (0-11)
+            "55667788": { premium_ok: true, clave: "vip_cloudflare_edge_2026", start_date: "01/01/2026", end_date: "01/01/2027 (Periodo 1 Año)", expiryDate: new Date(2027, 0, 1, 23, 59, 59) },
+            "12345678": { premium_ok: true, clave: "admin_test_2026", start_date: "15/06/2026", end_date: "15/07/2026 (Periodo 1 Mes)", expiryDate: new Date(2026, 6, 15, 23, 59, 59) }
         };
 
         let appState = {
             isPremium: false,
-            userId: "12345678", 
+            userId: "99999999", 
             username: "sin_alias",
             firstName: "Developer",
             chatInstance: "global_context",
@@ -328,10 +440,20 @@
             groupStats: {},
             adTimerInterval: null,
             adSecondsLeft: 30,
-            adCompleted: false
+            adCompleted: false,
+            firstTimeLoginDate: ""
         };
 
         document.addEventListener("DOMContentLoaded", () => {
+            // Registrar fecha de primera entrada para el plan Gratis
+            let savedFirstDate = localStorage.getItem("bv_first_login");
+            if (!savedFirstDate) {
+                const hoy = new Date();
+                savedFirstDate = hoy.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                localStorage.setItem("bv_first_login", savedFirstDate);
+            }
+            appState.firstTimeLoginDate = savedFirstDate;
+
             inicializarDatosUsuarioTelegram();
             ejecutarVerificacionLicenciaBase();
             actualizarFormularioPorTipoCam();
@@ -345,6 +467,7 @@
                 }
                 evaluarFlujoDeepLinkingDeEntrada();
                 renderizarPantallasDinamicas();
+                actualizarContadorHeader();
             });
         });
 
@@ -358,11 +481,28 @@
 
                 document.getElementById("user-display-name").innerText = appState.firstName;
                 document.getElementById("user-avatar-glow").style.backgroundColor = "var(--neon-green)";
+
+                // RENDERIZAR IMAGEN DE PERFIL O FALLBACK CON LA INICIAL
+                const avatarBox = document.getElementById("user-avatar-box");
+                const modalAvatarBox = document.getElementById("modal-avatar-box");
+                
+                if (u.photo_url) {
+                    avatarBox.innerHTML = `<img src="${u.photo_url}" alt="Profile"><div id="user-avatar-glow" class="avatar-glow-indicator"></div>`;
+                    modalAvatarBox.innerHTML = `<img src="${u.photo_url}" alt="Profile">`;
+                } else {
+                    const inicial = appState.firstName ? appState.firstName.charAt(0).toUpperCase() : "U";
+                    document.getElementById("avatar-fallback").innerText = inicial;
+                    document.getElementById("modal-avatar-fallback").innerText = inicial;
+                }
             }
         }
 
         function ejecutarVerificacionLicenciaBase() {
-            if(LICENCIAS_VERIFICADAS_PRO[appState.userId]) {
+            const ahora = new Date();
+            const licencia = LICENCIAS_VERIFICADAS_PRO[appState.userId];
+            
+            // VERIFICAR CONTRASTADO AUTOMÁTICO DE TIEMPO EXPIRADO
+            if(licencia && licencia.premium_ok && ahora <= licencia.expiryDate) {
                 appState.isPremium = true;
                 
                 const badge = document.getElementById("status-badge");
@@ -370,30 +510,131 @@
                 badge.className = "badge badge-premium";
                 
                 document.getElementById("nav-billing").classList.add("gold-user");
-                document.getElementById("user-avatar-glow").style.backgroundColor = "var(--neon-gold)";
-                document.getElementById("req-limit-hint").innerText = "Hasta 10 (Plan Pro)";
-                document.getElementById("req-limit-hint").style.color = "var(--neon-gold)";
+                
+                const glowIndicator = document.getElementById("user-avatar-glow");
+                if(glowIndicator) glowIndicator.style.backgroundColor = "var(--neon-gold)";
+                
+                const limitHint = document.getElementById("req-limit-hint");
+                if(limitHint) {
+                    limitHint.innerText = "Hasta 10 (Plan Pro)";
+                    limitHint.style.color = "var(--neon-gold)";
+                }
                 
                 document.getElementById("saas-watermark").style.display = "none";
                 document.getElementById("geo-premium-badge").style.display = "inline";
                 document.getElementById("admin-creator-card").classList.add("premium");
+                
+                // OCULTAR SECCIÓN PREMIUM Y ANUNCIOS ABSOLUTAMENTE SI ES USER PREMIUM
                 document.getElementById("premium-carousel-wrapper").style.display = "none";
+                document.getElementById("nav-billing").style.display = "none";
+                document.getElementById("premium-activation-key-card").style.display = "none";
+                
+                // HABILITAR OPCIONES DE ADMINISTRADOR POR SI FUERON BLOQUEADAS PREVIAMENTE
+                habilitarOpcionesPremiumAdmin();
             } else {
+                // SINO PASA A GRATIS / SE BLOQUEA AUTOMÁTICAMENTE
+                appState.isPremium = false;
+                
+                const badge = document.getElementById("status-badge");
+                badge.innerText = "Plan Gratis";
+                badge.className = "badge";
+                badge.style.background = "rgba(108,117,125,0.1)";
+                badge.style.color = "var(--text-muted)";
+                
+                document.getElementById("nav-billing").classList.remove("gold-user");
+                
+                const glowIndicator = document.getElementById("user-avatar-glow");
+                if(glowIndicator) glowIndicator.style.backgroundColor = "var(--neon-green)";
+                
+                const limitHint = document.getElementById("req-limit-hint");
+                if(limitHint) {
+                    limitHint.innerText = "Máx 3 (Plan Gratis)";
+                    limitHint.style.color = "var(--neon-purple)";
+                }
+                
+                document.getElementById("saas-watermark").style.display = "block";
+                document.getElementById("geo-premium-badge").style.display = "none";
+                document.getElementById("admin-creator-card").classList.remove("premium");
+                
                 document.getElementById("premium-carousel-wrapper").style.display = "block";
+                document.getElementById("nav-billing").style.display = "flex";
+                document.getElementById("premium-activation-key-card").style.display = "block";
                 deshabilitarOpcionesPremiumAdmin();
             }
+        }
+
+        function habilitarOpcionesPremiumAdmin() {
+            const premiumTypes = ["ad_text", "ad_image", "ad_video", "sub_channel", "join_group"];
+            premiumTypes.forEach(id => {
+                const opt = document.getElementById(`opt-${id}`);
+                if(opt) {
+                    opt.disabled = false;
+                    opt.innerText = opt.innerText.replace(" (🔒 Pro)", "");
+                }
+            });
+            document.getElementById("setup-ad-duration").disabled = false;
         }
 
         function deshabilitarOpcionesPremiumAdmin() {
             const premiumTypes = ["ad_text", "ad_image", "ad_video", "sub_channel", "join_group"];
             premiumTypes.forEach(id => {
                 const opt = document.getElementById(`opt-${id}`);
-                if(opt) {
+                if(opt && !opt.innerText.includes("🔒 Pro")) {
                     opt.disabled = true;
                     opt.innerText += " (🔒 Pro)";
                 }
             });
             document.getElementById("setup-ad-duration").disabled = true;
+            // Forzar selector a invitación si estaba en uno Pro expirado
+            const currentType = document.getElementById("setup-campaign-type").value;
+            if(currentType !== "invitation") {
+                document.getElementById("setup-campaign-type").value = "invitation";
+                actualizarFormularioPorTipoCam();
+            }
+        }
+
+        function actualizarContadorHeader() {
+            const counterEl = document.getElementById("header-campaign-counter");
+            if (appState.campañaActivaLocal) {
+                counterEl.innerText = "Campañas activas: 1";
+                counterEl.style.color = "var(--neon-green)";
+            } else {
+                counterEl.innerText = "Campañas activas: 0";
+                counterEl.style.color = "var(--text-muted)";
+            }
+        }
+
+        function abrirModalPerfil() {
+            // Re-verificar estado en caso de que expire en caliente durante la ejecución de la app
+            ejecutarVerificacionLicenciaBase();
+            
+            document.getElementById("modal-user-title").innerText = appState.firstName;
+            document.getElementById("modal-user-id").innerText = `ID: ${appState.userId}`;
+            
+            const statusLabel = document.getElementById("profile-plan-status");
+            const startLabel = document.getElementById("profile-plan-start");
+            const endLabel = document.getElementById("profile-plan-end");
+
+            const ahora = new Date();
+            if (LICENCIAS_VERIFICADAS_PRO[appState.userId] && ahora <= LICENCIAS_VERIFICADAS_PRO[appState.userId].expiryDate) {
+                const userData = LICENCIAS_VERIFICADAS_PRO[appState.userId];
+                statusLabel.innerText = "Premium Activado 👑";
+                statusLabel.style.color = "var(--neon-gold)";
+                startLabel.innerText = userData.start_date;
+                endLabel.innerText = userData.end_date;
+            } else {
+                statusLabel.innerText = "Gratis 🎯";
+                statusLabel.style.color = "var(--neon-green)";
+                startLabel.innerText = appState.firstTimeLoginDate;
+                endLabel.innerText = "Infinito ♾️";
+            }
+
+            document.getElementById("modal-perfil-usuario").classList.add("active");
+        }
+
+        function cerrarModalPerfil(event) {
+            event.stopPropagation();
+            document.getElementById("modal-perfil-usuario").classList.remove("active");
         }
 
         function actualizarFormularioPorTipoCam() {
@@ -462,6 +703,9 @@
         }
 
         function guardarCampanaAdmin() {
+            // Verificar expiración antes de permitir guardar
+            ejecutarVerificacionLicenciaBase();
+
             const t = document.getElementById("setup-title").value.trim();
             const d = document.getElementById("setup-desc").value.trim();
             const s = document.getElementById("setup-secret").value.trim();
@@ -472,7 +716,7 @@
             if(!t || !s) return tg.showAlert("❌ Título y Enlace Secreto requeridos.");
 
             if(!appState.isPremium && type !== "invitation") {
-                return tg.showAlert("🔒 Los tipos de conversión por anuncios o comunidades requieren membresía Premium VIP.");
+                return tg.showAlert("🔒 Los tipos de conversión por anuncios o comunidades requieren membresía Premium VIP activa.");
             }
 
             let r = parseInt(document.getElementById("setup-req-count").value) || 3;
@@ -500,6 +744,7 @@
                 appState.adCompleted = false;
                 tg.CloudStorage.setItem("ref_count_v1", "0");
                 renderizarPantallasDinamicas();
+                actualizarContadorHeader();
                 cambiarPestaña('client');
             });
         }
@@ -565,7 +810,7 @@
                 document.getElementById("tg-step-label").innerText = camp.tipo === "sub_channel" ? "Paso 1: Suscribirse al Canal" : "Paso 1: Unirse al Grupo";
                 document.getElementById("tg-step-desc").innerText = `Únete a @${camp.tgTarget} y luego presiona reclamar.`;
                 
-                evaluarDesbloqueoFinal(true); // Se asume acción local o click-through directo
+                evaluarDesbloqueoFinal(true); 
 
             } else if(camp.tipo.startsWith("ad_")) {
                 document.getElementById("step-dynamic-ad").style.display = "block";
@@ -675,25 +920,26 @@
 
         function inyectarLlaveLicenciaLocal() {
             const llaveInput = document.getElementById("licence-key-input").value.trim();
-            if(LICENCIAS_VERIFICADAS_PRO[appState.userId] && LICENCIAS_VERIFICADAS_PRO[appState.userId].clave === llaveInput) {
+            const ahora = new Date();
+            if(LICENCIAS_VERIFICADAS_PRO[appState.userId] && LICENCIAS_VERIFICADAS_PRO[appState.userId].clave === llaveInput && ahora <= LICENCIAS_VERIFICADAS_PRO[appState.userId].expiryDate) {
                 tg.showAlert("✅ Licencia Activada de manera global.");
                 appState.isPremium = true;
                 ejecutarVerificacionLicenciaBase();
                 renderizarPantallasDinamicas();
             } else {
-                tg.showAlert("❌ Firma inválida.");
+                tg.showAlert("❌ Firma inválida o licencia expirada.");
             }
         }
 
         /* LÓGICA TÁCTIL AUTOMÁTICA DEL CARRUSEL DE ANUNCIOS */
         function inicializarTouchCarrusel() {
             const inner = document.getElementById("adv-carousel-inner");
-            let isDragging = false, startX, currentTranslate = 0, prevTranslate = 0, animationID, currentIndex = 0;
+            if (!inner) return;
+            let isDragging = false, startX, currentTranslate = 0, prevTranslate = 0, currentIndex = 0;
             const slides = document.querySelectorAll(".adv-slide");
 
-            // Auto-rotación automática cada 4 segundos
             setInterval(() => {
-                if(!isDragging) {
+                if(!isDragging && appState.isPremium === false) {
                     currentIndex = (currentIndex + 1) % slides.length;
                     currentTranslate = currentIndex * -window.innerWidth;
                     prevTranslate = currentTranslate;
