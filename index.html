@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bomba Viral SaaS - Ultra P2P Growth</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-dark: #07080e;
+            --bg-surface: linear-gradient(145deg, #0f111a 0%, #151926 100%);
+            --neon-green: #00ff88;
+            --neon-purple: #9d4edd;
+            --neon-gold: #ffb700;
+            --text-main: #f8f9fa;
+            --text-muted: #6c757d;
+            --border-glow: rgba(0, 255, 136, 0.15);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-main); padding: 16px; padding-bottom: 160px; overflow-x: hidden; }
+
+        .app-container { max-width: 460px; margin: auto; }
+        
+        /* Tarjetas de Interfaz */
+        .card { background: var(--bg-surface); border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); position: relative; }
+        .card.premium { border-color: var(--neon-gold); box-shadow: 0 0 15px rgba(255,183,0,0.1); }
+        .card.viral-active { border-color: var(--neon-green); box-shadow: 0 0 15px var(--border-glow); }
+
+        h2 { font-size: 1.2rem; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        p { font-size: 0.85rem; color: #b2bec3; line-height: 1.5; margin-bottom: 12px; }
+
+        /* Inputs y Selectores */
+        .input-group { margin-bottom: 14px; }
+        .input-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px; display: block; font-weight: bold; }
+        .input-field { width: 100%; background: #0b0c13; border: 1px solid #252836; border-radius: 10px; color: #fff; padding: 12px; font-size: 0.85rem; outline: none; transition: 0.3s; }
+        .input-field:focus { border-color: var(--neon-green); }
+        .input-field:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Botones Eléctricos */
+        .btn { width: 100%; background: transparent; border: 2px solid var(--neon-green); color: var(--neon-green); padding: 12px; border-radius: 30px; font-weight: bold; font-size: 0.85rem; text-transform: uppercase; cursor: pointer; transition: 0.2s ease-in-out; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn:hover { background: rgba(0, 255, 136, 0.08); box-shadow: 0 0 12px rgba(0, 255, 136, 0.3); }
+        .btn-purple { border-color: var(--neon-purple); color: var(--neon-purple); }
+        .btn-purple:hover { background: rgba(157, 78, 221, 0.08); box-shadow: 0 0 12px rgba(157, 78, 221, 0.3); }
+        .btn-gold { border-color: var(--neon-gold); color: var(--neon-gold); }
+        .btn-gold:hover { background: rgba(255, 183, 0, 0.08); box-shadow: 0 0 12px rgba(255, 183, 0, 0.3); }
+        .btn-disabled { border-color: #3a3b45 !important; color: #3a3b45 !important; cursor: not-allowed; pointer-events: none; }
+
+        /* Barra de Progreso */
+        .progress-container { background: #0b0c13; border-radius: 8px; height: 12px; width: 100%; position: relative; margin: 15px 0; overflow: hidden; border: 1px solid #1e2230; }
+        .progress-bar { background: linear-gradient(90deg, var(--neon-purple), var(--neon-green)); height: 100%; width: 0%; transition: width 0.5s cubic-bezier(0.1, 1, 0.1, 1); }
+
+        /* Badges */
+        .badge { background: rgba(0, 255, 136, 0.1); color: var(--neon-green); font-size: 0.65rem; padding: 4px 8px; border-radius: 6px; font-weight: bold; text-transform: uppercase; }
+        .badge-premium { background: rgba(255, 183, 0, 0.1); color: var(--neon-gold); border: 1px solid var(--neon-gold); }
+
+        /* Vistas */
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+
+        /* Navegación Fija */
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 55px; background: #090a10; border-top: 1px solid #1a1c28; display: flex; justify-content: space-around; align-items: center; z-index: 110; }
+        .nav-item { background: none; border: none; color: var(--text-muted); font-size: 0.75rem; font-weight: bold; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .nav-item.active { color: var(--neon-green); }
+        .nav-item.active.gold-user { color: var(--neon-gold); }
+
+        .log-item { background: rgba(0,0,0,0.2); border-left: 3px solid var(--neon-purple); padding: 8px 12px; border-radius: 4px; font-size: 0.75rem; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+        .log-item.fraudulent { border-left-color: #ff4d4d; background: rgba(255, 77, 77, 0.05); }
+
+        .watermark { text-align: center; font-size: 0.7rem; color: var(--text-muted); margin-top: 20px; padding: 10px; border-top: 1px dashed rgba(255,255,255,0.05); }
+        .watermark a { color: var(--neon-green); text-decoration: none; font-weight: bold; }
+
+        /* CARRUSEL TÁCTIL DE ANUNCIOS */
+        .adv-carousel-wrapper { position: fixed; bottom: 55px; left: 0; right: 0; background: #0b0c14; border-top: 1px solid #202433; overflow: hidden; height: 75px; z-index: 105; display: none; }
+        .adv-carousel-inner { display: flex; width: 100%; height: 100%; cubic-bezier(0.1, 1, 0.1, 1); cursor: grab; user-select: none; touch-action: pan-y; }
+        .adv-slide { min-width: 100%; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 0 20px; text-align: center; font-size: 0.8rem; font-weight: bold; color: #a5b1c2; box-sizing: border-box; background: linear-gradient(90deg, #0e111a 0%, #171b2a 100%); }
+
+        /* Contenedor dinámico de anuncios */
+        .dynamic-ad-container { background: rgba(0,0,0,0.2); border: 1px dashed var(--neon-purple); border-radius: 10px; padding: 12px; margin-bottom: 12px; text-align: center; }
+        .countdown-timer { font-size: 1.1rem; font-weight: bold; color: var(--neon-gold); margin-top: 5px; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- HEADER DE ESTADO DE LICENCIA -->
+        <div class="card" style="padding: 12px 20px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <div id="user-avatar-glow" style="width: 10px; height: 10px; background: var(--text-muted); border-radius: 50%;"></div>
+                <span id="user-display-name" style="font-weight: bold; font-size: 0.85rem;">Usuario</span>
+            </div>
+            <span id="status-badge" class="badge" style="background: rgba(108,117,125,0.1); color: var(--text-muted);">Plan Gratis</span>
+        </div>
+
+        <!-- SECCIÓN 1: CLIENTE -->
+        <div id="view-client" class="view-section active">
+            <div id="card-no-campaign" class="card">
+                <h2>🎯 Sin campaña activa</h2>
+                <p>Abre esta Mini App usando un enlace de desbloqueo viral desde cualquier canal de Telegram afiliado o crea una en la Consola Admin.</p>
+            </div>
+
+            <!-- CAMPAÑA FUERA DE RANGO / TEMPORALIDAD -->
+            <div id="card-campaign-status-msg" class="card" style="display:none; border-color: #ff4d4d;">
+                <h2 id="status-msg-title">⏳ Campaña no disponible</h2>
+                <p id="status-msg-desc">Esta campaña aún no ha comenzado o ya ha expirado de forma automática.</p>
+            </div>
+
+            <div id="card-viral-unlock" class="card viral-active" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <h2 id="viral-title">🎁 Contenido Bloqueado</h2>
+                    <span class="badge" id="viral-type-badge">Exclusivo</span>
+                </div>
+                <p id="viral-desc">Completa la acción requerida por el creador para liberar tu recompensa segura.</p>
+                
+                <!-- PASO ADICIONAL: ANUNCIO DINÁMICO CON CONTADOR -->
+                <div id="step-dynamic-ad" class="dynamic-ad-container" style="display: none;">
+                    <span class="input-label" style="color: var(--neon-gold);">Contenido Patrocinado Requerido</span>
+                    <div id="ad-content-render" style="margin: 8px 0; font-size: 0.85rem;">Cargando...</div>
+                    <div id="ad-countdown-box">
+                        <div style="font-size: 0.65rem; color: var(--text-muted);">TIEMPO RESTANTE PARA RECLAMAR:</div>
+                        <div id="ad-timer" class="countdown-timer">30s</div>
+                    </div>
+                </div>
+
+                <!-- PASO TELEGRAM: CANAL O GRUPO -->
+                <div id="step-channel" class="input-group" style="background: rgba(0,0,0,0.15); padding: 12px; border-radius: 10px; margin-bottom: 10px; display:none;">
+                    <span class="input-label" id="tg-step-label" style="color: var(--neon-purple);">Requisito de Comunidad</span>
+                    <p id="tg-step-desc" style="font-size: 0.75rem; margin-bottom: 8px;">Debes unirte a este espacio para calificar.</p>
+                    <button id="btn-join-channel" onclick="abrirEspacioRequisito()" class="btn btn-purple" style="padding: 6px 12px; font-size: 0.75rem;">Unirse al Espacio</button>
+                </div>
+
+                <!-- PASO VIRALIZACIÓN P2P -->
+                <div id="step-referrals" class="input-group" style="background: rgba(0,0,0,0.15); padding: 12px; border-radius: 10px; display: none;">
+                    <span class="input-label" style="color: var(--neon-green);">Viralización P2P</span>
+                    <p style="font-size: 0.75rem; margin-bottom: 4px;">Invita amigos usando tu link. Deben ingresar a la app.</p>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-top: 10px; font-weight: bold;">
+                        <span>Progreso:</span>
+                        <span id="progress-text">0 / 3 Amigos</span>
+                    </div>
+                    <div class="progress-container">
+                        <div id="progress-bar-fill" class="progress-bar"></div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">
+                    <button id="btn-share-viral" onclick="compartirEnlaceReferido()" class="btn" style="display:none;">🔗 Invitar Amigos Ahora</button>
+                    <button id="btn-claim-reward" onclick="reclamarRecompensaFinal()" class="btn btn-gold btn-disabled">⌛ Validando Requisitos...</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 2: ADMINISTRADOR -->
+        <div id="view-admin" class="view-section">
+            <div class="card" id="admin-creator-card">
+                <h2>⚡ Creador de Campañas</h2>
+                <p>Configura candados avanzados controlando accesos por temporizadores y tipos de conversión.</p>
+                
+                <div class="input-group">
+                    <label class="input-label">Título del Recurso</label>
+                    <input type="text" id="setup-title" class="input-field" placeholder="Ej: Herramientas VIP 2026">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Descripción o Instrucciones</label>
+                    <input type="text" id="setup-desc" class="input-field" placeholder="Ej: Completa los pasos para liberar la descarga.">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Enlace Secreto de Entrega (Destino final)</label>
+                    <input type="text" id="setup-secret" class="input-field" placeholder="Ej: https://mega.nz/file/xyz...">
+                </div>
+
+                <!-- CONFIGURACIÓN DE CRONOGRAMA -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;" class="input-group">
+                    <div>
+                        <label class="input-label">Fecha Inicio Programada</label>
+                        <input type="datetime-local" id="setup-start-date" class="input-field" style="font-size:0.75rem; padding:10px;">
+                    </div>
+                    <div>
+                        <label class="input-label">Finalización Automática</label>
+                        <input type="datetime-local" id="setup-end-date" class="input-field" style="font-size:0.75rem; padding:10px;">
+                    </div>
+                </div>
+
+                <!-- TIPO DE CAMPAÑA -->
+                <div class="input-group">
+                    <label class="input-label">Tipo de Campaña / Conversión</label>
+                    <select id="setup-campaign-type" class="input-field" onchange="actualizarFormularioPorTipoCam()">
+                        <option value="invitation">Por número de invitados (Gratis e Ilimitado)</option>
+                        <option value="ad_text" id="opt-ad_text">👑 Ver Anuncio: Texto Dinámico + Enlace</option>
+                        <option value="ad_image" id="opt-ad_image">👑 Ver Anuncio: Imagen + Banner</option>
+                        <option value="ad_video" id="opt-ad_video">👑 Ver Anuncio: Vídeo</option>
+                        <option value="sub_channel" id="opt-sub_channel">👑 Suscribirse a Canal de Telegram</option>
+                        <option value="join_group" id="opt-join_group">👑 Unirse a Grupo de Telegram</option>
+                    </select>
+                </div>
+
+                <!-- OPCIONES CONDICIONALES BASADAS EN TIPO -->
+                <div id="group-opt-invitation" class="input-group border-opt-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label class="input-label">Número de Invitados Requeridos</label>
+                        <span id="req-limit-hint" style="font-size: 0.65rem; color: var(--neon-purple); font-weight: bold;">Máx 3 (Plan Gratis)</span>
+                    </div>
+                    <input type="number" id="setup-req-count" class="input-field" value="3" min="1" max="10">
+                </div>
+
+                <div id="group-opt-telegram" class="input-group" style="display:none;">
+                    <label class="input-label">Comunidad (Usuario sin @ o Link público)</label>
+                    <input type="text" id="setup-tg-target" class="input-field" placeholder="Ej: TuCanalOficial">
+                </div>
+
+                <div id="group-opt-ad" class="input-group" style="display:none;">
+                    <label class="input-label">Contenido / URL del Recurso Publicitario</label>
+                    <input type="text" id="setup-ad-value" class="input-field" placeholder="Texto, link de imagen o URL de vídeo...">
+                    
+                    <div style="margin-top:10px;">
+                        <label class="input-label">Duración del Anuncio (Segundos)</label>
+                        <input type="number" id="setup-ad-duration" class="input-field" value="30" min="5" placeholder="Por defecto 30s">
+                    </div>
+                </div>
+
+                <button onclick="guardarCampanaAdmin()" class="btn btn-purple">🚀 Lanzar Configuración</button>
+            </div>
+
+            <!-- ANALÍTICAS DE CAMPAÑA -->
+            <div class="card" id="analytics-box">
+                <h2>📊 Analíticas de Propagación (Local)</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                    <div style="background: #0b0c13; padding: 10px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Clicks Totales</div>
+                        <div style="font-size: 1.2rem; font-weight: bold; color: var(--neon-green);" id="meta-clicks">0</div>
+                    </div>
+                    <div style="background: #0b0c13; padding: 10px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Loops Virales</div>
+                        <div style="font-size: 1.2rem; font-weight: bold; color: var(--neon-purple);" id="meta-loops">0</div>
+                    </div>
+                </div>
+                
+                <div class="input-label" style="margin-top: 15px; margin-bottom: 5px; display: flex; justify-content: space-between;">
+                    <span>📍 Origen por Grupos (Top Canales):</span>
+                    <span id="geo-premium-badge" style="font-size:0.6rem; color:var(--neon-gold); display:none;">👑 Activo</span>
+                </div>
+                <div id="admin-group-stats" style="background: #0b0c13; padding: 10px; border-radius: 8px; font-size: 0.75rem; color: var(--text-muted);">
+                    <span id="group-stats-placeholder">Requiere Plan Premium para rastrear IDs de chats.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 3: FACTURACIÓN / PREMIUM -->
+        <div id="view-billing" class="view-section">
+            <div class="card premium">
+                <h2>👑 Membresía SaaS Ultra VIP</h2>
+                <p>Rompe las limitaciones estructurales y activa todos los modelos de conversión dinámicos (Anuncios y Telegram Actions).</p>
+                
+                <ul style="font-size: 0.8rem; color: #b2bec3; list-style: none; margin-bottom: 15px;">
+                    <li style="margin-bottom: 6px;">✅ Desbloqueo de todos los tipos de campaña (Anuncios, Canales, Grupos).</li>
+                    <li style="margin-bottom: 6px;">✅ Control total sobre la duración de visualización de anuncios.</li>
+                    <li style="margin-bottom: 6px;">✅ Remoción absoluta del Carrusel de anuncios inferior.</li>
+                    <li style="margin-bottom: 6px;">✅ Habilitar fecha de inicio y fin automático sin restricciones.</li>
+                </ul>
+
+                <div class="input-group">
+                    <label class="input-label">Selecciona tu pasarela de pago manual</label>
+                    <select id="billing-method" class="input-field" style="background: #0b0c13;">
+                        <option value="Binance Pay (USDT)">Binance Pay (USDT) - Recomendado</option>
+                        <option value="Telegram Stars (Estrellas)">Telegram Stars (Estrellas)</option>
+                    </select>
+                </div>
+
+                <button onclick="solicitarPremiumAirdayz()" class="btn btn-gold">💳 Solicitar Acceso Pro a @Airdayz</button>
+            </div>
+
+            <div class="card" style="border-color: var(--neon-purple);">
+                <div class="input-label" style="color: var(--neon-purple);">🔑 Activar Llave de Licencia Cifrada</div>
+                <input type="text" id="licence-key-input" class="input-field" placeholder="Introduce la firma SHA/Clave entregada...">
+                <button onclick="inyectarLlaveLicenciaLocal()" class="btn btn-purple" style="margin-top: 10px; border-radius: 10px; padding: 8px;">Validar Clave</button>
+            </div>
+        </div>
+
+        <!-- MARCA DE AGUA FREEMIUM AUTOMÁTICA -->
+        <div id="saas-watermark" class="watermark">
+            Potenciado por <a href="javascript:void(0);" onclick="cambiarPestaña('billing')">Bomba Viral SaaS Premium</a>
+        </div>
+
+        <!-- CARRUSEL DE ANUNCIOS AUTOMÁTICO DE ANCHO COMPLETO Y CONTROL DESLIZANTE -->
+        <div id="premium-carousel-wrapper" class="adv-carousel-wrapper">
+            <div id="adv-carousel-inner" class="adv-carousel-inner">
+                <div class="adv-slide" style="border-left: 4px solid #ff4d4d;">🔥 ¡Gana $50 USDT diarios en nuestro Bot de Trading! Desliza para ver más.</div>
+                <div class="adv-slide" style="border-left: 4px solid #00ff88;">🚀 Sube tus canales de Telegram orgánicamente con la infraestructura Pro.</div>
+                <div class="adv-slide" style="border-left: 4px solid #9d4edd;">💎 Hazte miembro Premium de Bomba Viral y quita estos anuncios hoy.</div>
+            </div>
+        </div>
+
+        <!-- MENÚ DE NAVEGACIÓN INFERIOR -->
+        <nav class="nav-bar">
+            <button onclick="cambiarPestaña('client')" id="nav-client" class="nav-item active">
+                <span>🎯</span>Campañas
+            </button>
+            <button onclick="cambiarPestaña('admin')" id="nav-admin" class="nav-item">
+                <span>⚡</span>Consola Admin
+            </button>
+            <button onclick="cambiarPestaña('billing')" id="nav-billing" class="nav-item">
+                <span>👑</span>Premium
+            </button>
+        </nav>
+
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        const LICENCIAS_VERIFICADAS_PRO = {
+            "17829292": { premium_ok: true, clave: "2739922jskw29292615sjwkw" },
+            "55667788": { premium_ok: true, clave: "vip_cloudflare_edge_2026" }
+        };
+
+        let appState = {
+            isPremium: false,
+            userId: "12345678", 
+            username: "sin_alias",
+            firstName: "Developer",
+            chatInstance: "global_context",
+            campañaActivaLocal: null,
+            referidosLogrados: 0,
+            dbLogs: [],
+            clicsTotalesEnlace: 0,
+            groupStats: {},
+            adTimerInterval: null,
+            adSecondsLeft: 30,
+            adCompleted: false
+        };
+
+        document.addEventListener("DOMContentLoaded", () => {
+            inicializarDatosUsuarioTelegram();
+            ejecutarVerificacionLicenciaBase();
+            actualizarFormularioPorTipoCam();
+            inicializarTouchCarrusel();
+            
+            tg.CloudStorage.getItems(["campaña_saved", "ref_count_v1", "group_stats_v1"], (err, res) => {
+                if(!err) {
+                    if(res.campaña_saved) appState.campañaActivaLocal = JSON.parse(res.campaña_saved);
+                    if(res.ref_count_v1) appState.referidosLogrados = parseInt(res.ref_count_v1) || 0;
+                    if(res.group_stats_v1) appState.groupStats = JSON.parse(res.group_stats_v1) || {};
+                }
+                evaluarFlujoDeepLinkingDeEntrada();
+                renderizarPantallasDinamicas();
+            });
+        });
+
+        function inicializarDatosUsuarioTelegram() {
+            const u = tg.initDataUnsafe?.user;
+            if(u) {
+                appState.userId = u.id.toString();
+                appState.username = u.username || "sin_alias";
+                appState.firstName = u.first_name;
+                appState.chatInstance = tg.initDataUnsafe?.chat_instance || "direct_chat";
+
+                document.getElementById("user-display-name").innerText = appState.firstName;
+                document.getElementById("user-avatar-glow").style.backgroundColor = "var(--neon-green)";
+            }
+        }
+
+        function ejecutarVerificacionLicenciaBase() {
+            if(LICENCIAS_VERIFICADAS_PRO[appState.userId]) {
+                appState.isPremium = true;
+                
+                const badge = document.getElementById("status-badge");
+                badge.innerText = "Plan Premium VIP";
+                badge.className = "badge badge-premium";
+                
+                document.getElementById("nav-billing").classList.add("gold-user");
+                document.getElementById("user-avatar-glow").style.backgroundColor = "var(--neon-gold)";
+                document.getElementById("req-limit-hint").innerText = "Hasta 10 (Plan Pro)";
+                document.getElementById("req-limit-hint").style.color = "var(--neon-gold)";
+                
+                document.getElementById("saas-watermark").style.display = "none";
+                document.getElementById("geo-premium-badge").style.display = "inline";
+                document.getElementById("admin-creator-card").classList.add("premium");
+                document.getElementById("premium-carousel-wrapper").style.display = "none";
+            } else {
+                document.getElementById("premium-carousel-wrapper").style.display = "block";
+                deshabilitarOpcionesPremiumAdmin();
+            }
+        }
+
+        function deshabilitarOpcionesPremiumAdmin() {
+            const premiumTypes = ["ad_text", "ad_image", "ad_video", "sub_channel", "join_group"];
+            premiumTypes.forEach(id => {
+                const opt = document.getElementById(`opt-${id}`);
+                if(opt) {
+                    opt.disabled = true;
+                    opt.innerText += " (🔒 Pro)";
+                }
+            });
+            document.getElementById("setup-ad-duration").disabled = true;
+        }
+
+        function actualizarFormularioPorTipoCam() {
+            const type = document.getElementById("setup-campaign-type").value;
+            
+            document.getElementById("group-opt-invitation").style.display = "none";
+            document.getElementById("group-opt-telegram").style.display = "none";
+            document.getElementById("group-opt-ad").style.display = "none";
+
+            if(type === "invitation") {
+                document.getElementById("group-opt-invitation").style.display = "block";
+            } else if(type === "sub_channel" || type === "join_group") {
+                document.getElementById("group-opt-telegram").style.display = "block";
+            } else if(type.startsWith("ad_")) {
+                document.getElementById("group-opt-ad").style.display = "block";
+            }
+        }
+
+        function cambiarPestaña(target) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(`view-${target}`).classList.add('active');
+            document.getElementById(`nav-${target}`).classList.add('active');
+        }
+
+        function evaluarFlujoDeepLinkingDeEntrada() {
+            const startParam = tg.initDataUnsafe?.start_param;
+            if(!startParam) return;
+
+            try {
+                let base64Clean = startParam.replace(/-/g, '+').replace(/_/g, '/');
+                while (base64Clean.length % 4) { base64Clean += '='; }
+                const payload = JSON.parse(decodeURIComponent(escape(atob(base64Clean))));
+
+                if(payload && payload.secret_url) {
+                    appState.campañaActivaLocal = {
+                        titulo: payload.title,
+                        desc: payload.description,
+                        secreto: payload.secret_url,
+                        tipo: payload.type || "invitation",
+                        requeridos: parseInt(payload.req_slots) || 3,
+                        tgTarget: payload.tg_target || "",
+                        adValue: payload.ad_val || "",
+                        adDuration: parseInt(payload.ad_dur) || 30,
+                        startDate: payload.s_date || null,
+                        endDate: payload.e_date || null,
+                        ownerId: payload.owner
+                    };
+
+                    if(payload.referrer && payload.referrer !== appState.userId) {
+                        appState.clicsTotalesEnlace += 1;
+                        if (payload.origin_chat) {
+                            appState.groupStats[payload.origin_chat] = (appState.groupStats[payload.origin_chat] || 0) + 1;
+                            tg.CloudStorage.setItem("group_stats_v1", JSON.stringify(appState.groupStats));
+                        }
+                        if(payload.referrer === tg.initDataUnsafe?.user?.id?.toString()) {
+                            appState.referidosLogrados += 1;
+                            tg.CloudStorage.setItem("ref_count_v1", appState.referidosLogrados.toString());
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Error decodificando nodo:", e);
+            }
+        }
+
+        function guardarCampanaAdmin() {
+            const t = document.getElementById("setup-title").value.trim();
+            const d = document.getElementById("setup-desc").value.trim();
+            const s = document.getElementById("setup-secret").value.trim();
+            const type = document.getElementById("setup-campaign-type").value;
+            const sDate = document.getElementById("setup-start-date").value;
+            const eDate = document.getElementById("setup-end-date").value;
+
+            if(!t || !s) return tg.showAlert("❌ Título y Enlace Secreto requeridos.");
+
+            if(!appState.isPremium && type !== "invitation") {
+                return tg.showAlert("🔒 Los tipos de conversión por anuncios o comunidades requieren membresía Premium VIP.");
+            }
+
+            let r = parseInt(document.getElementById("setup-req-count").value) || 3;
+            if(!appState.isPremium && r > 3) { r = 3; }
+
+            const adDur = !appState.isPremium ? 30 : (parseInt(document.getElementById("setup-ad-duration").value) || 30);
+
+            appState.campañaActivaLocal = {
+                titulo: t,
+                desc: d,
+                secreto: s,
+                tipo: type,
+                requeridos: r,
+                tgTarget: document.getElementById("setup-tg-target").value.trim(),
+                adValue: document.getElementById("setup-ad-value").value.trim(),
+                adDuration: adDur,
+                startDate: sDate ? new Date(sDate).getTime() : null,
+                endDate: eDate ? new Date(eDate).getTime() : null,
+                ownerId: appState.userId
+            };
+
+            tg.CloudStorage.setItem("campaña_saved", JSON.stringify(appState.campañaActivaLocal), () => {
+                tg.showAlert("🚀 ¡Campaña Guardada con Éxito!");
+                appState.referidosLogrados = 0;
+                appState.adCompleted = false;
+                tg.CloudStorage.setItem("ref_count_v1", "0");
+                renderizarPantallasDinamicas();
+                cambiarPestaña('client');
+            });
+        }
+
+        function renderizarPantallasDinamicas() {
+            const camp = appState.campañaActivaLocal;
+            const cardUnlock = document.getElementById("card-viral-unlock");
+            const cardNoCam = document.getElementById("card-no-campaign");
+            const cardStatusMsg = document.getElementById("card-campaign-status-msg");
+
+            if(!camp) {
+                cardNoCam.style.display = "block";
+                cardUnlock.style.display = "none";
+                cardStatusMsg.style.display = "none";
+                return;
+            }
+
+            // CONTROL AUTOMÁTICO DE FECHAS (INICIO Y FINALIZACIÓN)
+            const ahora = Date.now();
+            if(camp.startDate && ahora < camp.startDate) {
+                cardNoCam.style.display = "none";
+                cardUnlock.style.display = "none";
+                cardStatusMsg.style.display = "block";
+                document.getElementById("status-msg-title").innerText = "⏳ Próximamente";
+                document.getElementById("status-msg-desc").innerText = `Esta campaña está programada para iniciar el: ${new Date(camp.startDate).toLocaleString()}`;
+                return;
+            }
+            if(camp.endDate && ahora > camp.endDate) {
+                cardNoCam.style.display = "none";
+                cardUnlock.style.display = "none";
+                cardStatusMsg.style.display = "block";
+                document.getElementById("status-msg-title").innerText = "⌛ Campaña Finalizada";
+                document.getElementById("status-msg-desc").innerText = "El tiempo de vigencia automática de este candado ha expirado.";
+                return;
+            }
+
+            cardNoCam.style.display = "none";
+            cardStatusMsg.style.display = "none";
+            cardUnlock.style.display = "block";
+
+            document.getElementById("viral-title").innerText = camp.titulo;
+            document.getElementById("viral-desc").innerText = camp.desc;
+            document.getElementById("viral-type-badge").innerText = camp.tipo.toUpperCase();
+
+            // RENDER DE PASOS SEGÚN TIPO
+            document.getElementById("step-referrals").style.display = "none";
+            document.getElementById("step-channel").style.display = "none";
+            document.getElementById("step-dynamic-ad").style.display = "none";
+            document.getElementById("btn-share-viral").style.display = "none";
+
+            if(camp.tipo === "invitation") {
+                document.getElementById("step-referrals").style.display = "block";
+                document.getElementById("btn-share-viral").style.display = "block";
+                
+                const porcentaje = Math.min((appState.referidosLogrados / camp.requeridos) * 100, 100);
+                document.getElementById("progress-text").innerText = `${appState.referidosLogrados} / ${camp.requeridos} Amigos`;
+                document.getElementById("progress-bar-fill").style.width = `${porcentaje}%`;
+
+                evaluarDesbloqueoFinal(appState.referidosLogrados >= camp.requeridos);
+
+            } else if(camp.tipo === "sub_channel" || camp.tipo === "join_group") {
+                document.getElementById("step-channel").style.display = "block";
+                document.getElementById("tg-step-label").innerText = camp.tipo === "sub_channel" ? "Paso 1: Suscribirse al Canal" : "Paso 1: Unirse al Grupo";
+                document.getElementById("tg-step-desc").innerText = `Únete a @${camp.tgTarget} y luego presiona reclamar.`;
+                
+                evaluarDesbloqueoFinal(true); // Se asume acción local o click-through directo
+
+            } else if(camp.tipo.startsWith("ad_")) {
+                document.getElementById("step-dynamic-ad").style.display = "block";
+                const container = document.getElementById("ad-content-render");
+                
+                if(camp.tipo === "ad_text") {
+                    container.innerHTML = `<a href="${camp.adValue}" target="_blank" style="color:var(--neon-green); font-weight:bold;">👉 Haz clic aquí para ver la información obligatoria</a>`;
+                } else if(camp.tipo === "ad_image") {
+                    container.innerHTML = `<img src="${camp.adValue}" style="width:100%; max-height:100px; border-radius:8px; object-fit:cover; margin-bottom:4px;"><br><span style="font-size:0.7rem; color:var(--text-muted);">Visualiza el banner publicitario</span>`;
+                } else if(camp.tipo === "ad_video") {
+                    container.innerHTML = `<div style="background:#10121d; padding:15px; border-radius:8px; font-size:0.75rem; color:var(--neon-purple);">📺 Reproduciendo Vídeo de la Campaña de forma Dinámica</div>`;
+                }
+
+                if(!appState.adCompleted && !appState.adTimerInterval) {
+                    ejecutarContadorAnuncio(camp.adDuration);
+                } else if(appState.adCompleted) {
+                    document.getElementById("ad-timer").innerText = "¡Listo!";
+                    evaluarDesbloqueoFinal(true);
+                }
+            }
+
+            document.getElementById("meta-clicks").innerText = appState.clicsTotalesEnlace;
+            document.getElementById("meta-loops").innerText = appState.clicsTotalesEnlace > 0 ? Math.ceil(appState.clicsTotalesEnlace / 2) : 0;
+        }
+
+        function ejecutarContadorAnuncio(segundos) {
+            appState.adSecondsLeft = segundos;
+            document.getElementById("ad-timer").innerText = `${appState.adSecondsLeft}s`;
+            const btnClaim = document.getElementById("btn-claim-reward");
+            btnClaim.classList.add("btn-disabled");
+            btnClaim.innerText = "⏳ Esperando anuncio...";
+
+            appState.adTimerInterval = setInterval(() => {
+                appState.adSecondsLeft--;
+                if(appState.adSecondsLeft <= 0) {
+                    clearInterval(appState.adTimerInterval);
+                    appState.adTimerInterval = null;
+                    appState.adCompleted = true;
+                    document.getElementById("ad-timer").innerText = "¡Listo!";
+                    renderizarPantallasDinamicas();
+                } else {
+                    document.getElementById("ad-timer").innerText = `${appState.adSecondsLeft}s`;
+                }
+            }, 1000);
+        }
+
+        function evaluarDesbloqueoFinal(condicion) {
+            const btnClaim = document.getElementById("btn-claim-reward");
+            if(condicion) {
+                btnClaim.classList.remove("btn-disabled");
+                btnClaim.innerText = "🔓 Descargar / Acceder al Premio";
+            } else {
+                btnClaim.classList.add("btn-disabled");
+                btnClaim.innerText = "🔒 Requisitos Incompletos";
+            }
+        }
+
+        function abrirEspacioRequisito() {
+            if(!appState.campañaActivaLocal) return;
+            const target = appState.campañaActivaLocal.tgTarget.replace("@", "");
+            tg.openTelegramLink(`https://t.me/${target}`);
+        }
+
+        function compartirEnlaceReferido() {
+            const camp = appState.campañaActivaLocal;
+            if(!camp) return;
+
+            const botUsername = tg.initDataUnsafe?.receiver?.username || "BombaViralSaaSBot";
+            const payload = {
+                title: camp.titulo,
+                description: camp.desc,
+                secret_url: camp.secreto,
+                type: camp.tipo,
+                req_slots: camp.requeridos,
+                tg_target: camp.tgTarget,
+                ad_val: camp.adValue,
+                ad_dur: camp.adDuration,
+                s_date: camp.startDate,
+                e_date: camp.endDate,
+                owner: camp.ownerId,
+                referrer: appState.userId,
+                origin_chat: appState.chatInstance
+            };
+
+            const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+            const deepLinkFinal = `https://t.me/${botUsername}/app?startapp=${b64}`;
+
+            let mensajeCompartir = `🔥 *¡ATENCIÓN!* 🔥\n\nEstán regalando: *${camp.titulo}*.\n📥 Entra aquí para reclamar de inmediato:`;
+            tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(deepLinkFinal)}&text=${encodeURIComponent(mensajeCompartir)}`);
+        }
+
+        function reclamarRecompensaFinal() {
+            tg.showPopup({
+                title: "🔓 Contenido Liberado",
+                message: "Presiona OK para abrir tu recurso final en destino seguro.",
+                buttons: [{type: "default", text: "Abrir Link"}]
+            }, () => {
+                tg.openLink(appState.campañaActivaLocal.secreto);
+            });
+        }
+
+        function solicitarPremiumAirdayz() {
+            const metodo = document.getElementById("billing-method").value;
+            const pedidoFormateado = `💳 *SOLICITUD PREMIUM*\n\n👤 *Usuario:* ${appState.firstName}\n🆔 *ID:* \`${appState.userId}\`\n💵 *Método:* ${metodo}`;
+            tg.openTelegramLink(`https://t.me/Airdayz?text=${encodeURIComponent(pedidoFormateado)}`);
+        }
+
+        function inyectarLlaveLicenciaLocal() {
+            const llaveInput = document.getElementById("licence-key-input").value.trim();
+            if(LICENCIAS_VERIFICADAS_PRO[appState.userId] && LICENCIAS_VERIFICADAS_PRO[appState.userId].clave === llaveInput) {
+                tg.showAlert("✅ Licencia Activada de manera global.");
+                appState.isPremium = true;
+                ejecutarVerificacionLicenciaBase();
+                renderizarPantallasDinamicas();
+            } else {
+                tg.showAlert("❌ Firma inválida.");
+            }
+        }
+
+        /* LÓGICA TÁCTIL AUTOMÁTICA DEL CARRUSEL DE ANUNCIOS */
+        function inicializarTouchCarrusel() {
+            const inner = document.getElementById("adv-carousel-inner");
+            let isDragging = false, startX, currentTranslate = 0, prevTranslate = 0, animationID, currentIndex = 0;
+            const slides = document.querySelectorAll(".adv-slide");
+
+            // Auto-rotación automática cada 4 segundos
+            setInterval(() => {
+                if(!isDragging) {
+                    currentIndex = (currentIndex + 1) % slides.length;
+                    currentTranslate = currentIndex * -window.innerWidth;
+                    prevTranslate = currentTranslate;
+                    inner.style.transform = `translateX(${currentTranslate}px)`;
+                }
+            }, 4000);
+
+            inner.addEventListener("touchstart", (e) => {
+                isDragging = true;
+                startX = e.touches[0].clientX;
+                inner.style.transition = "none";
+            });
+
+            inner.addEventListener("touchmove", (e) => {
+                if (!isDragging) return;
+                const currentX = e.touches[0].clientX;
+                currentTranslate = prevTranslate + (currentX - startX);
+                inner.style.transform = `translateX(${currentTranslate}px)`;
+            });
+
+            inner.addEventListener("touchend", () => {
+                isDragging = false;
+                const movedBy = currentTranslate - prevTranslate;
+                if (movedBy < -100 && currentIndex < slides.length - 1) currentIndex++;
+                if (movedBy > 100 && currentIndex > 0) currentIndex--;
+                
+                currentTranslate = currentIndex * -window.innerWidth;
+                prevTranslate = currentTranslate;
+                inner.style.transition = "transform 0.3s ease-out";
+                inner.style.transform = `translateX(${currentTranslate}px)`;
+            });
+        }
+    </script>
+</body>
+</html>
