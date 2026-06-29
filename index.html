@@ -459,9 +459,20 @@
             actualizarFormularioPorTipoCam();
             inicializarTouchCarrusel();
             
+            // INTRODUCCIÓN ESTRATEGIA HÍBRIDA SÍNCRONA: Comprobar respaldo local para evitar desvanecimiento instantáneo de datos
+            const backupCampLocal = localStorage.getItem("campaña_local_backup");
+            if (backupCampLocal) {
+                appState.campañaActivaLocal = JSON.parse(backupCampLocal);
+                renderizarPantallasDinamicas();
+                actualizarContadorHeader();
+            }
+            
             tg.CloudStorage.getItems(["campaña_saved", "ref_count_v1", "group_stats_v1"], (err, res) => {
                 if(!err) {
-                    if(res.campaña_saved) appState.campañaActivaLocal = JSON.parse(res.campaña_saved);
+                    if(res.campaña_saved) {
+                        appState.campañaActivaLocal = JSON.parse(res.campaña_saved);
+                        localStorage.setItem("campaña_local_backup", res.campaña_saved);
+                    }
                     if(res.ref_count_v1) appState.referidosLogrados = parseInt(res.ref_count_v1) || 0;
                     if(res.group_stats_v1) appState.groupStats = JSON.parse(res.group_stats_v1) || {};
                 }
@@ -684,6 +695,8 @@
                         endDate: payload.e_date || null,
                         ownerId: payload.owner
                     };
+                    
+                    localStorage.setItem("campaña_local_backup", JSON.stringify(appState.campañaActivaLocal));
 
                     if(payload.referrer && payload.referrer !== appState.userId) {
                         appState.clicsTotalesEnlace += 1;
@@ -737,6 +750,9 @@
                 endDate: eDate ? new Date(eDate).getTime() : null,
                 ownerId: appState.userId
             };
+
+            // Guardar inmediatamente en localStorage de respaldo táctico
+            localStorage.setItem("campaña_local_backup", JSON.stringify(appState.campañaActivaLocal));
 
             tg.CloudStorage.setItem("campaña_saved", JSON.stringify(appState.campañaActivaLocal), () => {
                 tg.showAlert("🚀 ¡Campaña Guardada con Éxito!");
