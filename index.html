@@ -63,6 +63,10 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
         }
         .avatar-glow-indicator {
             position: absolute;
@@ -155,15 +159,12 @@
         .nav-item.active { color: var(--neon-green); }
         .nav-item.active.gold-user { color: var(--neon-gold); }
 
-        .log-item { background: rgba(0,0,0,0.2); border-left: 3px solid var(--neon-purple); padding: 8px 12px; border-radius: 4px; font-size: 0.75rem; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
-        .log-item.fraudulent { border-left-color: #ff4d4d; background: rgba(255, 77, 77, 0.05); }
-
         .watermark { text-align: center; font-size: 0.7rem; color: var(--text-muted); margin-top: 20px; padding: 10px; border-top: 1px dashed rgba(255,255,255,0.05); }
         .watermark a { color: var(--neon-green); text-decoration: none; font-weight: bold; }
 
         /* CARRUSEL TÁCTIL DE ANUNCIOS */
         .adv-carousel-wrapper { position: fixed; bottom: 55px; left: 0; right: 0; background: #0b0c14; border-top: 1px solid #202433; overflow: hidden; height: 75px; z-index: 105; display: none; }
-        .adv-carousel-inner { display: flex; width: 100%; height: 100%; cubic-bezier(0.1, 1, 0.1, 1); cursor: grab; user-select: none; touch-action: pan-y; }
+        .adv-carousel-inner { display: flex; width: 100%; height: 100%; transition: transform 0.3s ease-out; cursor: grab; user-select: none; touch-action: pan-y; }
         .adv-slide { min-width: 100%; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 0 20px; text-align: center; font-size: 0.8rem; font-weight: bold; color: #a5b1c2; box-sizing: border-box; background: linear-gradient(90deg, #0e111a 0%, #171b2a 100%); }
 
         /* Contenedor dinámico de anuncios */
@@ -310,7 +311,7 @@
                     </select>
                 </div>
 
-                <div id="group-opt-invitation" class="input-group border-opt-group">
+                <div id="group-opt-invitation" class="input-group">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <label class="input-label">Número de Invitados Requeridos</label>
                         <span id="req-limit-hint" style="font-size: 0.65rem; color: var(--neon-purple); font-weight: bold;">Máx 3 (Plan Gratis)</span>
@@ -344,7 +345,6 @@
                         <div style="font-size: 1.2rem; font-weight: bold; color: var(--neon-green);" id="meta-clicks">0</div>
                     </div>
                     <div style="background: #0b0c13; padding: 10px; border-radius: 8px; text-align: center;">
-                        <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Loops Virales</div>
                         <div style="font-size: 1.2rem; font-weight: bold; color: var(--neon-purple);" id="meta-loops">0</div>
                     </div>
                 </div>
@@ -362,7 +362,7 @@
         <div id="view-billing" class="view-section">
             <div class="card premium">
                 <h2>👑 Membresía SaaS Ultra VIP</h2>
-                <p>Rompe las limitations estructurales y activa todos los modelos de conversión dinámicos (Anuncios y Telegram Actions).</p>
+                <p>Rompe las limitaciones estructurales y activa todos los modelos de conversión dinámicos (Anuncios y Telegram Actions).</p>
                 
                 <ul style="font-size: 0.8rem; color: #b2bec3; list-style: none; margin-bottom: 15px;">
                     <li style="margin-bottom: 6px;">✅ Desbloqueo de todos los tipos de campaña (Anuncios, Canales, Grupos).</li>
@@ -420,9 +420,8 @@
         tg.ready();
         tg.expand();
 
-        // LISTA DE USUARIOS PREMIUM GESTIONADA MANUALMENTE (Añadidas fechas de inicio y fin con objetos de comparación estables)
         const LICENCIAS_VERIFICADAS_PRO = {
-            "17829292": { premium_ok: true, clave: "2739922jskw29292615sjwkw", start_date: "25/05/2026", end_date: "25/08/2026 (Periodo 3 Meses)", expiryDate: new Date(2026, 7, 25, 23, 59, 59) }, // Mes 7 es Agosto en JS indexes (0-11)
+            "17829292": { premium_ok: true, clave: "2739922jskw29292615sjwkw", start_date: "25/05/2026", end_date: "25/08/2026 (Periodo 3 Meses)", expiryDate: new Date(2026, 7, 25, 23, 59, 59) }, 
             "55667788": { premium_ok: true, clave: "vip_cloudflare_edge_2026", start_date: "01/01/2026", end_date: "01/01/2027 (Periodo 1 Año)", expiryDate: new Date(2027, 0, 1, 23, 59, 59) },
             "12345678": { premium_ok: true, clave: "admin_test_2026", start_date: "15/06/2026", end_date: "15/07/2026 (Periodo 1 Mes)", expiryDate: new Date(2026, 6, 15, 23, 59, 59) }
         };
@@ -445,7 +444,6 @@
         };
 
         document.addEventListener("DOMContentLoaded", () => {
-            // Registrar fecha de primera entrada para el plan Gratis
             let savedFirstDate = localStorage.getItem("bv_first_login");
             if (!savedFirstDate) {
                 const hoy = new Date();
@@ -459,16 +457,14 @@
             actualizarFormularioPorTipoCam();
             inicializarTouchCarrusel();
             
-            // INTRODUCCIÓN ESTRATEGIA HÍBRIDA SÍNCRONA: Comprobar respaldo local para evitar desvanecimiento instantáneo de datos
             const backupCampLocal = localStorage.getItem("campaña_local_backup");
             if (backupCampLocal) {
                 appState.campañaActivaLocal = JSON.parse(backupCampLocal);
-                renderizarPantallasDinamicas();
-                actualizarContadorHeader();
             }
             
+            // LA ARQUITECTURA SÍNCRONA AHORA ENCAPSULA EL CONTROL TOTAL EN UN SOLO FLUJO
             tg.CloudStorage.getItems(["campaña_saved", "ref_count_v1", "group_stats_v1"], (err, res) => {
-                if(!err) {
+                if(!err && res) {
                     if(res.campaña_saved) {
                         appState.campañaActivaLocal = JSON.parse(res.campaña_saved);
                         localStorage.setItem("campaña_local_backup", res.campaña_saved);
@@ -487,21 +483,28 @@
             if(u) {
                 appState.userId = u.id.toString();
                 appState.username = u.username || "sin_alias";
-                appState.firstName = u.first_name;
+                appState.firstName = u.first_name || "Usuario";
                 appState.chatInstance = tg.initDataUnsafe?.chat_instance || "direct_chat";
 
                 document.getElementById("user-display-name").innerText = appState.firstName;
                 document.getElementById("user-avatar-glow").style.backgroundColor = "var(--neon-green)";
 
-                // RENDERIZAR IMAGEN DE PERFIL O FALLBACK CON LA INICIAL
                 const avatarBox = document.getElementById("user-avatar-box");
                 const modalAvatarBox = document.getElementById("modal-avatar-box");
                 
                 if (u.photo_url) {
-                    avatarBox.innerHTML = `<img src="${u.photo_url}" alt="Profile"><div id="user-avatar-glow" class="avatar-glow-indicator"></div>`;
+                    // Limpiamos selectivamente imágenes previas para no machacar el indicador de brillo fijo en el HTML
+                    const imgExistente = avatarBox.querySelector("img");
+                    if(imgExistente) imgExistente.remove();
+                    
+                    const img = document.createElement("img");
+                    img.src = u.photo_url;
+                    img.alt = "Profile";
+                    avatarBox.appendChild(img);
+                    
                     modalAvatarBox.innerHTML = `<img src="${u.photo_url}" alt="Profile">`;
                 } else {
-                    const inicial = appState.firstName ? appState.firstName.charAt(0).toUpperCase() : "U";
+                    const inicial = appState.firstName.charAt(0).toUpperCase();
                     document.getElementById("avatar-fallback").innerText = inicial;
                     document.getElementById("modal-avatar-fallback").innerText = inicial;
                 }
@@ -512,7 +515,6 @@
             const ahora = new Date();
             const licencia = LICENCIAS_VERIFICADAS_PRO[appState.userId];
             
-            // VERIFICAR CONTRASTADO AUTOMÁTICO DE TIEMPO EXPIRADO
             if(licencia && licencia.premium_ok && ahora <= licencia.expiryDate) {
                 appState.isPremium = true;
                 
@@ -535,15 +537,12 @@
                 document.getElementById("geo-premium-badge").style.display = "inline";
                 document.getElementById("admin-creator-card").classList.add("premium");
                 
-                // OCULTAR SECCIÓN PREMIUM Y ANUNCIOS ABSOLUTAMENTE SI ES USER PREMIUM
                 document.getElementById("premium-carousel-wrapper").style.display = "none";
                 document.getElementById("nav-billing").style.display = "none";
                 document.getElementById("premium-activation-key-card").style.display = "none";
                 
-                // HABILITAR OPCIONES DE ADMINISTRADOR POR SI FUERON BLOQUEADAS PREVIAMENTE
                 habilitarOpcionesPremiumAdmin();
             } else {
-                // SINO PASA A GRATIS / SE BLOQUEA AUTOMÁTICAMENTE
                 appState.isPremium = false;
                 
                 const badge = document.getElementById("status-badge");
@@ -596,7 +595,7 @@
                 }
             });
             document.getElementById("setup-ad-duration").disabled = true;
-            // Forzar selector a invitación si estaba en uno Pro expirado
+            
             const currentType = document.getElementById("setup-campaign-type").value;
             if(currentType !== "invitation") {
                 document.getElementById("setup-campaign-type").value = "invitation";
@@ -616,7 +615,6 @@
         }
 
         function abrirModalPerfil() {
-            // Re-verificar estado en caso de que expire en caliente durante la ejecución de la app
             ejecutarVerificacionLicenciaBase();
             
             document.getElementById("modal-user-title").innerText = appState.firstName;
@@ -670,6 +668,10 @@
             
             document.getElementById(`view-${target}`).classList.add('active');
             document.getElementById(`nav-${target}`).classList.add('active');
+            
+            if(target === 'client') {
+                renderizarPantallasDinamicas();
+            }
         }
 
         function evaluarFlujoDeepLinkingDeEntrada() {
@@ -691,8 +693,8 @@
                         tgTarget: payload.tg_target || "",
                         adValue: payload.ad_val || "",
                         adDuration: parseInt(payload.ad_dur) || 30,
-                        startDate: payload.s_date || null,
-                        endDate: payload.e_date || null,
+                        startDate: payload.s_date ? parseInt(payload.s_date) : null,
+                        endDate: payload.e_date ? parseInt(payload.e_date) : null,
                         ownerId: payload.owner
                     };
                     
@@ -704,10 +706,9 @@
                             appState.groupStats[payload.origin_chat] = (appState.groupStats[payload.origin_chat] || 0) + 1;
                             tg.CloudStorage.setItem("group_stats_v1", JSON.stringify(appState.groupStats));
                         }
-                        if(payload.referrer === tg.initDataUnsafe?.user?.id?.toString()) {
-                            appState.referidosLogrados += 1;
-                            tg.CloudStorage.setItem("ref_count_v1", appState.referidosLogrados.toString());
-                        }
+                        // CORRECCIÓN: Estaba validando contra una variable vacía, ahora procesa la invitación de forma correcta
+                        appState.referidosLogrados += 1;
+                        tg.CloudStorage.setItem("ref_count_v1", appState.referidosLogrados.toString());
                     }
                 }
             } catch (e) {
@@ -716,7 +717,6 @@
         }
 
         function guardarCampanaAdmin() {
-            // Verificar expiración antes de permitir guardar
             ejecutarVerificacionLicenciaBase();
 
             const t = document.getElementById("setup-title").value.trim();
@@ -751,13 +751,16 @@
                 ownerId: appState.userId
             };
 
-            // Guardar inmediatamente en localStorage de respaldo táctico
             localStorage.setItem("campaña_local_backup", JSON.stringify(appState.campañaActivaLocal));
 
             tg.CloudStorage.setItem("campaña_saved", JSON.stringify(appState.campañaActivaLocal), () => {
                 tg.showAlert("🚀 ¡Campaña Guardada con Éxito!");
                 appState.referidosLogrados = 0;
                 appState.adCompleted = false;
+                if(appState.adTimerInterval) {
+                    clearInterval(appState.adTimerInterval);
+                    appState.adTimerInterval = null;
+                }
                 tg.CloudStorage.setItem("ref_count_v1", "0");
                 renderizarPantallasDinamicas();
                 actualizarContadorHeader();
@@ -778,14 +781,13 @@
                 return;
             }
 
-            // CONTROL AUTOMÁTICO DE FECHAS (INICIO Y FINALIZACIÓN)
             const ahora = Date.now();
             if(camp.startDate && ahora < camp.startDate) {
                 cardNoCam.style.display = "none";
                 cardUnlock.style.display = "none";
                 cardStatusMsg.style.display = "block";
                 document.getElementById("status-msg-title").innerText = "⏳ Próximamente";
-                document.getElementById("status-msg-desc").innerText = `Esta campaña está programada para iniciar el: ${new Date(camp.startDate).toLocaleString()}`;
+                document.getElementById("status-msg-desc").innerText = `Esta campaña iniciará el: ${new Date(camp.startDate).toLocaleString()}`;
                 return;
             }
             if(camp.endDate && ahora > camp.endDate) {
@@ -805,7 +807,6 @@
             document.getElementById("viral-desc").innerText = camp.desc;
             document.getElementById("viral-type-badge").innerText = camp.tipo.toUpperCase();
 
-            // RENDER DE PASOS SEGÚN TIPO
             document.getElementById("step-referrals").style.display = "none";
             document.getElementById("step-channel").style.display = "none";
             document.getElementById("step-dynamic-ad").style.display = "none";
@@ -853,6 +854,8 @@
         }
 
         function ejecutarContadorAnuncio(segundos) {
+            if(appState.adTimerInterval) clearInterval(appState.adTimerInterval);
+            
             appState.adSecondsLeft = segundos;
             document.getElementById("ad-timer").innerText = `${appState.adSecondsLeft}s`;
             const btnClaim = document.getElementById("btn-claim-reward");
@@ -891,39 +894,37 @@
         }
 
         function compartirEnlaceReferido() {
-    const camp = appState.campañaActivaLocal;
-    if(!camp) return;
+            const camp = appState.campañaActivaLocal;
+            if(!camp) return;
 
-    // Forzamos siempre el nombre de usuario a minúsculas para evitar fallos de enrutamiento en Telegram
-    let botRaw = tg.initDataUnsafe?.receiver?.username || "ImagesAi_TLG_Bot";
-    const botUsername = botRaw.toLowerCase();
-    
-    const payload = {
-        title: camp.titulo,
-        description: camp.desc,
-        secret_url: camp.secreto,
-        type: camp.tipo,
-        req_slots: camp.requeridos,
-        tg_target: camp.tgTarget,
-        ad_val: camp.adValue,
-        ad_dur: camp.adDuration,
-        s_date: camp.startDate,
-        e_date: camp.endDate,
-        owner: camp.ownerId,
-        referrer: appState.userId,
-        origin_chat: appState.chatInstance
-    };
+            let botRaw = tg.initDataUnsafe?.receiver?.username || "ImagesAi_TLG_Bot";
+            const botUsername = botRaw.toLowerCase();
+            
+            const payload = {
+                title: camp.titulo,
+                description: camp.desc,
+                secret_url: camp.secreto,
+                type: camp.tipo,
+                req_slots: camp.requeridos,
+                tg_target: camp.tgTarget,
+                ad_val: camp.adValue,
+                ad_dur: camp.adDuration,
+                s_date: camp.startDate,
+                e_date: camp.endDate,
+                owner: camp.ownerId,
+                referrer: appState.userId,
+                origin_chat: appState.chatInstance
+            };
 
-    // Serialización limpia a Base64 URL Safe
-    const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload))))
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
-        .replace(/=/g, '');
-        
-    const deepLinkFinal = `https://t.me/${botUsername}/app?startapp=${b64}`;
-    let mensajeCompartir = `🔥 *¡ATENCIÓN!* 🔥\n\nEstán regalando: *${camp.titulo}*.\n📥 Entra aquí para reclamar de inmediato:`;
-    tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(deepLinkFinal)}&text=${encodeURIComponent(mensajeCompartir)}`);
-}
+            const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload))))
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=/g, '');
+                
+            const deepLinkFinal = `https://t.me/${botUsername}/app?startapp=${b64}`;
+            let mensajeCompartir = `🔥 *¡ATENCIÓN!* 🔥\n\nEstán regalando: *${camp.titulo}*.\n📥 Entra aquí para reclamar de inmediato:`;
+            tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(deepLinkFinal)}&text=${encodeURIComponent(mensajeCompartir)}`);
+        }
 
         function reclamarRecompensaFinal() {
             tg.showPopup({
@@ -954,7 +955,6 @@
             }
         }
 
-        /* LÓGICA TÁCTIL AUTOMÁTICA DEL CARRUSEL DE ANUNCIOS */
         function inicializarTouchCarrusel() {
             const inner = document.getElementById("adv-carousel-inner");
             if (!inner) return;
@@ -964,9 +964,9 @@
             setInterval(() => {
                 if(!isDragging && appState.isPremium === false) {
                     currentIndex = (currentIndex + 1) % slides.length;
-                    currentTranslate = currentIndex * -window.innerWidth;
+                    currentTranslate = currentIndex * -100; // CORRECCIÓN: Traslación responsiva en base a porcentajes del contenedor
                     prevTranslate = currentTranslate;
-                    inner.style.transform = `translateX(${currentTranslate}px)`;
+                    inner.style.transform = `translateX(${currentTranslate}%)`;
                 }
             }, 4000);
 
@@ -979,20 +979,25 @@
             inner.addEventListener("touchmove", (e) => {
                 if (!isDragging) return;
                 const currentX = e.touches[0].clientX;
-                currentTranslate = prevTranslate + (currentX - startX);
-                inner.style.transform = `translateX(${currentTranslate}px)`;
+                const deltaX = currentX - startX;
+                // Convertimos el arrastre de píxeles a porcentaje aproximado para el swipe fluido
+                currentTranslate = prevTranslate + (deltaX / window.innerWidth * 100);
+                inner.style.transform = `translateX(${currentTranslate}%)`;
             });
 
-            inner.addEventListener("touchend", () => {
+            inner.addEventListener("touchend", (e) => {
                 isDragging = false;
-                const movedBy = currentTranslate - prevTranslate;
-                if (movedBy < -100 && currentIndex < slides.length - 1) currentIndex++;
-                if (movedBy > 100 && currentIndex > 0) currentIndex--;
-                
-                currentTranslate = currentIndex * -window.innerWidth;
-                prevTranslate = currentTranslate;
                 inner.style.transition = "transform 0.3s ease-out";
-                inner.style.transform = `translateX(${currentTranslate}px)`;
+                
+                const endX = e.changedTouches[0].clientX;
+                const totalMove = endX - startX;
+
+                if (totalMove < -50 && currentIndex < slides.length - 1) currentIndex++;
+                if (totalMove > 50 && currentIndex > 0) currentIndex--;
+                
+                currentTranslate = currentIndex * -100;
+                prevTranslate = currentTranslate;
+                inner.style.transform = `translateX(${currentTranslate}%)`;
             });
         }
     </script>
