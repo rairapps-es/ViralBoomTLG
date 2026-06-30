@@ -291,22 +291,24 @@
         }
         .badge-premium { background: rgba(255, 170, 0, 0.1); color: var(--neon-amber); border: 1px solid var(--neon-amber); }
 
-        .view-section { display: none; animation: slideIn 0.35s forwards ease-out; }
-        .view-section.active { display: block; }
+        /* CORRECCIÓN: Control de visualización explícito para las vistas */
+        .view-section { display: none !important; }
+        .view-section.active { display: block !important; animation: slideIn 0.35s forwards ease-out; }
 
         @keyframes slideIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* CORRECCIÓN: Z-INDEX de la nav-bar elevado al máximo absoluto */
         .nav-bar { 
             position: fixed; bottom: 0; left: 0; right: 0; height: 65px; 
-            background: rgba(5, 6, 15, 0.95); 
+            background: rgba(5, 6, 15, 0.98); 
             backdrop-filter: blur(10px);
             border-top: 2px solid var(--neon-cyan); 
             display: flex; justify-content: space-around; align-items: center; 
-            z-index: 10000; 
-            box-shadow: 0 -5px 15px rgba(0, 243, 255, 0.15);
+            z-index: 999999 !important; 
+            box-shadow: 0 -5px 15px rgba(0, 243, 255, 0.3);
         }
 
         .nav-item { 
@@ -326,7 +328,8 @@
         .watermark { text-align: center; font-size: 0.75rem; color: var(--text-dark); margin-top: 25px; padding: 12px; border-top: 1px dashed rgba(0,243,255,0.1); letter-spacing: 1px;}
         .watermark a { color: var(--neon-magenta); text-decoration: none; font-weight: bold; text-shadow: var(--glow-magenta);}
 
-        .adv-carousel-wrapper { position: fixed; bottom: 65px; left: 0; right: 0; background: #030308; border-top: 1px solid rgba(255,0,85,0.3); overflow: hidden; height: 75px; z-index: 105; display: none; }
+        /* CORRECCIÓN: Se ajusta el z-index inferior al nav-bar para evitar bloqueos táctiles */
+        .adv-carousel-wrapper { position: fixed; bottom: 65px; left: 0; right: 0; background: #030308; border-top: 1px solid rgba(255,0,85,0.3); overflow: hidden; height: 75px; z-index: 99999; display: none; }
         .adv-carousel-inner { display: flex; width: 100%; height: 100%; transition: transform 0.4s ease-in-out; }
         .adv-slide { min-width: 100%; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 0 20px; text-align: center; font-size: 0.85rem; font-weight: bold; color: #a5b1c2; background: linear-gradient(90deg, #05060f 0%, #0d0f1d 100%); }
 
@@ -378,7 +381,7 @@
 
         <div id="view-client" class="view-section active">
             <div id="card-no-campaign" class="card">
-                <h2>🎯 NO_ACTIVE_LINK</h2>
+                <h2>🎯 NO_ACTIVE_LINK!</h2>
                 <p>Inicializa este sistema a través de un nodo de encriptación P2P verificado en Telegram o genera una nueva firma desde la Consola de Administración.</p>
             </div>
 
@@ -696,7 +699,7 @@
                 if (!error && data && data.length > 0) {
                     const licenciaActiva = data[0];
                     const fechaActivacion = new Date(licenciaActiva.activated_at).getTime();
-                    const diasEnMilisegundos = licenciaActiva.duration_days * 24 * 60 * 60 * 1000;
+                    const dias EnMilisegundos = licenciaActiva.duration_days * 24 * 60 * 60 * 1000;
                     const fechaExpiracion = fechaActivacion + diasEnMilisegundos;
 
                     if (ahora < fechaExpiracion) {
@@ -797,17 +800,13 @@
             if(!startParam) return;
 
             try {
-                // Saneamiento de Base64 seguro para URL de Telegram
                 let base64Clean = startParam.replace(/-/g, '+').replace(/_/g, '/');
                 while (base64Clean.length % 4) { base64Clean += '='; }
                 
-                // DECIFRADO ULTRA-ROBUSTO COMPATIBLE CON UNICODE / UTF-8 MULTI-BYTE
-                const decodedBinary = atob(base64Clean);
-                const bytes = new Uint8Array(decodedBinary.length);
-                for (let i = 0; i < decodedBinary.length; i++) {
-                    bytes[i] = decodedBinary.charCodeAt(i);
-                }
-                const jsonString = new TextDecoder().decode(bytes);
+                const jsonString = decodeURIComponent(atob(base64Clean).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+
                 const payload = JSON.parse(jsonString);
 
                 if(payload && payload.secret_url) {
@@ -954,7 +953,7 @@
                 document.getElementById("status-msg-desc").innerText = `Uplink sincronizado para abrirse el: ${new Date(camp.startDate).toLocaleString()}`;
                 return;
             }
-            if(camp.endDate && grandma && ahora > camp.endDate) {
+            if(camp.endDate && ahora > camp.endDate) {
                 cardNoCam.style.display = "none";
                 cardUnlock.style.display = "none";
                 cardStatusMsg.style.display = "block";
@@ -1056,14 +1055,10 @@
                 referrer: appState.userId, origin_chat: appState.chatInstance
             };
 
-            // SERIALIZACIÓN UTF-8 ROBUSTA PARA EMISIÓN BASE64 URL SAFE
             const jsonStr = JSON.stringify(payload);
-            const bytes = new TextEncoder().encode(jsonStr);
-            let binary = "";
-            for (let i = 0; i < bytes.byteLength; i++) {
-                binary += String.fromCharCode(bytes[i]);
-            }
-            const b64 = btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+            const b64 = btoa(encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+                return String.fromCharCode('0x' + p1);
+            })).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
                 
             const deepLinkFinal = `https://t.me/${botUsername}/app?startapp=${b64}`;
             let mensajeCompartir = `🔥 *⚡ DATALOCK DETECTED ⚡* 🔥\n\nDistribuyendo acceso para: *${camp.titulo}*.\n📥 Sincroniza tu ID de red aquí para reclamar la copia segura:`;
@@ -1102,7 +1097,7 @@
             document.getElementById("modal-user-id").innerText = `NET_ADDR: ${appState.userId}`;
             
             const modal = document.getElementById("modal-perfil-usuario");
-            modal.style.display = "flex";
+            modal.style.display = "flex"; 
             
             setTimeout(() => {
                 modal.classList.add("active");
@@ -1112,13 +1107,14 @@
         function cerrarModalPerfil(event) {
             if (event) event.stopPropagation();
             const modal = document.getElementById("modal-perfil-usuario");
+            
             modal.classList.remove("active");
             
             setTimeout(() => {
                 if (!modal.classList.contains('active')) {
                     modal.style.display = 'none';
                 }
-            }, 300);
+            }, 300); 
         }
 
         function actualizarFormularioPorTipoCam() {
@@ -1128,15 +1124,30 @@
             document.getElementById("group-opt-ad").style.display = type.startsWith("ad_") ? "block" : "none";
         }
 
+        /* CORRECCIÓN INTERNA: Cambios aplicados para garantizar el swapeo limpio de contenedores */
         function cambiarPestana(target) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            // Remueve la clase active de todas las vistas
+            const vistas = document.querySelectorAll('.view-section');
+            vistas.forEach(el => {
+                el.classList.remove('active');
+            });
             
+            // Remueve la clase active de todos los botones de navegación
+            const botones = document.querySelectorAll('.nav-bar .nav-item');
+            botones.forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Forzar activación del contenedor destino
             const vistaObjetivo = document.getElementById(`view-${target}`);
             const botonObjetivo = document.getElementById(`nav-${target}`);
             
-            if (vistaObjetivo) vistaObjetivo.classList.add('active');
-            if (botonObjetivo) botonObjetivo.classList.add('active');
+            if (vistaObjetivo) {
+                vistaObjetivo.classList.add('active');
+            }
+            if (botonObjetivo) {
+                botonObjetivo.classList.add('active');
+            }
             
             if(target === 'client') renderizarPantallasDinamicas();
         }
