@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Bomba Viral SaaS - Neo P2P Growth Engine</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap');
 
@@ -13,9 +11,8 @@
            1. VARIABLES Y CONFIGURACIÓN DEL SISTEMA
            ========================================== */
         :root {
-            /* Paleta unificada: Sustituido magenta por variantes de dorado/ámbar según feedback */
             --bg-cyber: #030308;
-            --bg-card: rgba(10, 11, 22, 0.95); /* Mayor opacidad para mitigar falta de blur */
+            --bg-card: rgba(10, 11, 22, 0.95); 
             --surface: #05060f;
             --surface-secondary: #0d0f1d;
             
@@ -27,11 +24,9 @@
             --text-secondary: #94a3b8;
             --text-dark: #636e72;
             
-            /* Sombras optimizadas (más sutiles para evitar repaints costosos en WebView) */
             --glow-cyan: 0 0 8px rgba(0, 243, 255, 0.35);
             --glow-amber: 0 0 8px rgba(255, 170, 0, 0.35);
             
-            /* Escala Controlada de Z-Indices */
             --z-low: 10;
             --z-medium: 100;
             --z-high: 500;
@@ -60,7 +55,6 @@
             overflow-x: hidden;
         }
 
-        /* Scanlines optimizadas sin animaciones infinitas de posición */
         body::before {
             content: " ";
             display: block;
@@ -139,13 +133,13 @@
         }
 
         /* ==========================================
-           3. MODALES (Eliminado backdrop-filter)
+           3. MODALES
            ========================================== */
         .profile-modal {
             display: none;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(1, 1, 3, 0.96); /* Opacidad aumentada para suplir la falta de blur */
+            background: rgba(1, 1, 3, 0.96); 
             z-index: var(--z-modal);
             align-items: center;
             justify-content: center;
@@ -343,7 +337,7 @@
         .watermark a { color: var(--neon-amber); text-decoration: none; font-weight: bold; text-shadow: var(--glow-amber);}
 
         /* ==========================================
-           6. PUBLICIDAD Y CAROUSEL (Optimizado)
+           6. PUBLICIDAD Y CAROUSEL
            ========================================== */
         .adv-carousel-wrapper { position: fixed; bottom: 65px; left: 0; right: 0; background: #030308; border-top: 1px solid rgba(255,170,0,0.3); overflow: hidden; height: 75px; z-index: calc(var(--z-sticky) - 10); display: none; }
         .adv-carousel-inner { display: flex; width: 100%; height: 100%; transition: transform 0.3s ease-out; will-change: transform; }
@@ -594,6 +588,7 @@
     </nav>
 
     <script>
+
         // Centralización Segura del Almacenamiento Local (Evita accesos IO repetidos e inseguros)
         const Storage = {
             get(key, defaultValue) {
@@ -635,7 +630,11 @@
                 tgChannelJoined: false,
                 carouselIndex: 0,
                 carouselTimer: null,
-                isCarouselPaused: false
+                isCarouselPaused: false,
+                
+                // Variables de control para verificación sin bot
+                outboundTimestamp: 0,
+                verificationInProgress: false
             },
 
             supabaseClient: null,
@@ -675,7 +674,6 @@
             },
 
             bindEvents() {
-                // Desacoplamiento total de JS y HTML (onclick inline eliminados)
                 document.getElementById("btn-header-profile").addEventListener("click", () => this.abrirModalPerfil());
                 document.getElementById("btn-close-profile-modal").addEventListener("click", (e) => this.cerrarModalPerfil(e));
                 document.getElementById("btn-join-channel").addEventListener("click", () => this.abrirEspacioRequisito());
@@ -688,21 +686,20 @@
                 
                 document.getElementById("setup-campaign-type").addEventListener("change", () => this.actualizarFormularioPorTipoCam());
 
-                // Botones de Navegación del TabBar
                 document.getElementById("nav-client").addEventListener("click", () => this.cambiarPestana('client'));
                 document.getElementById("nav-admin").addEventListener("click", () => this.cambiarPestana('admin'));
                 document.getElementById("nav-billing").addEventListener("click", () => this.cambiarPestana('billing'));
 
-                // Control Inteligente de Visibilidad de Pestaña para suspender el bucle del carrusel publicitario
+                // Gestión inteligente del ciclo de vida de la Mini App (Verificación sin Bot)
                 document.addEventListener("visibilitychange", () => {
                     if (document.hidden) {
                         this.pauseCarousel();
                     } else {
                         this.resumeCarousel();
+                        this.procesarRetornoUsuario(); // Captura cuando el usuario vuelve de Telegram
                     }
                 });
 
-                // Pausar Carrusel si el usuario interactúa físicamente con él
                 const carouselWrapper = document.getElementById("premium-carousel-wrapper");
                 carouselWrapper.addEventListener("touchstart", () => this.pauseCarousel(), { passive: true });
                 carouselWrapper.addEventListener("touchend", () => {
@@ -776,7 +773,7 @@
                     if (!error && data && data.length > 0) {
                         const licenciaActiva = data[0];
                         const fechaActivacion = new Date(licenciaActiva.activated_at).getTime();
-                        const diasEnMilisegundos = licenciaActiva.duration_days * 24 * 60 * 60 * 1000;
+                        const dias EnMilisegundos = licenciaActiva.duration_days * 24 * 60 * 60 * 1000;
                         const fechaExpiracion = fechaActivacion + diasEnMilisegundos;
 
                         if (ahora < fechaExpiracion) {
@@ -793,8 +790,6 @@
 
             activarInterfazPremiumVisual() {
                 this.state.isPremium = true;
-                
-                // Actualizaciones de nodos parciales (Evita mutaciones pesadas de layout)
                 const statusBadge = document.getElementById("status-badge");
                 statusBadge.textContent = "OVERLORD_VIP";
                 statusBadge.className = "badge badge-premium";
@@ -820,7 +815,6 @@
 
             desactivarInterfazPremiumVisual() {
                 this.state.isPremium = false;
-                
                 const statusBadge = document.getElementById("status-badge");
                 statusBadge.textContent = "PROT_GUEST";
                 statusBadge.className = "badge";
@@ -840,7 +834,7 @@
                 document.getElementById("nav-admin").style.display = "flex";   
                 document.getElementById("nav-billing").style.display = "flex"; 
                 
-                this.deshabilitarOpcionesPremiumAdmin();
+                this.desactivarOpcionesPremiumAdmin();
             },
 
             habilitarOpcionesPremiumAdmin() {
@@ -851,7 +845,7 @@
                 document.getElementById("setup-ad-duration").disabled = false;
             },
 
-            deshabilitarOpcionesPremiumAdmin() {
+            desactivarOpcionesPremiumAdmin() {
                 ["ad_text", "ad_image", "ad_video", "sub_channel", "join_group"].forEach(id => {
                     const opt = document.getElementById(`opt-${id}`);
                     if(opt && !opt.textContent.includes("🔒 Pro")) { opt.disabled = true; opt.textContent += " 🔒 Pro"; }
@@ -926,7 +920,7 @@
                         }
                     }
                 } catch (e) {
-                    console.error("Error decodificando nodo cuántico:", e);
+                    console.error("Error decodificando nodo cuático:", e);
                 }
             },
 
@@ -985,6 +979,7 @@
                 this.state.referidosLogrados = 0;
                 this.state.adCompleted = false;
                 this.state.tgChannelJoined = false;
+                this.state.verificationInProgress = false;
                 if(this.state.adTimerInterval) { clearInterval(this.state.adTimerInterval); this.state.adTimerInterval = null; }
                 
                 this.renderizarPantallasDinamicas();
@@ -1025,7 +1020,6 @@
                 this.cambiarPestana('admin');
             },
 
-            /* MOTOR DE RENDEREADO MOTORIZADO PARCIALMENTE (Uso de textContent y Fragmentos Seguros) */
             renderizarPantallasDinamicas() {
                 const camp = this.state.campañaActivaLocal;
                 const cardNoCam = document.getElementById("card-no-campaign");
@@ -1088,7 +1082,7 @@
                     document.getElementById("step-dynamic-ad").style.display = "block";
                     const adRender = document.getElementById("ad-content-render");
                     
-                    adRender.innerHTML = ""; // Limpieza profunda preventiva de nodos
+                    adRender.innerHTML = ""; 
                     if(camp.tipo === "ad_text") {
                         const txtSpan = document.createElement("span");
                         txtSpan.style.color = "#fff";
@@ -1197,13 +1191,55 @@
                 });
             },
 
+            // ACTIVACIÓN DE LA COMPUERTA HACIA TELEGRAM (Salida controlada)
             abrirEspacioRequisito() {
                 const camp = this.state.campañaActivaLocal;
                 if (!camp || !camp.tgTarget) return;
+                
                 let targetUrl = camp.tgTarget.startsWith("http") ? camp.tgTarget : `https://t.me/${camp.tgTarget}`;
+                
+                // Marcamos que el usuario inició el proceso y guardamos el segundo actual de salida
+                this.state.outboundTimestamp = Date.now();
+                this.state.verificationInProgress = true;
+                
+                // Cambiar visualmente el botón a estado de carga
+                const btnJoin = document.getElementById("btn-join-channel");
+                btnJoin.textContent = "⏳ VERIFYING_EXTERNAL_NODE...";
+                btnJoin.classList.add("btn-disabled");
+
                 this.tg.openTelegramLink(targetUrl);
-                this.state.tgChannelJoined = true;
-                this.evaluarDesbloqueoFinal(true);
+            },
+
+            // PROCESAMIENTO ANALÍTICO DEL RETORNO (Comprobación inteligente de tiempo)
+            procesarRetornoUsuario() {
+                if (!this.state.verificationInProgress) return;
+                
+                const tiempoFuera = (Date.now() - this.state.outboundTimestamp) / 1000;
+                const btnJoin = document.getElementById("btn-join-channel");
+                
+                // Estipulamos un umbral de 7 segundos mínimos requeridos para leer y unirse
+                if (tiempoFuera >= 7) {
+                    this.state.tgChannelJoined = true;
+                    this.state.verificationInProgress = false;
+                    
+                    btnJoin.textContent = "✅ STATION_CONNECTED";
+                    btnJoin.className = "btn btn-purple btn-disabled";
+                    
+                    this.tg.showAlert("⚡ NODE_VERIFIED: Sincronización exitosa con la estación externa.");
+                    this.renderizarPantallasDinamicas();
+                } else {
+                    // El usuario regresó de golpe sin darle tiempo a unirse. Fallo de red simulado.
+                    this.state.verificationInProgress = false;
+                    
+                    btnJoin.textContent = "JOIN_STATION";
+                    btnJoin.classList.remove("btn-disabled");
+                    
+                    this.tg.showPopup({
+                        title: "❌ VERIFICATION_FAILED",
+                        message: "El tiempo de vinculación fue demasiado bajo. Asegúrate de unirte al canal antes de regresar.",
+                        buttons: [{type: "close"}]
+                    });
+                }
             },
 
             solicitarPremiumAirdayz() {
@@ -1216,11 +1252,8 @@
             abrirModalPerfil() {
                 document.getElementById("modal-user-title").textContent = this.state.firstName.toUpperCase();
                 document.getElementById("modal-user-id").textContent = `NET_ADDR: ${this.state.userId}`;
-                
                 const modal = document.getElementById("modal-perfil-usuario");
                 modal.style.display = "flex"; 
-                
-                // Forzar lectura layout mínima para aplicar animación de opacidad por CSS
                 modal.offsetHeight;
                 modal.classList.add("active");
             },
@@ -1229,7 +1262,6 @@
                 if (event) event.stopPropagation();
                 const modal = document.getElementById("modal-perfil-usuario");
                 modal.classList.remove("active");
-                
                 setTimeout(() => {
                     if (!modal.classList.contains('active')) {
                         modal.style.display = 'none';
@@ -1274,7 +1306,6 @@
                 document.getElementById("header-campaign-counter").textContent = this.state.campañaActivaLocal ? "CORE_UNITS: 1" : "CORE_UNITS: 0";
             },
 
-            /* MOTOR DEL CARRUSEL DE ANUNCIOS OPTIMIZADO CONTRA CONSUMO DE CPU */
             startCarouselEngine() {
                 const inner = document.getElementById("adv-carousel-inner");
                 if (!inner) return;
@@ -1286,8 +1317,6 @@
                     this.state.carouselIndex = (this.state.carouselIndex + 1) % 3;
                     inner.style.transform = `translateX(${this.state.carouselIndex * -100}%)`;
                 };
-
-                // Uso controlado de setInterval con interruptores lógicos de visibilidad
                 this.state.carouselTimer = setInterval(runCarouselTick, 4000);
             },
 
@@ -1300,10 +1329,11 @@
             }
         };
 
-        // Único punto de entrada tras la carga limpia del árbol del DOM
         document.addEventListener("DOMContentLoaded", () => {
             App.init();
         });
+
+        
     </script>
 </body>
 </html>
