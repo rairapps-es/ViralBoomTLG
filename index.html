@@ -948,69 +948,85 @@
                 }
             },
 
-            async guardarCampanaAdmin() {
-                const t = document.getElementById("setup-title").value.trim();
-                const d = document.getElementById("setup-desc").value.trim();
-                const s = document.getElementById("setup-secret").value.trim();
-                const type = document.getElementById("setup-campaign-type").value;
-                const sDate = document.getElementById("setup-start-date").value;
-                const eDate = document.getElementById("setup-end-date").value;
+                    async guardarCampanaAdmin() {
+            const t = document.getElementById("setup-title").value.trim();
+            const d = document.getElementById("setup-desc").value.trim();
+            const s = document.getElementById("setup-secret").value.trim();
+            const type = document.getElementById("setup-campaign-type").value;
+            const sDate = document.getElementById("setup-start-date").value;
+            const eDate = document.getElementById("setup-end-date").value;
 
-                if(!t || !s) {
-                    if(this.tg) this.tg.showAlert("❌ Identificador de Recurso y Enlace de Destino obligatorios.");
-                    return;
-                }
-                if(!this.supabaseClient) {
-                    if(this.tg) this.tg.showAlert("❌ Error de comunicación: Base de datos no vinculada.");
-                    return;
-                }
+            if(!t || !s) {
+                if(this.tg) this.tg.showAlert("❌ Identificador de Recurso y Enlace de Destino obligatorios.");
+                return;
+            }
+            if(!this.supabaseClient) {
+                if(this.tg) this.tg.showAlert("❌ Error de comunicación: Base de datos no vinculada.");
+                return;
+            }
 
-                let r = parseInt(document.getElementById("setup-req-count").value) || 3;
-                const adDur = parseInt(document.getElementById("setup-ad-duration").value) || 30;
+            let r = parseInt(document.getElementById("setup-req-count").value) || 3;
+            const adDur = parseInt(document.getElementById("setup-ad-duration").value) || 30;
 
-                const nuevaCampana = {
-                    id: this.state.userId + "_" + Date.now(), 
-                    owner_id: this.state.userId, 
-                    title: t, 
-                    description: d, 
-                    secret_url: s, 
-                    type: type, 
-                    req_slots: r,
-                    tg_target: document.getElementById("setup-tg-target").value.trim(), 
-                    ad_value: document.getElementById("setup-ad-value").value.trim(),
-                    ad_duration: adDur, 
-                    start_date: sDate ? new Date(sDate).toISOString() : null, 
-                    end_date: eDate ? new Date(eDate).toISOString() : null
-                };
+            const nuevaCampana = {
+                id: this.state.userId + "_" + Date.now(), 
+                owner_id: this.state.userId, 
+                title: t, 
+                description: d, 
+                secret_url: s, 
+                type: type, 
+                req_slots: r,
+                tg_target: document.getElementById("setup-tg-target").value.trim(), 
+                ad_value: document.getElementById("setup-ad-value").value.trim(),
+                ad_duration: adDur, 
+                start_date: sDate ? new Date(sDate).toISOString() : null, 
+                end_date: eDate ? new Date(eDate).toISOString() : null
+            };
 
+            // --- INICIO DE LA MODIFICACIÓN DE SEGURIDAD Y DEPURACIÓN ---
+            try {
+                console.log("Enviando datos a Supabase...", nuevaCampana);
+                
                 const { error } = await this.supabaseClient.from('campaigns').upsert([nuevaCampana]);
 
                 if (error) {
-                    if(this.tg) this.tg.showAlert("❌ TRANSMISSION_ERROR: " + error.message);
+                    console.error("Error devuelto por Supabase:", error);
+                    if(this.tg) this.tg.showAlert("❌ TRANSMISSION_ERROR (Supabase): " + error.message + " | Code: " + error.code);
                     return;
                 }
+            } catch (catchError) {
+                console.error("Error crítico de red atrapado:", catchError);
+                if(this.tg) {
+                    this.tg.showAlert(
+                        "🚨 ERROR CRÍTICO DE RED:\n" + catchError.message + 
+                        "\n\nEsto suele ser por la clave API 'cleanKey' caducada, RLS bloqueado o problemas de CORS en Supabase."
+                    );
+                }
+                return;
+            }
+            // --- FIN DE LA MODIFICACIÓN ---
 
-                this.state.campañaActivaLocal = {
-                    titulo: t, desc: d, secreto: s, tipo: type, requeridos: r,
-                    tgTarget: nuevaCampana.tg_target, adValue: nuevaCampana.ad_value, adDuration: adDur,
-                    startDate: nuevaCampana.start_date ? new Date(nuevaCampana.start_date).getTime() : null, 
-                    endDate: nuevaCampana.end_date ? new Date(nuevaCampana.end_date).getTime() : null, 
-                    ownerId: this.state.userId
-                };
+            this.state.campañaActivaLocal = {
+                titulo: t, desc: d, secreto: s, tipo: type, requeridos: r,
+                tgTarget: nuevaCampana.tg_target, adValue: nuevaCampana.ad_value, adDuration: adDur,
+                startDate: nuevaCampana.start_date ? new Date(nuevaCampana.start_date).getTime() : null, 
+                endDate: nuevaCampana.end_date ? new Date(nuevaCampana.end_date).getTime() : null, 
+                ownerId: this.state.userId
+            };
 
-                Storage.set("campaña_local_backup", this.state.campañaActivaLocal);
-                if(this.tg) this.tg.showAlert("🚀 NODE_COMPILED: ¡Configuración inyectada con éxito!");
-                
-                this.state.referidosLogrados = 0;
-                this.state.adCompleted = false;
-                this.state.tgChannelJoined = false;
-                this.state.verificationInProgress = false;
-                if(this.state.adTimerInterval) { clearInterval(this.state.adTimerInterval); this.state.adTimerInterval = null; }
-                
-                this.renderizarPantallasDinamicas();
-                this.actualizarContadorHeader();
-                this.cambiarPestana('client');
-            },
+            Storage.set("campaña_local_backup", this.state.campañaActivaLocal);
+            if(this.tg) this.tg.showAlert("🚀 NODE_COMPILED: ¡Configuración inyectada con éxito!");
+            
+            this.state.referidosLogrados = 0;
+            this.state.adCompleted = false;
+            this.state.tgChannelJoined = false;
+            this.state.verificationInProgress = false;
+            if(this.state.adTimerInterval) { clearInterval(this.state.adTimerInterval); this.state.adTimerInterval = null; }
+            
+            this.renderizarPantallasDinamicas();
+            this.actualizarContadorHeader();
+            this.cambiarPestana('client');
+        },
 
             async inyectarLlaveLicenciaLocal() {
                 const inputKey = document.getElementById("licence-key-input").value.trim();
