@@ -1092,16 +1092,32 @@
         }
 
         function abrirModalPerfil() {
-            document.getElementById("modal-user-title").innerText = appState.firstName.toUpperCase();
-            document.getElementById("modal-user-id").innerText = `NET_ADDR: ${appState.userId}`;
-            document.getElementById("modal-perfil-usuario").classList.add("active");
-        }
+    document.getElementById("modal-user-title").innerText = appState.firstName.toUpperCase();
+    document.getElementById("modal-user-id").innerText = `NET_ADDR: ${appState.userId}`;
+    
+    const modal = document.getElementById("modal-perfil-usuario");
+    modal.style.display = "flex"; // Forzamos el contenedor flex antes de la opacidad
+    
+    // Un mini-delay para que el navegador renderice el display y ejecute la animación smooth
+    setTimeout(() => {
+        modal.classList.add("active");
+    }, 10);
+}
 
         function cerrarModalPerfil(event) {
-            event.stopPropagation();
-            document.getElementById("modal-perfil-usuario").classList.remove("remove");
-            document.getElementById("modal-perfil-usuario").classList.remove("active");
+    if (event) event.stopPropagation();
+    const modal = document.getElementById("modal-perfil-usuario");
+    
+    // Primero removemos la clase active para que haga la transición de opacidad
+    modal.classList.remove("active");
+    
+    // Opcional: Forzar que el display vuelva a 'none' tras la transición
+    setTimeout(() => {
+        if (!modal.classList.contains('active')) {
+            modal.style.display = 'none';
         }
+    }, 300); // 300ms coincide con la transición CSS que pusiste
+}
 
         function actualizarFormularioPorTipoCam() {
             const type = document.getElementById("setup-campaign-type").value;
