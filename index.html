@@ -773,7 +773,7 @@
                     if (!error && data && data.length > 0) {
                         const licenciaActiva = data[0];
                         const fechaActivacion = new Date(licenciaActiva.activated_at).getTime();
-                        const dias EnMilisegundos = licenciaActiva.duration_days * 24 * 60 * 60 * 1000;
+                        const diasEnMilisegundos = licenciaActiva.duration_days * 24 * 60 * 60 * 1000;
                         const fechaExpiracion = fechaActivacion + diasEnMilisegundos;
 
                         if (ahora < fechaExpiracion) {
