@@ -359,7 +359,7 @@
         <div id="view-billing" class="view-section">
             <div class="card premium">
                 <h2>👑 Membresía SaaS Ultra VIP</h2>
-                <p>Rompe las limitaciones estructurales y activa todos los modelos de conversión dinámicos (Anuncios y Telegram Actions).</p>
+                <p>Rompe las limitaciones estructurales and activa todos los modelos de conversión dinámicos (Anuncios y Telegram Actions).</p>
                 
                 <ul style="font-size: 0.8rem; color: #b2bec3; list-style: none; margin-bottom: 15px;">
                     <li style="margin-bottom: 6px;">✅ Desbloqueo de todos los tipos de campaña (Anuncios, Canales, Grupos).</li>
@@ -617,10 +617,16 @@ async function evaluarFlujoDeepLinkingDeEntrada() {
 
         if(payload && payload.secret_url) {
             appState.campañaActivaLocal = {
-                titulo: payload.title, desc: payload.description, secreto: payload.secret_url,
-                tipo: payload.type || "invitation", requeridos: parseInt(payload.req_slots) || 3,
-                tgTarget: payload.tg_target || "", adValue: payload.ad_val || "", adDuration: parseInt(payload.ad_dur) || 30,
-                startDate: payload.s_date ? parseInt(payload.s_date) : null, endDate: payload.e_date ? parseInt(payload.e_date) : null,
+                titulo: payload.title, 
+                desc: payload.description, 
+                secreto: payload.secret_url,
+                tipo: payload.type || "invitation", 
+                requeridos: parseInt(payload.req_slots) || 3,
+                tgTarget: payload.tg_target || "", 
+                adValue: payload.ad_val || "", 
+                adDuration: parseInt(payload.ad_dur) || 30,
+                startDate: payload.s_date ? parseInt(payload.s_date) : null, 
+                endDate: payload.e_date ? parseInt(payload.e_date) : null,
                 ownerId: payload.owner
             };
             
@@ -651,10 +657,19 @@ async function guardarCampanaAdmin() {
     let r = parseInt(document.getElementById("setup-req-count").value) || 3;
     const adDur = parseInt(document.getElementById("setup-ad-duration").value) || 30;
 
+    // ⚡ CORRECCIÓN CLAVE: Emparejar los campos con las columnas reales de la base de datos de Supabase (Snake Case)
     const nuevaCampana = {
-        id: appState.userId, title: t, description: d, secret_url: s, type: type, req_slots: r,
-        tg_target: document.getElementById("setup-tg-target").value.trim(), ad_value: document.getElementById("setup-ad-value").value.trim(),
-        ad_duration: adDur, start_date: sDate ? new Date(sDate).getTime() : null, end_date: eDate ? new Date(eDate).getTime() : null
+        id: appState.userId, 
+        title: t, 
+        description: d, 
+        secret_url: s, 
+        type: type, 
+        req_slots: r,
+        tg_target: document.getElementById("setup-tg-target").value.trim(), 
+        ad_value: document.getElementById("setup-ad-value").value.trim(),
+        ad_duration: adDur, 
+        start_date: sDate ? new Date(sDate).toISOString() : null, 
+        end_date: eDate ? new Date(eDate).toISOString() : null
     };
 
     const { error } = await supabase.from('campaigns').upsert([nuevaCampana]);
@@ -664,7 +679,9 @@ async function guardarCampanaAdmin() {
     appState.campañaActivaLocal = {
         titulo: t, desc: d, secreto: s, tipo: type, requeridos: r,
         tgTarget: nuevaCampana.tg_target, adValue: nuevaCampana.ad_value, adDuration: adDur,
-        startDate: nuevaCampana.start_date, endDate: nuevaCampana.end_date, ownerId: appState.userId
+        startDate: nuevaCampana.start_date ? new Date(nuevaCampana.start_date).getTime() : null, 
+        endDate: nuevaCampana.end_date ? new Date(nuevaCampana.end_date).getTime() : null, 
+        ownerId: appState.userId
     };
 
     localStorage.setItem("campaña_local_backup", JSON.stringify(appState.campañaActivaLocal));
@@ -907,7 +924,6 @@ function inicializarTouchCarrusel() {
         }
     }, 4000);
 }
-
     </script>
 </body>
 </html>
