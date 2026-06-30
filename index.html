@@ -44,7 +44,6 @@
             overflow-x: hidden;
         }
 
-        /* CORREGIDO: z-index reducido para no bloquear clics en WebViews */
         body::before {
             content: " ";
             display: block;
@@ -57,7 +56,8 @@
             background-size: 100% 4px, 6px 100%;
         }
 
-        .app-container { max-width: 460px; margin: auto; position: relative; z-index: 20; }
+        /* Cambiado a main-container para envolver el tag <main> adecuadamente */
+        .main-container { max-width: 460px; margin: auto; position: relative; z-index: 20; }
         
         .sticky-header {
             position: fixed;
@@ -300,7 +300,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* CORREGIDO: z-index superior a body::before para asegurar clics */
         .nav-bar { 
             position: fixed; bottom: 0; left: 0; right: 0; height: 65px; 
             background: rgba(5, 6, 15, 0.95); 
@@ -376,7 +375,7 @@
         </div>
     </div>
 
-    <div class="app-container">
+    <main class="main-container">
 
         <div id="view-client" class="view-section active">
             <div id="card-no-campaign" class="card">
@@ -554,27 +553,25 @@
             CORE ENGINE RUNNING ON <a href="javascript:void(0);" onclick="cambiarPestana('billing')">VIRAL_BOOM_SAAS_v4.0</a>
         </div>
 
-        <div id="premium-carousel-wrapper" class="adv-carousel-wrapper">
-            <div id="adv-carousel-inner" class="adv-carousel-inner">
-                <div class="adv-slide" style="border-left: 4px solid var(--neon-magenta);">🔥 OVERRIDE: Gana +$50 USDT diarios en nuestro Bot Quant Trading. Desliza feed.</div>
-                <div class="adv-slide" style="border-left: 4px solid var(--neon-cyan);">🚀 NET_BOOST: Multiplica canales orgánicamente con algoritmos automatizados Pro.</div>
-                <div class="adv-slide" style="border-left: 4px solid var(--neon-amber);">💎 UPGRADE: Inyecta el pase de Licencia Premium y limpia este feed comercial hoy.</div>
-            </div>
+    </main> <div id="premium-carousel-wrapper" class="adv-carousel-wrapper">
+        <div id="adv-carousel-inner" class="adv-carousel-inner">
+            <div class="adv-slide" style="border-left: 4px solid var(--neon-magenta);">🔥 OVERRIDE: Gana +$50 USDT diarios en nuestro Bot Quant Trading. Desliza feed.</div>
+            <div class="adv-slide" style="border-left: 4px solid var(--neon-cyan);">🚀 NET_BOOST: Multiplica canales orgánicamente con algoritmos automatizados Pro.</div>
+            <div class="adv-slide" style="border-left: 4px solid var(--neon-amber);">💎 UPGRADE: Inyecta el pase de Licencia Premium y limpia este feed comercial hoy.</div>
         </div>
-
-        <nav class="nav-bar">
-            <button onclick="cambiarPestana('client')" id="nav-client" class="nav-item active">
-                <span>🎯</span>NET_NODES
-            </button>
-            <button onclick="cambiarPestana('admin')" id="nav-admin" class="nav-item">
-                <span>⚡</span>CORE_CONSOLE
-            </button>
-            <button onclick="cambiarPestana('billing')" id="nav-billing" class="nav-item">
-                <span>👑</span>LICENSE_UP
-            </button>
-        </nav>
-
     </div>
+
+    <nav class="nav-bar">
+        <button onclick="cambiarPestana('client')" id="nav-client" class="nav-item active">
+            <span>🎯</span>NET_NODES
+        </button>
+        <button onclick="cambiarPestana('admin')" id="nav-admin" class="nav-item">
+            <span>⚡</span>CORE_CONSOLE
+        </button>
+        <button onclick="cambiarPestana('billing')" id="nav-billing" class="nav-item">
+            <span>👑</span>LICENSE_UP
+        </button>
+    </nav>
 
     <script>
         const tg = window.Telegram.WebApp;
@@ -708,45 +705,43 @@
             desactivarInterfazPremiumVisual();
         }
 
-    function activarInterfazPremiumVisual() {
-    appState.isPremium = true;
-    document.getElementById("status-badge").innerText = "OVERLORD_VIP";
-    document.getElementById("status-badge").className = "badge badge-premium";
-    document.getElementById("profile-plan-status").innerText = "OVERLORD_VIP_RANK";
-    document.getElementById("profile-plan-status").style.color = "var(--neon-amber)";
-    document.getElementById("user-avatar-glow").style.backgroundColor = "var(--neon-amber)";
-    document.getElementById("user-avatar-glow").style.boxShadow = "0 0 10px var(--neon-amber)";
-    
-    document.getElementById("premium-carousel-wrapper").style.display = "none";
-    document.getElementById("premium-activation-key-card").style.display = "none";
-    
-    // CONTROL DEL MENÚ INFERIOR (Premium Activo):
-    document.getElementById("nav-client").style.display = "flex";
-    document.getElementById("nav-admin").style.display = "flex"; // Asegura que se vea la consola
-    document.getElementById("nav-billing").style.display = "none"; // Oculta "LICENSE_UP" porque ya es Pro
-    
-    habilitarOpcionesPremiumAdmin();
-}
+        function activarInterfazPremiumVisual() {
+            appState.isPremium = true;
+            document.getElementById("status-badge").innerText = "OVERLORD_VIP";
+            document.getElementById("status-badge").className = "badge badge-premium";
+            document.getElementById("profile-plan-status").innerText = "OVERLORD_VIP_RANK";
+            document.getElementById("profile-plan-status").style.color = "var(--neon-amber)";
+            document.getElementById("user-avatar-glow").style.backgroundColor = "var(--neon-amber)";
+            document.getElementById("user-avatar-glow").style.boxShadow = "0 0 10px var(--neon-amber)";
+            
+            document.getElementById("premium-carousel-wrapper").style.display = "none";
+            document.getElementById("premium-activation-key-card").style.display = "none";
+            
+            document.getElementById("nav-client").style.display = "flex";
+            document.getElementById("nav-admin").style.display = "flex"; 
+            document.getElementById("nav-billing").style.display = "none"; 
+            
+            habilitarOpcionesPremiumAdmin();
+        }
 
-function desactivarInterfazPremiumVisual() {
-    appState.isPremium = false;
-    document.getElementById("status-badge").innerText = "PROT_GUEST";
-    document.getElementById("status-badge").className = "badge";
-    document.getElementById("profile-plan-status").innerText = "FREE_TIER_NODE";
-    document.getElementById("profile-plan-status").style.color = "var(--text-cyber)";
-    document.getElementById("user-avatar-glow").style.backgroundColor = "var(--neon-lime)";
-    document.getElementById("user-avatar-glow").style.boxShadow = "0 0 8px var(--neon-lime)";
-    
-    document.getElementById("premium-carousel-wrapper").style.display = "block";
-    document.getElementById("premium-activation-key-card").style.display = "block";
-    
-    // CONTROL DEL MENÚ INFERIOR (Modo Invitado):
-    document.getElementById("nav-client").style.display = "flex";
-    document.getElementById("nav-admin").style.display = "flex";   // Muestra la consola (bloqueando las opciones Pro dentro)
-    document.getElementById("nav-billing").style.display = "flex"; // Muestra "LICENSE_UP" para que puedan comprar
-    
-    deshabilitarOpcionesPremiumAdmin();
-}
+        function desactivarInterfazPremiumVisual() {
+            appState.isPremium = false;
+            document.getElementById("status-badge").innerText = "PROT_GUEST";
+            document.getElementById("status-badge").className = "badge";
+            document.getElementById("profile-plan-status").innerText = "FREE_TIER_NODE";
+            document.getElementById("profile-plan-status").style.color = "var(--text-cyber)";
+            document.getElementById("user-avatar-glow").style.backgroundColor = "var(--neon-lime)";
+            document.getElementById("user-avatar-glow").style.boxShadow = "0 0 8px var(--neon-lime)";
+            
+            document.getElementById("premium-carousel-wrapper").style.display = "block";
+            document.getElementById("premium-activation-key-card").style.display = "block";
+            
+            document.getElementById("nav-client").style.display = "flex";
+            document.getElementById("nav-admin").style.display = "flex";   
+            document.getElementById("nav-billing").style.display = "flex"; 
+            
+            deshabilitarOpcionesPremiumAdmin();
+        }
 
         function habilitarOpcionesPremiumAdmin() {
             ["ad_text", "ad_image", "ad_video", "sub_channel", "join_group"].forEach(id => {
@@ -1078,7 +1073,6 @@ function desactivarInterfazPremiumVisual() {
             document.getElementById("group-opt-ad").style.display = type.startsWith("ad_") ? "block" : "none";
         }
 
-        /* CORREGIDO: Renombrada a cambiarPestana sin caracteres especiales */
         function cambiarPestana(target) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
