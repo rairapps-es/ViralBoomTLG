@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Bomba Viral SaaS - Neo P2P Growth Engine</title>
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap');
 
@@ -588,8 +592,6 @@
     </nav>
 
     <script>
-
-        // Centralización Segura del Almacenamiento Local (Evita accesos IO repetidos e inseguros)
         const Storage = {
             get(key, defaultValue) {
                 try {
@@ -631,18 +633,18 @@
                 carouselIndex: 0,
                 carouselTimer: null,
                 isCarouselPaused: false,
-                
-                // Variables de control para verificación sin bot
                 outboundTimestamp: 0,
                 verificationInProgress: false
             },
 
             supabaseClient: null,
-            tg: window.Telegram.WebApp,
+            tg: window.Telegram ? window.Telegram.WebApp : null,
 
             init() {
-                this.tg.ready();
-                this.tg.expand();
+                if(this.tg) {
+                    this.tg.ready();
+                    this.tg.expand();
+                }
 
                 const SUPABASE_URL = "https://hdvmoeuggbuxvdeoprks.supabase.co"; 
                 try {
@@ -668,43 +670,51 @@
                     Storage.set("bv_first_login", savedFirstDate);
                 }
                 this.state.firstTimeLoginDate = savedFirstDate;
-                document.getElementById("profile-plan-start").textContent = savedFirstDate;
+                
+                const labelStart = document.getElementById("profile-plan-start");
+                if(labelStart) labelStart.textContent = savedFirstDate;
 
                 this.state.campañaActivaLocal = Storage.get("campaña_local_backup", null);
             },
 
             bindEvents() {
-                document.getElementById("btn-header-profile").addEventListener("click", () => this.abrirModalPerfil());
-                document.getElementById("btn-close-profile-modal").addEventListener("click", (e) => this.cerrarModalPerfil(e));
-                document.getElementById("btn-join-channel").addEventListener("click", () => this.abrirEspacioRequisito());
-                document.getElementById("btn-share-viral").addEventListener("click", () => this.compartirEnlaceReferido());
-                document.getElementById("btn-claim-reward").addEventListener("click", () => this.reclamarRecompensaFinal());
-                document.getElementById("btn-deploy-campaign").addEventListener("click", () => this.guardarCampanaAdmin());
-                document.getElementById("btn-validate-license").addEventListener("click", () => this.inyectarLlaveLicenciaLocal());
-                document.getElementById("btn-request-premium").addEventListener("click", () => this.solicitarPremiumAirdayz());
-                document.getElementById("btn-watermark-link").addEventListener("click", () => this.cambiarPestana('billing'));
+                const safeAddEvent = (id, type, callback) => {
+                    const el = document.getElementById(id);
+                    if (el) el.addEventListener(type, callback);
+                };
+
+                safeAddEvent("btn-header-profile", "click", () => this.abrirModalPerfil());
+                safeAddEvent("btn-close-profile-modal", "click", (e) => this.cerrarModalPerfil(e));
+                safeAddEvent("btn-join-channel", "click", () => this.abrirSpaceRequisito());
+                safeAddEvent("btn-share-viral", "click", () => this.compartirEnlaceReferido());
+                safeAddEvent("btn-claim-reward", "click", () => this.reclamarRecompensaFinal());
+                safeAddEvent("btn-deploy-campaign", "click", () => this.guardarCampanaAdmin());
+                safeAddEvent("btn-validate-license", "click", () => this.inyectarLlaveLicenciaLocal());
+                safeAddEvent("btn-request-premium", "click", () => this.solicitarPremiumAirdayz());
+                safeAddEvent("btn-watermark-link", "click", () => this.cambiarPestana('billing'));
                 
-                document.getElementById("setup-campaign-type").addEventListener("change", () => this.actualizarFormularioPorTipoCam());
+                safeAddEvent("setup-campaign-type", "change", () => this.actualizarFormularioPorTipoCam());
 
-                document.getElementById("nav-client").addEventListener("click", () => this.cambiarPestana('client'));
-                document.getElementById("nav-admin").addEventListener("click", () => this.cambiarPestana('admin'));
-                document.getElementById("nav-billing").addEventListener("click", () => this.cambiarPestana('billing'));
+                safeAddEvent("nav-client", "click", () => this.cambiarPestana('client'));
+                safeAddEvent("nav-admin", "click", () => this.cambiarPestana('admin'));
+                safeAddEvent("nav-billing", "click", () => this.cambiarPestana('billing'));
 
-                // Gestión inteligente del ciclo de vida de la Mini App (Verificación sin Bot)
                 document.addEventListener("visibilitychange", () => {
                     if (document.hidden) {
                         this.pauseCarousel();
                     } else {
                         this.resumeCarousel();
-                        this.procesarRetornoUsuario(); // Captura cuando el usuario vuelve de Telegram
+                        this.procesarRetornoUsuario();
                     }
                 });
 
                 const carouselWrapper = document.getElementById("premium-carousel-wrapper");
-                carouselWrapper.addEventListener("touchstart", () => this.pauseCarousel(), { passive: true });
-                carouselWrapper.addEventListener("touchend", () => {
-                    setTimeout(() => this.resumeCarousel(), 5000);
-                }, { passive: true });
+                if(carouselWrapper) {
+                    carouselWrapper.addEventListener("touchstart", () => this.pauseCarousel(), { passive: true });
+                    carouselWrapper.addEventListener("touchend", () => {
+                        setTimeout(() => this.resumeCarousel(), 5000);
+                    }, { passive: true });
+                }
             },
 
             async inicializarFlujoAplicacion() {
@@ -718,6 +728,7 @@
             },
 
             inicializarDatosUsuarioTelegram() {
+                if(!this.tg) return;
                 const u = this.tg.initDataUnsafe?.user;
                 if(u) {
                     this.state.userId = u.id.toString();
@@ -726,26 +737,35 @@
                     this.state.chatInstance = this.tg.initDataUnsafe?.chat_instance || "direct_chat";
                 }
 
-                document.getElementById("user-display-name").textContent = this.state.firstName.toUpperCase();
+                const nameDisplay = document.getElementById("user-display-name");
+                if(nameDisplay) nameDisplay.textContent = this.state.firstName.toUpperCase();
+                
                 const avatarBox = document.getElementById("user-avatar-box");
                 const modalAvatarBox = document.getElementById("modal-avatar-box");
                 
                 if (u && u.photo_url) {
-                    const imgExistente = avatarBox.querySelector("img");
-                    if(imgExistente) imgExistente.remove();
-                    
-                    const img = document.createElement("img");
-                    img.src = u.photo_url;
-                    img.alt = "Profile";
-                    avatarBox.appendChild(img);
-                    
-                    modalAvatarBox.innerHTML = "";
-                    const imgModal = img.cloneNode(true);
-                    modalAvatarBox.appendChild(imgModal);
+                    if(avatarBox) {
+                        const imgExistente = avatarBox.querySelector("img");
+                        if(imgExistente) imgExistente.remove();
+                        const img = document.createElement("img");
+                        img.src = u.photo_url;
+                        img.alt = "Profile";
+                        avatarBox.appendChild(img);
+                    }
+                    if(modalAvatarBox) {
+                        modalAvatarBox.innerHTML = "";
+                        const imgModal = document.createElement("img");
+                        imgModal.src = u.photo_url;
+                        imgModal.alt = "Profile";
+                        imgModal.style.width = "100%"; imgModal.style.height = "100%"; imgModal.style.objectFit = "cover";
+                        modalAvatarBox.appendChild(imgModal);
+                    }
                 } else {
                     const inicial = this.state.firstName.charAt(0).toUpperCase();
-                    document.getElementById("avatar-fallback").textContent = inicial;
-                    document.getElementById("modal-avatar-fallback").textContent = inicial;
+                    const fallback = document.getElementById("avatar-fallback");
+                    const modalFallback = document.getElementById("modal-avatar-fallback");
+                    if(fallback) fallback.textContent = inicial;
+                    if(modalFallback) modalFallback.textContent = inicial;
                 }
             },
 
@@ -753,9 +773,16 @@
                 const ahora = Date.now();
                 const localPremiumUntil = localStorage.getItem(`bv_premium_until_${this.state.userId}`);
                 
-                if (localPremiumUntil && parseInt(localPremiumUntil) > ahora) {
-                    this.activarInterfazPremiumVisual();
-                    return;
+                if (localPremiumUntil) {
+                    if (parseInt(localPremiumUntil) > ahora) {
+                        this.activarInterfazPremiumVisual();
+                        return;
+                    } else {
+                        // EXPLICITO: Si la clave expiró localmente, limpia registros y fuerza estado Gratis
+                        localStorage.removeItem(`bv_premium_until_${this.state.userId}`);
+                        this.desactivarInterfazPremiumVisual();
+                        return;
+                    }
                 }
 
                 if(!this.supabaseClient) {
@@ -791,23 +818,20 @@
             activarInterfazPremiumVisual() {
                 this.state.isPremium = true;
                 const statusBadge = document.getElementById("status-badge");
-                statusBadge.textContent = "OVERLORD_VIP";
-                statusBadge.className = "badge badge-premium";
+                if(statusBadge) { statusBadge.textContent = "OVERLORD_VIP"; statusBadge.className = "badge badge-premium"; }
                 
                 const planStatus = document.getElementById("profile-plan-status");
-                planStatus.textContent = "OVERLORD_VIP_RANK";
-                planStatus.style.color = "var(--neon-amber)";
+                if(planStatus) { planStatus.textContent = "OVERLORD_VIP_RANK"; planStatus.style.color = "var(--neon-amber)"; }
                 
                 const avatarGlow = document.getElementById("user-avatar-glow");
-                avatarGlow.style.backgroundColor = "var(--neon-amber)";
-                avatarGlow.style.boxShadow = "var(--glow-amber)";
+                if(avatarGlow) { avatarGlow.style.backgroundColor = "var(--neon-amber)"; avatarGlow.style.boxShadow = "var(--glow-amber)"; }
                 
-                document.getElementById("premium-carousel-wrapper").style.display = "none";
-                document.getElementById("premium-activation-key-card").style.display = "none";
+                const cw = document.getElementById("premium-carousel-wrapper"); if(cw) cw.style.display = "none";
+                const akc = document.getElementById("premium-activation-key-card"); if(akc) akc.style.display = "none";
                 
-                document.getElementById("nav-client").style.display = "flex";
-                document.getElementById("nav-admin").style.display = "flex"; 
-                document.getElementById("nav-billing").style.display = "none"; 
+                const nc = document.getElementById("nav-client"); if(nc) nc.style.display = "flex";
+                const na = document.getElementById("nav-admin"); if(na) na.style.display = "flex"; 
+                const nb = document.getElementById("nav-billing"); if(nb) nb.style.display = "none"; 
                 
                 this.habilitarOpcionesPremiumAdmin();
                 this.pauseCarousel();
@@ -816,23 +840,20 @@
             desactivarInterfazPremiumVisual() {
                 this.state.isPremium = false;
                 const statusBadge = document.getElementById("status-badge");
-                statusBadge.textContent = "PROT_GUEST";
-                statusBadge.className = "badge";
+                if(statusBadge) { statusBadge.textContent = "PROT_GUEST"; statusBadge.className = "badge"; }
                 
                 const planStatus = document.getElementById("profile-plan-status");
-                planStatus.textContent = "FREE_TIER_NODE";
-                planStatus.style.color = "var(--text-cyber)";
+                if(planStatus) { planStatus.textContent = "FREE_TIER_NODE"; planStatus.style.color = "var(--text-cyber)"; }
                 
                 const avatarGlow = document.getElementById("user-avatar-glow");
-                avatarGlow.style.backgroundColor = "var(--neon-lime)";
-                avatarGlow.style.boxShadow = "0 0 6px var(--neon-lime)";
+                if(avatarGlow) { avatarGlow.style.backgroundColor = "var(--neon-lime)"; avatarGlow.style.boxShadow = "0 0 6px var(--neon-lime)"; }
                 
-                document.getElementById("premium-carousel-wrapper").style.display = "block";
-                document.getElementById("premium-activation-key-card").style.display = "block";
+                const cw = document.getElementById("premium-carousel-wrapper"); if(cw) cw.style.display = "block";
+                const akc = document.getElementById("premium-activation-key-card"); if(akc) akc.style.display = "block";
                 
-                document.getElementById("nav-client").style.display = "flex";
-                document.getElementById("nav-admin").style.display = "flex";   
-                document.getElementById("nav-billing").style.display = "flex"; 
+                const nc = document.getElementById("nav-client"); if(nc) nc.style.display = "flex";
+                const na = document.getElementById("nav-admin"); if(na) na.style.display = "flex";   
+                const nb = document.getElementById("nav-billing"); if(nb) nb.style.display = "flex"; 
                 
                 this.desactivarOpcionesPremiumAdmin();
             },
@@ -842,7 +863,7 @@
                     const opt = document.getElementById(`opt-${id}`);
                     if(opt) { opt.disabled = false; opt.textContent = opt.textContent.replace(" 🔒 Pro", ""); }
                 });
-                document.getElementById("setup-ad-duration").disabled = false;
+                const dur = document.getElementById("setup-ad-duration"); if(dur) dur.disabled = false;
             },
 
             desactivarOpcionesPremiumAdmin() {
@@ -850,7 +871,7 @@
                     const opt = document.getElementById(`opt-${id}`);
                     if(opt && !opt.textContent.includes("🔒 Pro")) { opt.disabled = true; opt.textContent += " 🔒 Pro"; }
                 });
-                document.getElementById("setup-ad-duration").disabled = true;
+                const dur = document.getElementById("setup-ad-duration"); if(dur) dur.disabled = true;
             },
 
             async recuperarEstadisticasBD() {
@@ -865,22 +886,25 @@
 
                     if (!error) {
                         this.state.referidosLogrados = count || 0;
-                        document.getElementById("meta-loops").textContent = this.state.referidosLogrados;
-                        document.getElementById("meta-clicks").textContent = Math.floor(this.state.referidosLogrados * 1.4);
+                        const ml = document.getElementById("meta-loops"); if(ml) ml.textContent = this.state.referidosLogrados;
+                        const mc = document.getElementById("meta-clicks"); if(mc) mc.textContent = Math.floor(this.state.referidosLogrados * 1.4);
                     }
                 } catch(e) {
                     console.error("Error recuperando estadísticas:", e);
                 }
 
                 const container = document.getElementById("admin-group-stats");
-                if (this.state.referidosLogrados > 0) {
-                    container.innerHTML = `<div style="display:flex; justify-content:space-between; font-family:'Orbitron',sans-serif;"><span>DATA_STREAM_FEED:</span> <span style="color:var(--neon-lime)">• CLOUD_SYNC_ON</span></div>`;
-                } else {
-                    container.textContent = "Awaiting datastream package requests...";
+                if(container) {
+                    if (this.state.referidosLogrados > 0) {
+                        container.innerHTML = `<div style="display:flex; justify-content:space-between; font-family:'Orbitron',sans-serif;"><span>DATA_STREAM_FEED:</span> <span style="color:var(--neon-lime)">• CLOUD_SYNC_ON</span></div>`;
+                    } else {
+                        container.textContent = "Awaiting datastream package requests...";
+                    }
                 }
             },
 
             async evaluarFlujoDeepLinkingDeEntrada() {
+                if(!this.tg) return;
                 const startParam = this.tg.initDataUnsafe?.start_param;
                 if(!startParam) return;
 
@@ -920,7 +944,7 @@
                         }
                     }
                 } catch (e) {
-                    console.error("Error decodificando nodo cuático:", e);
+                    console.error("Error decodificando nodo cuántico:", e);
                 }
             },
 
@@ -933,11 +957,11 @@
                 const eDate = document.getElementById("setup-end-date").value;
 
                 if(!t || !s) {
-                    this.tg.showAlert("❌ Identificador de Recurso y Enlace de Destino obligatorios.");
+                    if(this.tg) this.tg.showAlert("❌ Identificador de Recurso y Enlace de Destino obligatorios.");
                     return;
                 }
                 if(!this.supabaseClient) {
-                    this.tg.showAlert("❌ Error de comunicación: Base de datos no vinculada.");
+                    if(this.tg) this.tg.showAlert("❌ Error de comunicación: Base de datos no vinculada.");
                     return;
                 }
 
@@ -945,38 +969,37 @@
                 const adDur = parseInt(document.getElementById("setup-ad-duration").value) || 30;
 
                 const nuevaCampana = {
-    // Genera un ID único para la campaña (o puedes omitirlo si tu tabla 'campaigns' tiene ID autoincremental/UUID en Supabase)
-    id: this.state.userId + "_" + Date.now(), 
-    owner_id: this.state.userId, // Identifica de quién es la campaña
-    title: t, 
-    description: d, 
-    secret_url: s, 
-    type: type, 
-    req_slots: r,
-    tg_target: document.getElementById("setup-tg-target").value.trim(), 
-    ad_value: document.getElementById("setup-ad-value").value.trim(),
-    ad_duration: adDur, 
-    start_date: sDate ? new Date(sDate).toISOString() : null, 
-    end_date: eDate ? new Date(eDate).toISOString() : null
-};
+                    id: this.state.userId + "_" + Date.now(), 
+                    owner_id: this.state.userId, 
+                    title: t, 
+                    description: d, 
+                    secret_url: s, 
+                    type: type, 
+                    req_slots: r,
+                    tg_target: document.getElementById("setup-tg-target").value.trim(), 
+                    ad_value: document.getElementById("setup-ad-value").value.trim(),
+                    ad_duration: adDur, 
+                    start_date: sDate ? new Date(sDate).toISOString() : null, 
+                    end_date: eDate ? new Date(eDate).toISOString() : null
+                };
 
                 const { error } = await this.supabaseClient.from('campaigns').upsert([nuevaCampana]);
 
                 if (error) {
-                    this.tg.showAlert("❌ TRANSMISSION_ERROR: " + error.message);
+                    if(this.tg) this.tg.showAlert("❌ TRANSMISSION_ERROR: " + error.message);
                     return;
                 }
 
                 this.state.campañaActivaLocal = {
-    titulo: t, desc: d, secreto: s, tipo: type, requeridos: r,
-    tgTarget: nuevaCampana.tg_target, adValue: nuevaCampana.ad_value, adDuration: adDur,
-    startDate: nuevaCampana.start_date ? new Date(nuevaCampana.start_date).getTime() : null, 
-    endDate: nuevaCampana.end_date ? new Date(nuevaCampana.end_date).getTime() : null, 
-    ownerId: this.state.userId
-};
+                    titulo: t, desc: d, secreto: s, tipo: type, requeridos: r,
+                    tgTarget: nuevaCampana.tg_target, adValue: nuevaCampana.ad_value, adDuration: adDur,
+                    startDate: nuevaCampana.start_date ? new Date(nuevaCampana.start_date).getTime() : null, 
+                    endDate: nuevaCampana.end_date ? new Date(nuevaCampana.end_date).getTime() : null, 
+                    ownerId: this.state.userId
+                };
 
                 Storage.set("campaña_local_backup", this.state.campañaActivaLocal);
-                this.tg.showAlert("🚀 NODE_COMPILED: ¡Configuración inyectada con éxito!");
+                if(this.tg) this.tg.showAlert("🚀 NODE_COMPILED: ¡Configuración inyectada con éxito!");
                 
                 this.state.referidosLogrados = 0;
                 this.state.adCompleted = false;
@@ -992,11 +1015,11 @@
             async inyectarLlaveLicenciaLocal() {
                 const inputKey = document.getElementById("licence-key-input").value.trim();
                 if (!inputKey) {
-                    this.tg.showAlert("⚠️ Introduce un hash de firma válido.");
+                    if(this.tg) this.tg.showAlert("⚠️ Introduce un hash de firma válido.");
                     return;
                 }
                 if (!this.supabaseClient) {
-                    this.tg.showAlert("❌ Canal de datos inactivo.");
+                    if(this.tg) this.tg.showAlert("❌ Canal de datos inactivo.");
                     return;
                 }
 
@@ -1007,7 +1030,7 @@
                     .eq('is_used', false);
 
                 if (error || !licencia || licencia.length === 0) {
-                    this.tg.showAlert("❌ Firma inválida o consumida por otra ID.");
+                    if(this.tg) this.tg.showAlert("❌ Firma inválida o consumida por otra ID.");
                     return;
                 }
 
@@ -1016,7 +1039,7 @@
                     is_used: true, used_by_tg_id: this.state.userId, activated_at: new Date().toISOString()
                 }).eq('license_key', inputKey);
 
-                this.tg.showAlert("🎉 ACCESS_GRANTED: ¡Llave del Núcleo Validada con éxito!");
+                if(this.tg) this.tg.showAlert("🎉 ACCESS_GRANTED: ¡Llave del Núcleo Validada con éxito!");
                 localStorage.setItem(`bv_premium_until_${this.state.userId}`, new Date().getTime() + (lic.duration_days * 24 * 60 * 60 * 1000));
                 this.activarInterfazPremiumVisual();
                 this.cambiarPestana('admin');
@@ -1029,94 +1052,88 @@
                 const cardStatusMsg = document.getElementById("card-campaign-status-msg");
 
                 if(!camp) {
-                    cardNoCam.style.display = "block";
-                    cardUnlock.style.display = "none";
-                    cardStatusMsg.style.display = "none";
+                    if(cardNoCam) cardNoCam.style.display = "block";
+                    if(cardUnlock) cardUnlock.style.display = "none";
+                    if(cardStatusMsg) cardStatusMsg.style.display = "none";
                     return;
                 }
 
                 const ahora = Date.now();
                 if(camp.startDate && ahora < camp.startDate) {
-                    cardNoCam.style.display = "none";
-                    cardUnlock.style.display = "none";
-                    cardStatusMsg.style.display = "block";
-                    document.getElementById("status-msg-title").textContent = "⏳ TIME_LOCK_ACTIVE";
-                    document.getElementById("status-msg-desc").textContent = `Uplink sincronizado para abrirse el: ${new Date(camp.startDate).toLocaleString()}`;
+                    if(cardNoCam) cardNoCam.style.display = "none";
+                    if(cardUnlock) cardUnlock.style.display = "none";
+                    if(cardStatusMsg) {
+                        cardStatusMsg.style.display = "block";
+                        document.getElementById("status-msg-title").textContent = "⏳ TIME_LOCK_ACTIVE";
+                        document.getElementById("status-msg-desc").textContent = `Uplink sincronizado para abrirse el: ${new Date(camp.startDate).toLocaleString()}`;
+                    }
                     return;
                 }
                 if(camp.endDate && ahora > camp.endDate) {
-                    cardNoCam.style.display = "none";
-                    cardUnlock.style.display = "none";
-                    cardStatusMsg.style.display = "block";
-                    document.getElementById("status-msg-title").textContent = "⌛ NODE_EXPIRED";
-                    document.getElementById("status-msg-desc").textContent = "El ciclo de vida útil asignado a esta firma digital ha finalizado.";
+                    if(cardNoCam) cardNoCam.style.display = "none";
+                    if(cardUnlock) cardUnlock.style.display = "none";
+                    if(cardStatusMsg) {
+                        cardStatusMsg.style.display = "block";
+                        document.getElementById("status-msg-title").textContent = "⌛ NODE_EXPIRED";
+                        document.getElementById("status-msg-desc").textContent = "El ciclo de vida útil asignado a esta firma digital ha finalizado.";
+                    }
                     return;
                 }
 
-                cardNoCam.style.display = "none";
-                cardStatusMsg.style.display = "none";
-                cardUnlock.style.display = "block";
+                if(cardNoCam) cardNoCam.style.display = "none";
+                if(cardStatusMsg) cardStatusMsg.style.display = "none";
+                if(cardUnlock) cardUnlock.style.display = "block";
 
-                document.getElementById("viral-title").textContent = camp.titulo.toUpperCase();
-                document.getElementById("viral-desc").textContent = camp.desc;
-                document.getElementById("viral-type-badge").textContent = camp.tipo.toUpperCase();
+                const vTitle = document.getElementById("viral-title"); if(vTitle) vTitle.textContent = camp.titulo.toUpperCase();
+                const vDesc = document.getElementById("viral-desc"); if(vDesc) vDesc.textContent = camp.desc;
+                const vBadge = document.getElementById("viral-type-badge"); if(vBadge) vBadge.textContent = camp.tipo.toUpperCase();
 
-                document.getElementById("step-referrals").style.display = "none";
-                document.getElementById("step-channel").style.display = "none";
-                document.getElementById("step-dynamic-ad").style.display = "none";
-                document.getElementById("btn-share-viral").style.display = "none";
+                const stepRef = document.getElementById("step-referrals"); if(stepRef) stepRef.style.display = "none";
+                const stepCh = document.getElementById("step-channel"); if(stepCh) stepCh.style.display = "none";
+                const stepAd = document.getElementById("step-dynamic-ad"); if(stepAd) stepAd.style.display = "none";
+                const btnShare = document.getElementById("btn-share-viral"); if(btnShare) btnShare.style.display = "none";
 
                 if(camp.tipo === "invitation") {
-                    document.getElementById("step-referrals").style.display = "block";
-                    document.getElementById("btn-share-viral").style.display = "block";
+                    if(stepRef) stepRef.style.display = "block";
+                    if(btnShare) btnShare.style.display = "block";
                     
                     const porcentaje = Math.min((this.state.referidosLogrados / camp.requeridos) * 100, 100);
-                    document.getElementById("progress-text").textContent = `${this.state.referidosLogrados} / ${camp.requeridos} CLONES`;
-                    document.getElementById("progress-bar-fill").style.width = `${porcentaje}%`;
+                    const pText = document.getElementById("progress-text"); if(pText) pText.textContent = `${this.state.referidosLogrados} / ${camp.requeridos} CLONES`;
+                    const pFill = document.getElementById("progress-bar-fill"); if(pFill) pFill.style.width = `${porcentaje}%`;
 
                     this.evaluarDesbloqueoFinal(this.state.referidosLogrados >= camp.requeridos);
                 } else if(camp.tipo === "sub_channel" || camp.tipo === "join_group") {
-                    document.getElementById("step-channel").style.display = "block";
-                    document.getElementById("tg-step-label").textContent = camp.tipo === "sub_channel" ? "STATION_SUBSCRIPTION" : "CLUSTER_TUNNELING";
-                    document.getElementById("tg-step-desc").textContent = `Sincroniza terminal con el alias @${camp.tgTarget || 'comunidad'} para abrir compuerta.`;
+                    if(stepCh) stepCh.style.display = "block";
+                    const tgLabel = document.getElementById("tg-step-label"); if(tgLabel) tgLabel.textContent = camp.tipo === "sub_channel" ? "STATION_SUBSCRIPTION" : "CLUSTER_TUNNELING";
+                    const tgDesc = document.getElementById("tg-step-desc"); if(tgDesc) tgDesc.textContent = `Sincroniza terminal con el alias @${camp.tgTarget || 'comunidad'} para abrir compuerta.`;
                     this.evaluarDesbloqueoFinal(this.state.tgChannelJoined); 
                 } else if(camp.tipo.startsWith("ad_")) {
-                    document.getElementById("step-dynamic-ad").style.display = "block";
+                    if(stepAd) stepAd.style.display = "block";
                     const adRender = document.getElementById("ad-content-render");
                     
-                    adRender.innerHTML = ""; 
-                    if(camp.tipo === "ad_text") {
-                        const txtSpan = document.createElement("span");
-                        txtSpan.style.color = "#fff";
-                        txtSpan.style.fontWeight = "bold";
-                        txtSpan.textContent = camp.adValue;
-                        adRender.appendChild(txtSpan);
-                    } else if(camp.tipo === "ad_image") {
-                        const adImg = document.createElement("img");
-                        adImg.src = camp.adValue;
-                        adImg.style.width = "100%";
-                        adImg.style.maxHeight = "160px";
-                        adImg.style.objectFit = "cover";
-                        adImg.style.border = "1px solid var(--neon-cyan)";
-                        adRender.appendChild(adImg);
-                    } else if(camp.tipo === "ad_video") {
-                        const adVid = document.createElement("video");
-                        adVid.src = camp.adValue;
-                        adVid.autoplay = true;
-                        adVid.muted = true;
-                        adVid.loop = true;
-                        adVid.playsInline = true;
-                        adVid.style.width = "100%";
-                        adVid.style.maxHeight = "160px";
-                        adVid.style.objectFit = "cover";
-                        adVid.style.border = "1px solid var(--neon-amber)";
-                        adRender.appendChild(adVid);
+                    if(adRender) {
+                        adRender.innerHTML = ""; 
+                        if(camp.tipo === "ad_text") {
+                            const txtSpan = document.createElement("span");
+                            txtSpan.style.color = "#fff"; txtSpan.style.fontWeight = "bold";
+                            txtSpan.textContent = camp.adValue;
+                            adRender.appendChild(txtSpan);
+                        } else if(camp.tipo === "ad_image") {
+                            const adImg = document.createElement("img");
+                            adImg.src = camp.adValue; adImg.style.width = "100%"; adImg.style.maxHeight = "160px"; adImg.style.objectFit = "cover"; adImg.style.border = "1px solid var(--neon-cyan)";
+                            adRender.appendChild(adImg);
+                        } else if(camp.tipo === "ad_video") {
+                            const adVid = document.createElement("video");
+                            adVid.src = camp.adValue; adVid.autoplay = true; adVid.muted = true; adVid.loop = true; adVid.playsInline = true; adVid.style.width = "100%"; adVid.style.maxHeight = "160px"; adVid.style.objectFit = "cover"; adVid.style.border = "1px solid var(--neon-amber)";
+                            adRender.appendChild(adVid);
+                        }
                     }
 
+                    const adTimer = document.getElementById("ad-timer");
                     if(!this.state.adCompleted && !this.state.adTimerInterval) {
                         this.ejecutarContadorAnuncio(camp.adDuration);
                     } else if(this.state.adCompleted) {
-                        document.getElementById("ad-timer").textContent = "DECRYPTED";
+                        if(adTimer) adTimer.textContent = "DECRYPTED";
                         this.evaluarDesbloqueoFinal(true);
                     }
                 }
@@ -1125,11 +1142,15 @@
             ejecutarContadorAnuncio(segundos) {
                 if (this.state.adTimerInterval) clearInterval(this.state.adTimerInterval);
                 this.state.adSecondsLeft = segundos;
-                document.getElementById("ad-timer").textContent = `${this.state.adSecondsLeft}s`;
+                
+                const adTimer = document.getElementById("ad-timer");
+                if(adTimer) adTimer.textContent = `${this.state.adSecondsLeft}s`;
                 
                 const btnClaim = document.getElementById("btn-claim-reward");
-                btnClaim.className = "btn btn-gold btn-disabled";
-                btnClaim.textContent = "⏳ PARSING_STREAM_DATA...";
+                if(btnClaim) {
+                    btnClaim.className = "btn btn-gold btn-disabled";
+                    btnClaim.textContent = "⏳ PARSING_STREAM_DATA...";
+                }
 
                 this.state.adTimerInterval = setInterval(() => {
                     this.state.adSecondsLeft--;
@@ -1137,16 +1158,17 @@
                         clearInterval(this.state.adTimerInterval);
                         this.state.adTimerInterval = null;
                         this.state.adCompleted = true;
-                        document.getElementById("ad-timer").textContent = "DECRYPTED";
+                        if(adTimer) adTimer.textContent = "DECRYPTED";
                         this.renderizarPantallasDinamicas();
                     } else {
-                        document.getElementById("ad-timer").textContent = `${this.state.adSecondsLeft}s`;
+                        if(adTimer) adTimer.textContent = `${this.state.adSecondsLeft}s`;
                     }
                 }, 1000);
             },
 
             evaluarDesbloqueoFinal(condicion) {
                 const btnClaim = document.getElementById("btn-claim-reward");
+                if(!btnClaim) return;
                 if(condicion) {
                     btnClaim.classList.remove("btn-disabled");
                     btnClaim.className = "btn btn-gold";
@@ -1159,7 +1181,7 @@
 
             compartirEnlaceReferido() {
                 const camp = this.state.campañaActivaLocal;
-                if(!camp) return;
+                if(!camp || !this.tg) return;
 
                 const botUsername = "ImagesAI_TLG_Bot"; 
                 const payload = {
@@ -1183,7 +1205,8 @@
             },
 
             reclamarRecompensaFinal() {
-                if (document.getElementById("btn-claim-reward").classList.contains("btn-disabled")) return;
+                const btnClaim = document.getElementById("btn-claim-reward");
+                if (!this.tg || (btnClaim && btnClaim.classList.contains("btn-disabled"))) return;
                 this.tg.showPopup({
                     title: "🔓 LINK_UNLOCKED",
                     message: "Protocolo de desencriptación exitoso. Abre el túnel seguro hacia el destino de los datos.",
@@ -1193,58 +1216,56 @@
                 });
             },
 
-            // ACTIVACIÓN DE LA COMPUERTA HACIA TELEGRAM (Salida controlada)
-            abrirEspacioRequisito() {
+            abrirSpaceRequisito() {
                 const camp = this.state.campañaActivaLocal;
-                if (!camp || !camp.tgTarget) return;
+                if (!camp || !camp.tgTarget || !this.tg) return;
                 
                 let targetUrl = camp.tgTarget.startsWith("http") ? camp.tgTarget : `https://t.me/${camp.tgTarget}`;
-                
-                // Marcamos que el usuario inició el proceso y guardamos el segundo actual de salida
                 this.state.outboundTimestamp = Date.now();
                 this.state.verificationInProgress = true;
                 
-                // Cambiar visualmente el botón a estado de carga
                 const btnJoin = document.getElementById("btn-join-channel");
-                btnJoin.textContent = "⏳ VERIFYING_EXTERNAL_NODE...";
-                btnJoin.classList.add("btn-disabled");
-
+                if(btnJoin) {
+                    btnJoin.textContent = "⏳ VERIFYING_EXTERNAL_NODE...";
+                    btnJoin.classList.add("btn-disabled");
+                }
                 this.tg.openTelegramLink(targetUrl);
             },
 
-            // PROCESAMIENTO ANALÍTICO DEL RETORNO (Comprobación inteligente de tiempo)
             procesarRetornoUsuario() {
                 if (!this.state.verificationInProgress) return;
                 
                 const tiempoFuera = (Date.now() - this.state.outboundTimestamp) / 1000;
                 const btnJoin = document.getElementById("btn-join-channel");
                 
-                // Estipulamos un umbral de 7 segundos mínimos requeridos para leer y unirse
                 if (tiempoFuera >= 7) {
                     this.state.tgChannelJoined = true;
                     this.state.verificationInProgress = false;
                     
-                    btnJoin.textContent = "✅ STATION_CONNECTED";
-                    btnJoin.className = "btn btn-purple btn-disabled";
-                    
-                    this.tg.showAlert("⚡ NODE_VERIFIED: Sincronización exitosa con la estación externa.");
+                    if(btnJoin) {
+                        btnJoin.textContent = "✅ STATION_CONNECTED";
+                        btnJoin.className = "btn btn-purple btn-disabled";
+                    }
+                    if(this.tg) this.tg.showAlert("⚡ NODE_VERIFIED: Sincronización exitosa con la estación externa.");
                     this.renderizarPantallasDinamicas();
                 } else {
-                    // El usuario regresó de golpe sin darle tiempo a unirse. Fallo de red simulado.
                     this.state.verificationInProgress = false;
-                    
-                    btnJoin.textContent = "JOIN_STATION";
-                    btnJoin.classList.remove("btn-disabled");
-                    
-                    this.tg.showPopup({
-                        title: "❌ VERIFICATION_FAILED",
-                        message: "El tiempo de vinculación fue demasiado bajo. Asegúrate de unirte al canal antes de regresar.",
-                        buttons: [{type: "close"}]
-                    });
+                    if(btnJoin) {
+                        btnJoin.textContent = "JOIN_STATION";
+                        btnJoin.classList.remove("btn-disabled");
+                    }
+                    if(this.tg) {
+                        this.tg.showPopup({
+                            title: "❌ VERIFICATION_FAILED",
+                            message: "El tiempo de vinculación fue demasiado bajo. Asegúrate de unirte al canal antes de regresar.",
+                            buttons: [{type: "close"}]
+                        });
+                    }
                 }
             },
 
             solicitarPremiumAirdayz() {
+                if(!this.tg) return;
                 const metodo = document.getElementById("billing-method").value;
                 const textoMensaje = `¡Hola @Airdayz! Solicito pasaporte Overlord Premium para Bomba Viral 🚀.\n\n` +
                                      `• ID_Firma: \`${this.state.userId}\`\n• Gateway_Metodo: ${metodo}`;
@@ -1252,30 +1273,36 @@
             },
 
             abrirModalPerfil() {
-                document.getElementById("modal-user-title").textContent = this.state.firstName.toUpperCase();
-                document.getElementById("modal-user-id").textContent = `NET_ADDR: ${this.state.userId}`;
+                const modalTitle = document.getElementById("modal-user-title"); if(modalTitle) modalTitle.textContent = this.state.firstName.toUpperCase();
+                const modalId = document.getElementById("modal-user-id"); if(modalId) modalId.textContent = `NET_ADDR: ${this.state.userId}`;
                 const modal = document.getElementById("modal-perfil-usuario");
-                modal.style.display = "flex"; 
-                modal.offsetHeight;
-                modal.classList.add("active");
+                if(modal) {
+                    modal.style.display = "flex"; 
+                    modal.offsetHeight;
+                    modal.classList.add("active");
+                }
             },
 
             cerrarModalPerfil(event) {
                 if (event) event.stopPropagation();
                 const modal = document.getElementById("modal-perfil-usuario");
-                modal.classList.remove("active");
-                setTimeout(() => {
-                    if (!modal.classList.contains('active')) {
-                        modal.style.display = 'none';
-                    }
-                }, 250); 
+                if(modal) {
+                    modal.classList.remove("active");
+                    setTimeout(() => {
+                        if (!modal.classList.contains('active')) {
+                            modal.style.display = 'none';
+                        }
+                    }, 250); 
+                }
             },
 
             actualizarFormularioPorTipoCam() {
-                const type = document.getElementById("setup-campaign-type").value;
-                document.getElementById("group-opt-invitation").style.display = type === "invitation" ? "block" : "none";
-                document.getElementById("group-opt-telegram").style.display = (type === "sub_channel" || type === "join_group") ? "block" : "none";
-                document.getElementById("group-opt-ad").style.display = type.startsWith("ad_") ? "block" : "none";
+                const stc = document.getElementById("setup-campaign-type"); if(!stc) return;
+                const type = stc.value;
+                
+                const gInv = document.getElementById("group-opt-invitation"); if(gInv) gInv.style.display = type === "invitation" ? "block" : "none";
+                const gTg = document.getElementById("group-opt-telegram"); if(gTg) gTg.style.display = (type === "sub_channel" || type === "join_group") ? "block" : "none";
+                const gAd = document.getElementById("group-opt-ad"); if(gAd) gAd.style.display = type.startsWith("ad_") ? "block" : "none";
             },
 
             cambiarPestana(target) {
@@ -1305,7 +1332,8 @@
             },
 
             actualizarContadorHeader() {
-                document.getElementById("header-campaign-counter").textContent = this.state.campañaActivaLocal ? "CORE_UNITS: 1" : "CORE_UNITS: 0";
+                const hcc = document.getElementById("header-campaign-counter");
+                if(hcc) hcc.textContent = this.state.campañaActivaLocal ? "CORE_UNITS: 1" : "CORE_UNITS: 0";
             },
 
             startCarouselEngine() {
@@ -1334,8 +1362,6 @@
         document.addEventListener("DOMContentLoaded", () => {
             App.init();
         });
-
-        
     </script>
 </body>
 </html>
