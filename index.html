@@ -947,26 +947,45 @@
                     console.error("Error decodificando nodo cuántico:", e);
                 }
             },
-
+                    
                     async guardarCampanaAdmin() {
             const t = document.getElementById("setup-title").value.trim();
             const d = document.getElementById("setup-desc").value.trim();
             const s = document.getElementById("setup-secret").value.trim();
             const type = document.getElementById("setup-campaign-type").value;
-            const sDate = document.getElementById("setup-start-date").value;
-            const eDate = document.getElementById("setup-end-date").value;
+            
+            // Forzamos que si está vacío se guarde como null de inmediato
+            const sDateRaw = document.getElementById("setup-start-date").value;
+            const eDateRaw = document.getElementById("setup-end-date").value;
+            const sDate = sDateRaw ? sDateRaw.trim() : "";
+            const eDate = eDateRaw ? eDateRaw.trim() : "";
 
             if(!t || !s) {
                 if(this.tg) this.tg.showAlert("❌ Identificador de Recurso y Enlace de Destino obligatorios.");
+                alert("❌ Identificador de Recurso y Enlace de Destino obligatorios."); // Alerta nativa por si estás fuera de TG
                 return;
             }
             if(!this.supabaseClient) {
                 if(this.tg) this.tg.showAlert("❌ Error de comunicación: Base de datos no vinculada.");
+                alert("❌ Error de comunicación: Base de datos no vinculada.");
                 return;
             }
 
             let r = parseInt(document.getElementById("setup-req-count").value) || 3;
             const adDur = parseInt(document.getElementById("setup-ad-duration").value) || 30;
+
+            // Formateo seguro de fechas para evitar el crash en iOS/Android
+            let startDateISO = null;
+            let endDateISO = null;
+
+            if (sDate !== "") {
+                const parsedStart = new Date(sDate);
+                if (!isNaN(parsedStart.getTime())) startDateISO = parsedStart.toISOString();
+            }
+            if (eDate !== "") {
+                const parsedEnd = new Date(eDate);
+                if (!isNaN(parsedEnd.getTime())) endDateISO = parsedEnd.toISOString();
+            }
 
             const nuevaCampana = {
                 id: this.state.userId + "_" + Date.now(), 
@@ -979,32 +998,26 @@
                 tg_target: document.getElementById("setup-tg-target").value.trim(), 
                 ad_value: document.getElementById("setup-ad-value").value.trim(),
                 ad_duration: adDur, 
-                start_date: sDate ? new Date(sDate).toISOString() : null, 
-                end_date: eDate ? new Date(eDate).toISOString() : null
+                start_date: startDateISO, 
+                end_date: endDateISO
             };
 
-            // --- INICIO DE LA MODIFICACIÓN DE SEGURIDAD Y DEPURACIÓN ---
             try {
-                console.log("Enviando datos a Supabase...", nuevaCampana);
+                // Colocamos una alerta de confirmación para ver que el botón responde
+                console.log("Enviando datos...", nuevaCampana);
                 
                 const { error } = await this.supabaseClient.from('campaigns').upsert([nuevaCampana]);
 
                 if (error) {
-                    console.error("Error devuelto por Supabase:", error);
-                    if(this.tg) this.tg.showAlert("❌ TRANSMISSION_ERROR (Supabase): " + error.message + " | Code: " + error.code);
+                    if(this.tg) this.tg.showAlert("❌ Error en Supabase: " + error.message);
+                    alert("❌ Error en Supabase: " + error.message);
                     return;
                 }
             } catch (catchError) {
-                console.error("Error crítico de red atrapado:", catchError);
-                if(this.tg) {
-                    this.tg.showAlert(
-                        "🚨 ERROR CRÍTICO DE RED:\n" + catchError.message + 
-                        "\n\nEsto suele ser por la clave API 'cleanKey' caducada, RLS bloqueado o problemas de CORS en Supabase."
-                    );
-                }
+                if(this.tg) this.tg.showAlert("🚨 Fallo de Red: " + catchError.message);
+                alert("🚨 Fallo de Red: " + catchError.message);
                 return;
             }
-            // --- FIN DE LA MODIFICACIÓN ---
 
             this.state.campañaActivaLocal = {
                 titulo: t, desc: d, secreto: s, tipo: type, requeridos: r,
@@ -1015,7 +1028,9 @@
             };
 
             Storage.set("campaña_local_backup", this.state.campañaActivaLocal);
+            
             if(this.tg) this.tg.showAlert("🚀 NODE_COMPILED: ¡Configuración inyectada con éxito!");
+            alert("🚀 NODE_COMPILED: ¡Configuración inyectada con éxito!");
             
             this.state.referidosLogrados = 0;
             this.state.adCompleted = false;
