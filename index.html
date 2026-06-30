@@ -442,7 +442,7 @@
             tgChannelJoined: false
         };
 
-        // Escucha nativa y limpia del ciclo de vida de Telegram (Solución Definitiva)
+        // Sincronización robusta reactiva (Solución definitiva para entornos móviles lento)
         function inicializarFlujoAplicacion() {
             inicializarDatosUsuarioTelegram();
             ejecutarVerificacionLicenciaBase().then(() => {
@@ -469,13 +469,15 @@
             const backupCampLocal = localStorage.getItem("campaña_local_backup");
             if (backupCampLocal) appState.campañaActivaLocal = JSON.parse(backupCampLocal);
 
-            // Intentar inicialización inmediata y suscribir al evento nativo por si hay retardo en hilos móviles
-            inicializarFlujoAplicacion();
-            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                inicializarFlujoAplicacion();
-            } else {
-                setTimeout(inicializarFlujoAplicacion, 250);
-            }
+            // Bucle repetitivo temporal controlado por si Telegram tarda en inyectar datos de usuario
+            let chequeosEfectuados = 0;
+            const intervaloChequeo = setInterval(() => {
+                chequeosEfectuados++;
+                if ((tg.initDataUnsafe && tg.initDataUnsafe.user) || chequeosEfectuados > 15) {
+                    clearInterval(intervaloChequeo);
+                    inicializarFlujoAplicacion();
+                }
+            }, 100);
         });
 
         function inicializarDatosUsuarioTelegram() {
@@ -527,7 +529,7 @@
 
             if (!error && data) {
                 const fechaActivacion = new Date(data.activated_at).getTime();
-                const diasEnMilisegundos = data.duration_days * 24 * 60 * 60 * 1000; // Corrección: variable unificada sin espacio
+                const diasEnMilisegundos = data.duration_days * 24 * 60 * 60 * 1000;
                 const fechaExpiracion = fechaActivacion + diasEnMilisegundos;
 
                 if (ahora < fechaExpiracion) {
