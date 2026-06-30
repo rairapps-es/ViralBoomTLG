@@ -291,8 +291,8 @@
         }
         .badge-premium { background: rgba(255, 170, 0, 0.1); color: var(--neon-amber); border: 1px solid var(--neon-amber); }
 
-        /* CORRECCIÓN: Control de visualización explícito para las vistas */
-        .view-section { display: none !important; }
+        /* CORRECCIÓN DE VISIBILIDAD: Quitamos el !important del display: none */
+        .view-section { display: none; }
         .view-section.active { display: block !important; animation: slideIn 0.35s forwards ease-out; }
 
         @keyframes slideIn {
@@ -300,7 +300,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* CORRECCIÓN: Z-INDEX de la nav-bar elevado al máximo absoluto */
         .nav-bar { 
             position: fixed; bottom: 0; left: 0; right: 0; height: 65px; 
             background: rgba(5, 6, 15, 0.98); 
@@ -328,7 +327,6 @@
         .watermark { text-align: center; font-size: 0.75rem; color: var(--text-dark); margin-top: 25px; padding: 12px; border-top: 1px dashed rgba(0,243,255,0.1); letter-spacing: 1px;}
         .watermark a { color: var(--neon-magenta); text-decoration: none; font-weight: bold; text-shadow: var(--glow-magenta);}
 
-        /* CORRECCIÓN: Se ajusta el z-index inferior al nav-bar para evitar bloqueos táctiles */
         .adv-carousel-wrapper { position: fixed; bottom: 65px; left: 0; right: 0; background: #030308; border-top: 1px solid rgba(255,0,85,0.3); overflow: hidden; height: 75px; z-index: 99999; display: none; }
         .adv-carousel-inner { display: flex; width: 100%; height: 100%; transition: transform 0.4s ease-in-out; }
         .adv-slide { min-width: 100%; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 0 20px; text-align: center; font-size: 0.85rem; font-weight: bold; color: #a5b1c2; background: linear-gradient(90deg, #05060f 0%, #0d0f1d 100%); }
@@ -699,7 +697,7 @@
                 if (!error && data && data.length > 0) {
                     const licenciaActiva = data[0];
                     const fechaActivacion = new Date(licenciaActiva.activated_at).getTime();
-                    const dias EnMilisegundos = licenciaActiva.duration_days * 24 * 60 * 60 * 1000;
+                    const diasEnMilisegundos = licenciaActiva.duration_days * 24 * 60 * 60 * 1000;
                     const fechaExpiracion = fechaActivacion + diasEnMilisegundos;
 
                     if (ahora < fechaExpiracion) {
@@ -1124,7 +1122,6 @@
             document.getElementById("group-opt-ad").style.display = type.startsWith("ad_") ? "block" : "none";
         }
 
-        /* CORRECCIÓN INTERNA: Cambios aplicados para garantizar el swapeo limpio de contenedores */
         function cambiarPestana(target) {
             // Remueve la clase active de todas las vistas
             const vistas = document.querySelectorAll('.view-section');
