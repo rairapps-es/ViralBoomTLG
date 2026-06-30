@@ -292,8 +292,13 @@
         .badge-premium { background: rgba(255, 170, 0, 0.1); color: var(--neon-amber); border: 1px solid var(--neon-amber); }
 
         /* CORRECCIÓN DE VISIBILIDAD DE PESTAÑAS */
-        .view-section { display: none !important; }
-        .view-section.active { display: block !important; animation: slideIn 0.35s forwards ease-out; }
+.view-section { 
+    display: none; 
+}
+.view-section.active { 
+    display: block; 
+    animation: slideIn 0.35s forwards ease-out; 
+}
 
         @keyframes slideIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -1139,28 +1144,30 @@
         }
 
         function cambiarPestana(target) {
-            const vistas = document.querySelectorAll('.view-section');
-            vistas.forEach(el => {
-                el.classList.remove('active');
-            });
-            
-            const botones = document.querySelectorAll('.nav-bar .nav-item');
-            botones.forEach(el => {
-                el.classList.remove('active');
-            });
-            
-            const vistaObjetivo = document.getElementById(`view-${target}`);
-            const botonObjetivo = document.getElementById(`nav-${target}`);
-            
-            if (vistaObjetivo) {
-                vistaObjetivo.classList.add('active');
-            }
-            if (botonObjetivo) {
-                botonObjetivo.classList.add('active');
-            }
-            
-            if(target === 'client') renderizarPantallasDinamicas();
-        }
+    const vistas = document.querySelectorAll('.view-section');
+    vistas.forEach(el => {
+        el.classList.remove('active');
+        el.style.display = "none"; // Fuerza el ocultamiento limpio
+    });
+    
+    const botones = document.querySelectorAll('.nav-bar .nav-item');
+    botones.forEach(el => {
+        el.classList.remove('active');
+    });
+    
+    const vistaObjetivo = document.getElementById(`view-${target}`);
+    const botonObjetivo = document.getElementById(`nav-${target}`);
+    
+    if (vistaObjetivo) {
+        vistaObjetivo.classList.add('active');
+        vistaObjetivo.style.display = "block"; // Fuerza la muestra de la sección activa
+    }
+    if (botonObjetivo) {
+        botonObjetivo.classList.add('active');
+    }
+    
+    if(target === 'client') renderizarPantallasDinamicas();
+}
 
         function actualizarContadorHeader() {
             document.getElementById("header-campaign-counter").innerText = appState.campañaActivaLocal ? "CORE_UNITS: 1" : "CORE_UNITS: 0";
