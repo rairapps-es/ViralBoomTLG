@@ -945,18 +945,20 @@
                 const adDur = parseInt(document.getElementById("setup-ad-duration").value) || 30;
 
                 const nuevaCampana = {
-                    id: this.state.userId, 
-                    title: t, 
-                    description: d, 
-                    secret_url: s, 
-                    type: type, 
-                    req_slots: r,
-                    tg_target: document.getElementById("setup-tg-target").value.trim(), 
-                    ad_value: document.getElementById("setup-ad-value").value.trim(),
-                    ad_duration: adDur, 
-                    start_date: sDate ? new Date(sDate).toISOString() : null, 
-                    end_date: eDate ? new Date(eDate).toISOString() : null
-                };
+    // Genera un ID único para la campaña (o puedes omitirlo si tu tabla 'campaigns' tiene ID autoincremental/UUID en Supabase)
+    id: this.state.userId + "_" + Date.now(), 
+    owner_id: this.state.userId, // Identifica de quién es la campaña
+    title: t, 
+    description: d, 
+    secret_url: s, 
+    type: type, 
+    req_slots: r,
+    tg_target: document.getElementById("setup-tg-target").value.trim(), 
+    ad_value: document.getElementById("setup-ad-value").value.trim(),
+    ad_duration: adDur, 
+    start_date: sDate ? new Date(sDate).toISOString() : null, 
+    end_date: eDate ? new Date(eDate).toISOString() : null
+};
 
                 const { error } = await this.supabaseClient.from('campaigns').upsert([nuevaCampana]);
 
@@ -966,12 +968,12 @@
                 }
 
                 this.state.campañaActivaLocal = {
-                    titulo: t, desc: d, secreto: s, tipo: type, requeridos: r,
-                    tgTarget: nuevaCampana.tg_target, adValue: nuevaCampana.ad_value, adDuration: adDur,
-                    startDate: nuevaCampana.start_date ? new Date(nuevaCampana.start_date).getTime() : null, 
-                    endDate: nuevaCampana.end_date ? new Date(nuevaCampana.end_date).getTime() : null, 
-                    ownerId: this.state.userId
-                };
+    titulo: t, desc: d, secreto: s, tipo: type, requeridos: r,
+    tgTarget: nuevaCampana.tg_target, adValue: nuevaCampana.ad_value, adDuration: adDur,
+    startDate: nuevaCampana.start_date ? new Date(nuevaCampana.start_date).getTime() : null, 
+    endDate: nuevaCampana.end_date ? new Date(nuevaCampana.end_date).getTime() : null, 
+    ownerId: this.state.userId
+};
 
                 Storage.set("campaña_local_backup", this.state.campañaActivaLocal);
                 this.tg.showAlert("🚀 NODE_COMPILED: ¡Configuración inyectada con éxito!");
