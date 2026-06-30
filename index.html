@@ -56,7 +56,6 @@
             background-size: 100% 4px, 6px 100%;
         }
 
-        /* Cambiado a main-container para envolver el tag <main> adecuadamente */
         .main-container { max-width: 460px; margin: auto; position: relative; z-index: 20; }
         
         .sticky-header {
@@ -553,7 +552,9 @@
             CORE ENGINE RUNNING ON <a href="javascript:void(0);" onclick="cambiarPestana('billing')">VIRAL_BOOM_SAAS_v4.0</a>
         </div>
 
-    </main> <div id="premium-carousel-wrapper" class="adv-carousel-wrapper">
+    </main> 
+    
+    <div id="premium-carousel-wrapper" class="adv-carousel-wrapper">
         <div id="adv-carousel-inner" class="adv-carousel-inner">
             <div class="adv-slide" style="border-left: 4px solid var(--neon-magenta);">🔥 OVERRIDE: Gana +$50 USDT diarios en nuestro Bot Quant Trading. Desliza feed.</div>
             <div class="adv-slide" style="border-left: 4px solid var(--neon-cyan);">🚀 NET_BOOST: Multiplica canales orgánicamente con algoritmos automatizados Pro.</div>
@@ -606,15 +607,13 @@
             tgChannelJoined: false
         };
 
-        function inicializarFlujoAplicacion() {
+        async function inicializarFlujoAplicacion() {
             inicializarDatosUsuarioTelegram();
-            ejecutarVerificacionLicenciaBase().then(() => {
-                recuperarEstadisticasBD();
-                evaluarFlujoDeepLinkingDeEntrada().then(() => {
-                    renderizarPantallasDinamicas();
-                    actualizarContadorHeader();
-                });
-            });
+            await ejecutarVerificacionLicenciaBase();
+            await recuperarEstadisticasBD();
+            await evaluarFlujoDeepLinkingDeEntrada();
+            renderizarPantallasDinamicas();
+            actualizarContadorHeader();
         }
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -682,25 +681,32 @@
                 return;
             }
 
-            if(!supabase) return desactivarInterfazPremiumVisual();
+            if(!supabase) {
+                desactivarInterfazPremiumVisual();
+                return;
+            }
 
-            const { data, error } = await supabase
-                .from('licenses')
-                .select('*')
-                .eq('used_by_tg_id', appState.userId)
-                .eq('is_used', true);
+            try {
+                const { data, error } = await supabase
+                    .from('licenses')
+                    .select('*')
+                    .eq('used_by_tg_id', appState.userId)
+                    .eq('is_used', true);
 
-            if (!error && data && data.length > 0) {
-                const licenciaActiva = data[0];
-                const fechaActivacion = new Date(licenciaActiva.activated_at).getTime();
-                const diasEnMilisegundos = licenciaActiva.duration_days * 24 * 60 * 60 * 1000;
-                const fechaExpiracion = fechaActivacion + diasEnMilisegundos;
+                if (!error && data && data.length > 0) {
+                    const licenciaActiva = data[0];
+                    const fechaActivacion = new Date(licenciaActiva.activated_at).getTime();
+                    const diasEnMilisegundos = licenciaActiva.duration_days * 24 * 60 * 60 * 1000;
+                    const fechaExpiracion = fechaActivacion + diasEnMilisegundos;
 
-                if (ahora < fechaExpiracion) {
-                    localStorage.setItem(`bv_premium_until_${appState.userId}`, fechaExpiracion);
-                    activarInterfazPremiumVisual();
-                    return;
+                    if (ahora < fechaExpiracion) {
+                        localStorage.setItem(`bv_premium_until_${appState.userId}`, fechaExpiracion);
+                        activarInterfazPremiumVisual();
+                        return;
+                    }
                 }
+            } catch(e) {
+                console.error("Fallo al consultar licencias:", e);
             }
             desactivarInterfazPremiumVisual();
         }
@@ -763,15 +769,19 @@
             if (!appState.campañaActivaLocal || !supabase) return;
             const ownerId = appState.campañaActivaLocal.ownerId;
 
-            const { count, error } = await supabase
-                .from('referrals')
-                .select('*', { count: 'exact', head: true })
-                .eq('campaign_owner_id', ownerId);
+            try {
+                const { count, error } = await supabase
+                    .from('referrals')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('campaign_owner_id', ownerId);
 
-            if (!error) {
-                appState.referidosLogrados = count || 0;
-                document.getElementById("meta-loops").innerText = appState.referidosLogrados;
-                document.getElementById("meta-clicks").innerText = Math.floor(appState.referidosLogrados * 1.4);
+                if (!error) {
+                    appState.referidosLogrados = count || 0;
+                    document.getElementById("meta-loops").innerText = appState.referidosLogrados;
+                    document.getElementById("meta-clicks").innerText = Math.floor(appState.referidosLogrados * 1.4);
+                }
+            } catch(e) {
+                console.error("Error recuperando estadísticas:", e);
             }
 
             const container = document.getElementById("admin-group-stats");
@@ -789,7 +799,13 @@
             try {
                 let base64Clean = startParam.replace(/-/g, '+').replace(/_/g, '/');
                 while (base64Clean.length % 4) { base64Clean += '='; }
-                const payload = JSON.parse(decodeURIComponent(escape(atob(base64Clean))));
+                
+                // Decodificación UTF-8 robusta para Base64
+                const jsonString = decodeURIComponent(atob(base64Clean).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+
+                const payload = JSON.parse(jsonString);
 
                 if(payload && payload.secret_url) {
                     appState.campañaActivaLocal = {
@@ -813,7 +829,6 @@
                             { campaign_owner_id: payload.owner, referred_user_id: appState.userId }
                         ]);
                     }
-                    await recuperarEstadisticasBD();
                 }
             } catch (e) {
                 console.error("Error decodificando nodo cuántico:", e);
@@ -828,8 +843,14 @@
             const sDate = document.getElementById("setup-start-date").value;
             const eDate = document.getElementById("setup-end-date").value;
 
-            if(!t || !s) return tg.showAlert("❌ Identificador de Recurso y Enlace de Destino obligatorios.");
-            if(!supabase) return tg.showAlert("❌ Error de comunicación: Base de datos no vinculada.");
+            if(!t || !s) {
+                tg.showAlert("❌ Identificador de Recurso y Enlace de Destino obligatorios.");
+                return;
+            }
+            if(!supabase) {
+                tg.showAlert("❌ Error de comunicación: Base de datos no vinculada.");
+                return;
+            }
 
             let r = parseInt(document.getElementById("setup-req-count").value) || 3;
             const adDur = parseInt(document.getElementById("setup-ad-duration").value) || 30;
@@ -850,7 +871,10 @@
 
             const { error } = await supabase.from('campaigns').upsert([nuevaCampana]);
 
-            if (error) return tg.showAlert("❌ TRANSMISSION_ERROR: " + error.message);
+            if (error) {
+                tg.showAlert("❌ TRANSMISSION_ERROR: " + error.message);
+                return;
+            }
 
             appState.campañaActivaLocal = {
                 titulo: t, desc: d, secreto: s, tipo: type, requeridos: r,
@@ -874,8 +898,14 @@
 
         async function inyectarLlaveLicenciaLocal() {
             const inputKey = document.getElementById("licence-key-input").value.trim();
-            if (!inputKey) return tg.showAlert("⚠️ Introduce un hash de firma válido.");
-            if (!supabase) return tg.showAlert("❌ Canal de datos inactivo.");
+            if (!inputKey) {
+                tg.showAlert("⚠️ Introduce un hash de firma válido.");
+                return;
+            }
+            if (!supabase) {
+                tg.showAlert("❌ Canal de datos inactivo.");
+                return;
+            }
 
             const { data: licencia, error } = await supabase
                 .from('licenses')
@@ -883,7 +913,10 @@
                 .eq('license_key', inputKey)
                 .eq('is_used', false);
 
-            if (error || !licencia || licencia.length === 0) return tg.showAlert("❌ Firma inválida o consumida por otra ID.");
+            if (error || !licencia || licencia.length === 0) {
+                tg.showAlert("❌ Firma inválida o consumida por otra ID.");
+                return;
+            }
 
             const lic = licencia[0];
             await supabase.from('licenses').update({
@@ -1020,8 +1053,11 @@
                 referrer: appState.userId, origin_chat: appState.chatInstance
             };
 
-            const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload))))
-                .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+            // Codificación UTF-8 segura para Base64
+            const jsonStr = JSON.stringify(payload);
+            const b64 = btoa(encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+                return String.fromCharCode('0x' + p1);
+            })).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
                 
             const deepLinkFinal = `https://t.me/${botUsername}/app?startapp=${b64}`;
             let mensajeCompartir = `🔥 *⚡ DATALOCK DETECTED ⚡* 🔥\n\nDistribuyendo acceso para: *${camp.titulo}*.\n📥 Sincroniza tu ID de red aquí para reclamar la copia segura:`;
@@ -1063,6 +1099,7 @@
 
         function cerrarModalPerfil(event) {
             event.stopPropagation();
+            document.getElementById("modal-perfil-usuario").classList.remove("remove");
             document.getElementById("modal-perfil-usuario").classList.remove("active");
         }
 
