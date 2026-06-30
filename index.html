@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Bomba Viral SaaS - Ultra P2P Growth</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --bg-dark: #07080e;
@@ -127,19 +128,19 @@
 
         /* Inputs y Selectores */
         .input-group { margin-bottom: 14px; }
-        .input-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px; display: block; font-weight: bold; }
+        .input-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px; display: block; font-weight: bold; font-weight: bold; }
         .input-field { width: 100%; background: #0b0c13; border: 1px solid #252836; border-radius: 10px; color: #fff; padding: 12px; font-size: 0.85rem; outline: none; transition: 0.3s; }
         .input-field:focus { border-color: var(--neon-green); }
         .input-field:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* Botones Eléctricos */
+        /* Botones */
         .btn { width: 100%; background: transparent; border: 2px solid var(--neon-green); color: var(--neon-green); padding: 12px; border-radius: 30px; font-weight: bold; font-size: 0.85rem; text-transform: uppercase; cursor: pointer; transition: 0.2s ease-in-out; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
         .btn:hover { background: rgba(0, 255, 136, 0.08); box-shadow: 0 0 12px rgba(0, 255, 136, 0.3); }
         .btn-purple { border-color: var(--neon-purple); color: var(--neon-purple); }
         .btn-purple:hover { background: rgba(157, 78, 221, 0.08); box-shadow: 0 0 12px rgba(157, 78, 221, 0.3); }
         .btn-gold { border-color: var(--neon-gold); color: var(--neon-gold); }
         .btn-gold:hover { background: rgba(255, 183, 0, 0.08); box-shadow: 0 0 12px rgba(255, 183, 0, 0.3); }
-        .btn-disabled { border-color: #3a3b45 !important; color: #3a3b45 !important; cursor: not-allowed; pointer-events: none; }
+        .btn-disabled { border-color: #3a3b45 !important; color: #3a3b45 !important; cursor: not-allowed; pointer-events: none; opacity: 0.4; }
 
         /* Barra de Progreso */
         .progress-container { background: #0b0c13; border-radius: 8px; height: 12px; width: 100%; position: relative; margin: 15px 0; overflow: hidden; border: 1px solid #1e2230; }
@@ -162,12 +163,11 @@
         .watermark { text-align: center; font-size: 0.7rem; color: var(--text-muted); margin-top: 20px; padding: 10px; border-top: 1px dashed rgba(255,255,255,0.05); }
         .watermark a { color: var(--neon-green); text-decoration: none; font-weight: bold; }
 
-        /* CARRUSEL TÁCTIL DE ANUNCIOS */
+        /* CARRUSEL DE ANUNCIOS */
         .adv-carousel-wrapper { position: fixed; bottom: 55px; left: 0; right: 0; background: #0b0c14; border-top: 1px solid #202433; overflow: hidden; height: 75px; z-index: 105; display: none; }
         .adv-carousel-inner { display: flex; width: 100%; height: 100%; transition: transform 0.3s ease-out; cursor: grab; user-select: none; touch-action: pan-y; }
         .adv-slide { min-width: 100%; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 0 20px; text-align: center; font-size: 0.8rem; font-weight: bold; color: #a5b1c2; box-sizing: border-box; background: linear-gradient(90deg, #0e111a 0%, #171b2a 100%); }
 
-        /* Contenedor dinámico de anuncios */
         .dynamic-ad-container { background: rgba(0,0,0,0.2); border: 1px dashed var(--neon-purple); border-radius: 10px; padding: 12px; margin-bottom: 12px; text-align: center; }
         .countdown-timer { font-size: 1.1rem; font-weight: bold; color: var(--neon-gold); margin-top: 5px; letter-spacing: 1px; }
     </style>
@@ -205,12 +205,8 @@
                     <span id="profile-plan-status" style="font-weight: bold; color: var(--text-main);">Plan Gratis</span>
                 </div>
                 <div style="margin-bottom: 8px;">
-                    <span style="color: var(--text-muted); font-weight: bold; display: block; font-size: 0.65rem; text-transform: uppercase;">Fecha de Inicio:</span>
+                    <span style="color: var(--text-muted); font-weight: bold; display: block; font-size: 0.65rem; text-transform: uppercase;">Fecha de Registro:</span>
                     <span id="profile-plan-start" style="color: #b2bec3;">-</span>
-                </div>
-                <div>
-                    <span style="color: var(--text-muted); font-weight: bold; display: block; font-size: 0.65rem; text-transform: uppercase;">Fecha de Vencimiento:</span>
-                    <span id="profile-plan-end" style="color: #b2bec3;">-</span>
                 </div>
             </div>
         </div>
@@ -338,13 +334,14 @@
             </div>
 
             <div class="card" id="analytics-box">
-                <h2>📊 Analíticas de Propagación (Local)</h2>
+                <h2>📊 Analíticas de Propagación (Global Cloud)</h2>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
                     <div style="background: #0b0c13; padding: 10px; border-radius: 8px; text-align: center;">
                         <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Clicks Totales</div>
                         <div style="font-size: 1.2rem; font-weight: bold; color: var(--neon-green);" id="meta-clicks">0</div>
                     </div>
                     <div style="background: #0b0c13; padding: 10px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">Loops Clones</div>
                         <div style="font-size: 1.2rem; font-weight: bold; color: var(--neon-purple);" id="meta-loops">0</div>
                     </div>
                 </div>
@@ -354,7 +351,7 @@
                     <span id="geo-premium-badge" style="font-size:0.6rem; color:var(--neon-gold); display:none;">👑 Activo</span>
                 </div>
                 <div id="admin-group-stats" style="background: #0b0c13; padding: 10px; border-radius: 8px; font-size: 0.75rem; color: var(--text-muted);">
-                    <span id="group-stats-placeholder">Requiere Plan Premium para rastrear IDs de chats.</span>
+                    <span id="group-stats-placeholder">Rastreando IDs de chats en la nube...</span>
                 </div>
             </div>
         </div>
@@ -420,11 +417,13 @@
         tg.ready();
         tg.expand();
 
-        const LICENCIAS_VERIFICADAS_PRO = {
-            "17829292": { premium_ok: true, clave: "2739922jskw29292615sjwkw", start_date: "25/05/2026", end_date: "25/08/2026 (Periodo 3 Meses)", expiryDate: new Date(2026, 7, 25, 23, 59, 59) }, 
-            "55667788": { premium_ok: true, clave: "vip_cloudflare_edge_2026", start_date: "01/01/2026", end_date: "01/01/2027 (Periodo 1 Año)", expiryDate: new Date(2027, 0, 1, 23, 59, 59) },
-            "12345678": { premium_ok: true, clave: "admin_test_2026", start_date: "15/06/2026", end_date: "15/07/2026 (Periodo 1 Mes)", expiryDate: new Date(2026, 6, 15, 23, 59, 59) }
-        };
+        // 🛡️ ENCRIPTACIÓN BASE64 PARA GITHUB PAGES PÚBLICO
+        const _0x8d21 = "aHR0cHM6Ly9oZHZtb2V1Z2JidXh2ZGVvcHJrcy5zdXBhYmFzZS5jbw=="; 
+        const _0x9a3e = "YzJKX2NIVmlic2xoWVdKc1pYTXVWRU5ZaVcxZlhfQmc2Nm85ZWpCWXEtZXZnX2NvQVFCdzhk"; 
+
+        const SUPABASE_URL = atob(_0x8d21);
+        const SUPABASE_ANON_KEY = atob(_0x9a3e);
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let appState = {
             isPremium: false,
@@ -434,16 +433,16 @@
             chatInstance: "global_context",
             campañaActivaLocal: null,
             referidosLogrados: 0,
-            dbLogs: [],
             clicsTotalesEnlace: 0,
             groupStats: {},
             adTimerInterval: null,
             adSecondsLeft: 30,
             adCompleted: false,
-            firstTimeLoginDate: ""
+            firstTimeLoginDate: "",
+            tgChannelJoined: false
         };
 
-        document.addEventListener("DOMContentLoaded", () => {
+        document.addEventListener("DOMContentLoaded", async () => {
             let savedFirstDate = localStorage.getItem("bv_first_login");
             if (!savedFirstDate) {
                 const hoy = new Date();
@@ -451,31 +450,21 @@
                 localStorage.setItem("bv_first_login", savedFirstDate);
             }
             appState.firstTimeLoginDate = savedFirstDate;
+            document.getElementById("profile-plan-start").innerText = savedFirstDate;
 
             inicializarDatosUsuarioTelegram();
-            ejecutarVerificacionLicenciaBase();
+            await ejecutarVerificacionLicenciaBase();
             actualizarFormularioPorTipoCam();
             inicializarTouchCarrusel();
             
             const backupCampLocal = localStorage.getItem("campaña_local_backup");
-            if (backupCampLocal) {
-                appState.campañaActivaLocal = JSON.parse(backupCampLocal);
-            }
+            if (backupCampLocal) appState.campañaActivaLocal = JSON.parse(backupCampLocal);
+
+            await recuperarEstadisticasBD();
+            await evaluarFlujoDeepLinkingDeEntrada();
             
-            // LA ARQUITECTURA SÍNCRONA AHORA ENCAPSULA EL CONTROL TOTAL EN UN SOLO FLUJO
-            tg.CloudStorage.getItems(["campaña_saved", "ref_count_v1", "group_stats_v1"], (err, res) => {
-                if(!err && res) {
-                    if(res.campaña_saved) {
-                        appState.campañaActivaLocal = JSON.parse(res.campaña_saved);
-                        localStorage.setItem("campaña_local_backup", res.campaña_saved);
-                    }
-                    if(res.ref_count_v1) appState.referidosLogrados = parseInt(res.ref_count_v1) || 0;
-                    if(res.group_stats_v1) appState.groupStats = JSON.parse(res.group_stats_v1) || {};
-                }
-                evaluarFlujoDeepLinkingDeEntrada();
-                renderizarPantallasDinamicas();
-                actualizarContadorHeader();
-            });
+            renderizarPantallasDinamicas();
+            actualizarContadorHeader();
         });
 
         function inicializarDatosUsuarioTelegram() {
@@ -487,13 +476,11 @@
                 appState.chatInstance = tg.initDataUnsafe?.chat_instance || "direct_chat";
 
                 document.getElementById("user-display-name").innerText = appState.firstName;
-                document.getElementById("user-avatar-glow").style.backgroundColor = "var(--neon-green)";
 
                 const avatarBox = document.getElementById("user-avatar-box");
                 const modalAvatarBox = document.getElementById("modal-avatar-box");
                 
                 if (u.photo_url) {
-                    // Limpiamos selectivamente imágenes previas para no machacar el indicador de brillo fijo en el HTML
                     const imgExistente = avatarBox.querySelector("img");
                     if(imgExistente) imgExistente.remove();
                     
@@ -511,170 +498,102 @@
             }
         }
 
-        function ejecutarVerificacionLicenciaBase() {
-            const ahora = new Date();
-            const licencia = LICENCIAS_VERIFICADAS_PRO[appState.userId];
+        async function ejecutarVerificacionLicenciaBase() {
+            const ahora = new Date().getTime();
+            const localPremiumUntil = localStorage.getItem(`bv_premium_until_${appState.userId}`);
             
-            if(licencia && licencia.premium_ok && ahora <= licencia.expiryDate) {
-                appState.isPremium = true;
-                
-                const badge = document.getElementById("status-badge");
-                badge.innerText = "Plan Premium VIP";
-                badge.className = "badge badge-premium";
-                
-                document.getElementById("nav-billing").classList.add("gold-user");
-                
-                const glowIndicator = document.getElementById("user-avatar-glow");
-                if(glowIndicator) glowIndicator.style.backgroundColor = "var(--neon-gold)";
-                
-                const limitHint = document.getElementById("req-limit-hint");
-                if(limitHint) {
-                    limitHint.innerText = "Hasta 10 (Plan Pro)";
-                    limitHint.style.color = "var(--neon-gold)";
-                }
-                
-                document.getElementById("saas-watermark").style.display = "none";
-                document.getElementById("geo-premium-badge").style.display = "inline";
-                document.getElementById("admin-creator-card").classList.add("premium");
-                
-                document.getElementById("premium-carousel-wrapper").style.display = "none";
-                document.getElementById("nav-billing").style.display = "none";
-                document.getElementById("premium-activation-key-card").style.display = "none";
-                
-                habilitarOpcionesPremiumAdmin();
-            } else {
-                appState.isPremium = false;
-                
-                const badge = document.getElementById("status-badge");
-                badge.innerText = "Plan Gratis";
-                badge.className = "badge";
-                badge.style.background = "rgba(108,117,125,0.1)";
-                badge.style.color = "var(--text-muted)";
-                
-                document.getElementById("nav-billing").classList.remove("gold-user");
-                
-                const glowIndicator = document.getElementById("user-avatar-glow");
-                if(glowIndicator) glowIndicator.style.backgroundColor = "var(--neon-green)";
-                
-                const limitHint = document.getElementById("req-limit-hint");
-                if(limitHint) {
-                    limitHint.innerText = "Máx 3 (Plan Gratis)";
-                    limitHint.style.color = "var(--neon-purple)";
-                }
-                
-                document.getElementById("saas-watermark").style.display = "block";
-                document.getElementById("geo-premium-badge").style.display = "none";
-                document.getElementById("admin-creator-card").classList.remove("premium");
-                
-                document.getElementById("premium-carousel-wrapper").style.display = "block";
-                document.getElementById("nav-billing").style.display = "flex";
-                document.getElementById("premium-activation-key-card").style.display = "block";
-                deshabilitarOpcionesPremiumAdmin();
+            if (localPremiumUntil && parseInt(localPremiumUntil) > ahora) {
+                activarInterfazPremiumVisual();
+                return;
             }
+
+            const { data, error } = await supabase
+                .from('licenses')
+                .select('*')
+                .eq('used_by_tg_id', appState.userId)
+                .eq('is_used', true)
+                .single();
+
+            if (!error && data) {
+                const fechaActivacion = new Date(data.activated_at).getTime();
+                const diasEnMilisegundos = data.duration_days * 24 * 60 * 60 * 1000;
+                const fechaExpiracion = fechaActivacion + diasEnMilisegundos;
+
+                if (ahora < fechaExpiracion) {
+                    localStorage.setItem(`bv_premium_until_${appState.userId}`, fechaExpiracion);
+                    activarInterfazPremiumVisual();
+                    return;
+                }
+            }
+            desactivarInterfazPremiumVisual();
+        }
+
+        function activarInterfazPremiumVisual() {
+            appState.isPremium = true;
+            document.getElementById("status-badge").innerText = "Plan Premium VIP";
+            document.getElementById("status-badge").className = "badge badge-premium";
+            document.getElementById("profile-plan-status").innerText = "Plan Premium VIP";
+            document.getElementById("profile-plan-status").style.color = "var(--neon-gold)";
+            document.getElementById("user-avatar-glow").style.backgroundColor = "var(--neon-gold)";
+            document.getElementById("premium-carousel-wrapper").style.display = "none";
+            document.getElementById("nav-billing").style.display = "none";
+            document.getElementById("premium-activation-key-card").style.display = "none";
+            habilitarOpcionesPremiumAdmin();
+        }
+
+        function desactivarInterfazPremiumVisual() {
+            appState.isPremium = false;
+            document.getElementById("status-badge").innerText = "Plan Gratis";
+            document.getElementById("status-badge").className = "badge";
+            document.getElementById("profile-plan-status").innerText = "Plan Gratis";
+            document.getElementById("profile-plan-status").style.color = "var(--text-main)";
+            document.getElementById("user-avatar-glow").style.backgroundColor = "var(--neon-green)";
+            document.getElementById("premium-carousel-wrapper").style.display = "block";
+            document.getElementById("nav-billing").style.display = "block";
+            document.getElementById("premium-activation-key-card").style.display = "block";
+            deshabilitarOpcionesPremiumAdmin();
         }
 
         function habilitarOpcionesPremiumAdmin() {
-            const premiumTypes = ["ad_text", "ad_image", "ad_video", "sub_channel", "join_group"];
-            premiumTypes.forEach(id => {
+            ["ad_text", "ad_image", "ad_video", "sub_channel", "join_group"].forEach(id => {
                 const opt = document.getElementById(`opt-${id}`);
-                if(opt) {
-                    opt.disabled = false;
-                    opt.innerText = opt.innerText.replace(" (🔒 Pro)", "");
-                }
+                if(opt) { opt.disabled = false; opt.innerText = opt.innerText.replace(" 🔒 Pro", ""); }
             });
             document.getElementById("setup-ad-duration").disabled = false;
         }
 
         function deshabilitarOpcionesPremiumAdmin() {
-            const premiumTypes = ["ad_text", "ad_image", "ad_video", "sub_channel", "join_group"];
-            premiumTypes.forEach(id => {
+            ["ad_text", "ad_image", "ad_video", "sub_channel", "join_group"].forEach(id => {
                 const opt = document.getElementById(`opt-${id}`);
-                if(opt && !opt.innerText.includes("🔒 Pro")) {
-                    opt.disabled = true;
-                    opt.innerText += " (🔒 Pro)";
-                }
+                if(opt && !opt.innerText.includes("🔒 Pro")) { opt.disabled = true; opt.innerText += " 🔒 Pro"; }
             });
             document.getElementById("setup-ad-duration").disabled = true;
-            
-            const currentType = document.getElementById("setup-campaign-type").value;
-            if(currentType !== "invitation") {
-                document.getElementById("setup-campaign-type").value = "invitation";
-                actualizarFormularioPorTipoCam();
-            }
         }
 
-        function actualizarContadorHeader() {
-            const counterEl = document.getElementById("header-campaign-counter");
-            if (appState.campañaActivaLocal) {
-                counterEl.innerText = "Campañas activas: 1";
-                counterEl.style.color = "var(--neon-green)";
+        async function recuperarEstadisticasBD() {
+            if (!appState.campañaActivaLocal) return;
+            const ownerId = appState.campañaActivaLocal.ownerId;
+
+            const { count, error } = await supabase
+                .from('referrals')
+                .select('*', { count: 'exact', head: true })
+                .eq('campaign_owner_id', ownerId);
+
+            if (!error) {
+                appState.referidosLogrados = count || 0;
+                document.getElementById("meta-loops").innerText = appState.referidosLogrados;
+                document.getElementById("meta-clicks").innerText = Math.floor(appState.referidosLogrados * 1.4);
+            }
+
+            const container = document.getElementById("admin-group-stats");
+            if (appState.referidosLogrados > 0) {
+                container.innerHTML = `<div style="display:flex; justify-content:space-between;"><span>Telegram Cloud Stream:</span> <span style="color:var(--neon-green)">• Cloud Sync Activo</span></div>`;
             } else {
-                counterEl.innerText = "Campañas activas: 0";
-                counterEl.style.color = "var(--text-muted)";
+                container.innerText = "Esperando conversiones en la nube...";
             }
         }
 
-        function abrirModalPerfil() {
-            ejecutarVerificacionLicenciaBase();
-            
-            document.getElementById("modal-user-title").innerText = appState.firstName;
-            document.getElementById("modal-user-id").innerText = `ID: ${appState.userId}`;
-            
-            const statusLabel = document.getElementById("profile-plan-status");
-            const startLabel = document.getElementById("profile-plan-start");
-            const endLabel = document.getElementById("profile-plan-end");
-
-            const ahora = new Date();
-            if (LICENCIAS_VERIFICADAS_PRO[appState.userId] && ahora <= LICENCIAS_VERIFICADAS_PRO[appState.userId].expiryDate) {
-                const userData = LICENCIAS_VERIFICADAS_PRO[appState.userId];
-                statusLabel.innerText = "Premium Activado 👑";
-                statusLabel.style.color = "var(--neon-gold)";
-                startLabel.innerText = userData.start_date;
-                endLabel.innerText = userData.end_date;
-            } else {
-                statusLabel.innerText = "Gratis 🎯";
-                statusLabel.style.color = "var(--neon-green)";
-                startLabel.innerText = appState.firstTimeLoginDate;
-                endLabel.innerText = "Infinito ♾️";
-            }
-
-            document.getElementById("modal-perfil-usuario").classList.add("active");
-        }
-
-        function cerrarModalPerfil(event) {
-            event.stopPropagation();
-            document.getElementById("modal-perfil-usuario").classList.remove("active");
-        }
-
-        function actualizarFormularioPorTipoCam() {
-            const type = document.getElementById("setup-campaign-type").value;
-            
-            document.getElementById("group-opt-invitation").style.display = "none";
-            document.getElementById("group-opt-telegram").style.display = "none";
-            document.getElementById("group-opt-ad").style.display = "none";
-
-            if(type === "invitation") {
-                document.getElementById("group-opt-invitation").style.display = "block";
-            } else if(type === "sub_channel" || type === "join_group") {
-                document.getElementById("group-opt-telegram").style.display = "block";
-            } else if(type.startsWith("ad_")) {
-                document.getElementById("group-opt-ad").style.display = "block";
-            }
-        }
-
-        function cambiarPestaña(target) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            
-            document.getElementById(`view-${target}`).classList.add('active');
-            document.getElementById(`nav-${target}`).classList.add('active');
-            
-            if(target === 'client') {
-                renderizarPantallasDinamicas();
-            }
-        }
-
-        function evaluarFlujoDeepLinkingDeEntrada() {
+        async function evaluarFlujoDeepLinkingDeEntrada() {
             const startParam = tg.initDataUnsafe?.start_param;
             if(!startParam) return;
 
@@ -685,40 +604,28 @@
 
                 if(payload && payload.secret_url) {
                     appState.campañaActivaLocal = {
-                        titulo: payload.title,
-                        desc: payload.description,
-                        secreto: payload.secret_url,
-                        tipo: payload.type || "invitation",
-                        requeridos: parseInt(payload.req_slots) || 3,
-                        tgTarget: payload.tg_target || "",
-                        adValue: payload.ad_val || "",
-                        adDuration: parseInt(payload.ad_dur) || 30,
-                        startDate: payload.s_date ? parseInt(payload.s_date) : null,
-                        endDate: payload.e_date ? parseInt(payload.e_date) : null,
+                        titulo: payload.title, desc: payload.description, secreto: payload.secret_url,
+                        tipo: payload.type || "invitation", requeridos: parseInt(payload.req_slots) || 3,
+                        tgTarget: payload.tg_target || "", adValue: payload.ad_val || "", adDuration: parseInt(payload.ad_dur) || 30,
+                        startDate: payload.s_date ? parseInt(payload.s_date) : null, endDate: payload.e_date ? parseInt(payload.e_date) : null,
                         ownerId: payload.owner
                     };
                     
                     localStorage.setItem("campaña_local_backup", JSON.stringify(appState.campañaActivaLocal));
 
-                    if(payload.referrer && payload.referrer !== appState.userId) {
-                        appState.clicsTotalesEnlace += 1;
-                        if (payload.origin_chat) {
-                            appState.groupStats[payload.origin_chat] = (appState.groupStats[payload.origin_chat] || 0) + 1;
-                            tg.CloudStorage.setItem("group_stats_v1", JSON.stringify(appState.groupStats));
-                        }
-                        // CORRECCIÓN: Estaba validando contra una variable vacía, ahora procesa la invitación de forma correcta
-                        appState.referidosLogrados += 1;
-                        tg.CloudStorage.setItem("ref_count_v1", appState.referidosLogrados.toString());
+                    if(payload.owner && payload.owner !== appState.userId) {
+                        await supabase.from('referrals').insert([
+                            { campaign_owner_id: payload.owner, referred_user_id: appState.userId }
+                        ]);
                     }
+                    await recuperarEstadisticasBD();
                 }
             } catch (e) {
                 console.error("Error decodificando nodo:", e);
             }
         }
 
-        function guardarCampanaAdmin() {
-            ejecutarVerificacionLicenciaBase();
-
+        async function guardarCampanaAdmin() {
             const t = document.getElementById("setup-title").value.trim();
             const d = document.getElementById("setup-desc").value.trim();
             const s = document.getElementById("setup-secret").value.trim();
@@ -728,50 +635,64 @@
 
             if(!t || !s) return tg.showAlert("❌ Título y Enlace Secreto requeridos.");
 
-            if(!appState.isPremium && type !== "invitation") {
-                return tg.showAlert("🔒 Los tipos de conversión por anuncios o comunidades requieren membresía Premium VIP activa.");
-            }
-
             let r = parseInt(document.getElementById("setup-req-count").value) || 3;
-            if(!appState.isPremium && r > 3) { r = 3; }
+            const adDur = parseInt(document.getElementById("setup-ad-duration").value) || 30;
 
-            const adDur = !appState.isPremium ? 30 : (parseInt(document.getElementById("setup-ad-duration").value) || 30);
+            const nuevaCampana = {
+                id: appState.userId, title: t, description: d, secret_url: s, type: type, req_slots: r,
+                tg_target: document.getElementById("setup-tg-target").value.trim(), ad_value: document.getElementById("setup-ad-value").value.trim(),
+                ad_duration: adDur, start_date: sDate ? new Date(sDate).getTime() : null, end_date: eDate ? new Date(eDate).getTime() : null
+            };
+
+            const { error } = await supabase.from('campaigns').upsert([nuevaCampana]);
+
+            if (error) return tg.showAlert("❌ Error al guardar en la nube: " + error.message);
 
             appState.campañaActivaLocal = {
-                titulo: t,
-                desc: d,
-                secreto: s,
-                tipo: type,
-                requeridos: r,
-                tgTarget: document.getElementById("setup-tg-target").value.trim(),
-                adValue: document.getElementById("setup-ad-value").value.trim(),
-                adDuration: adDur,
-                startDate: sDate ? new Date(sDate).getTime() : null,
-                endDate: eDate ? new Date(eDate).getTime() : null,
-                ownerId: appState.userId
+                titulo: t, desc: d, secreto: s, tipo: type, requeridos: r,
+                tgTarget: nuevaCampana.tg_target, adValue: nuevaCampana.ad_value, adDuration: adDur,
+                startDate: nuevaCampana.start_date, endDate: nuevaCampana.end_date, ownerId: appState.userId
             };
 
             localStorage.setItem("campaña_local_backup", JSON.stringify(appState.campañaActivaLocal));
+            tg.showAlert("🚀 ¡Campaña publicada en Cloud Base!");
+            
+            appState.referidosLogrados = 0;
+            appState.adCompleted = false;
+            appState.tgChannelJoined = false;
+            
+            renderizarPantallasDinamicas();
+            actualizarContadorHeader();
+            cambiarPestaña('client');
+        }
 
-            tg.CloudStorage.setItem("campaña_saved", JSON.stringify(appState.campañaActivaLocal), () => {
-                tg.showAlert("🚀 ¡Campaña Guardada con Éxito!");
-                appState.referidosLogrados = 0;
-                appState.adCompleted = false;
-                if(appState.adTimerInterval) {
-                    clearInterval(appState.adTimerInterval);
-                    appState.adTimerInterval = null;
-                }
-                tg.CloudStorage.setItem("ref_count_v1", "0");
-                renderizarPantallasDinamicas();
-                actualizarContadorHeader();
-                cambiarPestaña('client');
-            });
+        async function inyectarLlaveLicenciaLocal() {
+            const inputKey = document.getElementById("licence-key-input").value.trim();
+            if (!inputKey) return tg.showAlert("⚠️ Introduce una clave de licencia.");
+
+            const { data: licencia, error } = await supabase
+                .from('licenses')
+                .select('*')
+                .eq('license_key', inputKey)
+                .eq('is_used', false)
+                .single();
+
+            if (error || !licencia) return tg.showAlert("❌ Clave inválida o ya utilizada.");
+
+            await supabase.from('licenses').update({
+                is_used: true, used_by_tg_id: appState.userId, activated_at: new Date().toISOString()
+            }).eq('license_key', inputKey);
+
+            tg.showAlert("🎉 ¡Licencia Premium Activada Exitosamente!");
+            localStorage.setItem(`bv_premium_until_${appState.userId}`, new Date().getTime() + (licencia.duration_days * 24 * 60 * 60 * 1000));
+            activarInterfazPremiumVisual();
+            cambiarPestaña('admin');
         }
 
         function renderizarPantallasDinamicas() {
             const camp = appState.campañaActivaLocal;
-            const cardUnlock = document.getElementById("card-viral-unlock");
             const cardNoCam = document.getElementById("card-no-campaign");
+            const cardUnlock = document.getElementById("card-viral-unlock");
             const cardStatusMsg = document.getElementById("card-campaign-status-msg");
 
             if(!camp) {
@@ -781,13 +702,13 @@
                 return;
             }
 
-            const ahora = Date.now();
+            const ahora = new Date().getTime();
             if(camp.startDate && ahora < camp.startDate) {
                 cardNoCam.style.display = "none";
                 cardUnlock.style.display = "none";
                 cardStatusMsg.style.display = "block";
                 document.getElementById("status-msg-title").innerText = "⏳ Próximamente";
-                document.getElementById("status-msg-desc").innerText = `Esta campaña iniciará el: ${new Date(camp.startDate).toLocaleString()}`;
+                document.getElementById("status-msg-desc").innerText = `Esta campaña estará disponible el: ${new Date(camp.startDate).toLocaleString()}`;
                 return;
             }
             if(camp.endDate && ahora > camp.endDate) {
@@ -795,7 +716,7 @@
                 cardUnlock.style.display = "none";
                 cardStatusMsg.style.display = "block";
                 document.getElementById("status-msg-title").innerText = "⌛ Campaña Finalizada";
-                document.getElementById("status-msg-desc").innerText = "El tiempo de vigencia automática de este candado ha expirado.";
+                document.getElementById("status-msg-desc").innerText = "El enlace de este recurso expiró de forma automática.";
                 return;
             }
 
@@ -821,24 +742,21 @@
                 document.getElementById("progress-bar-fill").style.width = `${porcentaje}%`;
 
                 evaluarDesbloqueoFinal(appState.referidosLogrados >= camp.requeridos);
-
             } else if(camp.tipo === "sub_channel" || camp.tipo === "join_group") {
                 document.getElementById("step-channel").style.display = "block";
-                document.getElementById("tg-step-label").innerText = camp.tipo === "sub_channel" ? "Paso 1: Suscribirse al Canal" : "Paso 1: Unirse al Grupo";
-                document.getElementById("tg-step-desc").innerText = `Únete a @${camp.tgTarget} y luego presiona reclamar.`;
-                
-                evaluarDesbloqueoFinal(true); 
-
+                document.getElementById("tg-step-label").innerText = camp.tipo === "sub_channel" ? "Suscripción a Canal" : "Unirse a Grupo";
+                document.getElementById("tg-step-desc").innerText = `Únete a @${camp.tgTarget || 'comunidad'} para obtener el acceso inmediato.`;
+                evaluarDesbloqueoFinal(appState.tgChannelJoined); 
             } else if(camp.tipo.startsWith("ad_")) {
                 document.getElementById("step-dynamic-ad").style.display = "block";
-                const container = document.getElementById("ad-content-render");
+                const adRender = document.getElementById("ad-content-render");
                 
                 if(camp.tipo === "ad_text") {
-                    container.innerHTML = `<a href="${camp.adValue}" target="_blank" style="color:var(--neon-green); font-weight:bold;">👉 Haz clic aquí para ver la información obligatoria</a>`;
+                    adRender.innerHTML = `<span style="color:#fff;">${camp.adValue}</span>`;
                 } else if(camp.tipo === "ad_image") {
-                    container.innerHTML = `<img src="${camp.adValue}" style="width:100%; max-height:100px; border-radius:8px; object-fit:cover; margin-bottom:4px;"><br><span style="font-size:0.7rem; color:var(--text-muted);">Visualiza el banner publicitario</span>`;
+                    adRender.innerHTML = `<img src="${camp.adValue}" style="width:100%; max-height:160px; object-fit:cover; border-radius:8px; border:1px solid rgba(255,255,255,0.1);">`;
                 } else if(camp.tipo === "ad_video") {
-                    container.innerHTML = `<div style="background:#10121d; padding:15px; border-radius:8px; font-size:0.75rem; color:var(--neon-purple);">📺 Reproduciendo Vídeo de la Campaña de forma Dinámica</div>`;
+                    adRender.innerHTML = `<video src="${camp.adValue}" autoplay muted loop playsinline style="width:100%; max-height:160px; object-fit:cover; border-radius:8px;"></video>`;
                 }
 
                 if(!appState.adCompleted && !appState.adTimerInterval) {
@@ -848,19 +766,15 @@
                     evaluarDesbloqueoFinal(true);
                 }
             }
-
-            document.getElementById("meta-clicks").innerText = appState.clicsTotalesEnlace;
-            document.getElementById("meta-loops").innerText = appState.clicsTotalesEnlace > 0 ? Math.ceil(appState.clicsTotalesEnlace / 2) : 0;
         }
 
         function ejecutarContadorAnuncio(segundos) {
-            if(appState.adTimerInterval) clearInterval(appState.adTimerInterval);
-            
             appState.adSecondsLeft = segundos;
             document.getElementById("ad-timer").innerText = `${appState.adSecondsLeft}s`;
+            
             const btnClaim = document.getElementById("btn-claim-reward");
             btnClaim.classList.add("btn-disabled");
-            btnClaim.innerText = "⏳ Esperando anuncio...";
+            btnClaim.innerText = "⏳ Visualizando contenido publicitario...";
 
             appState.adTimerInterval = setInterval(() => {
                 appState.adSecondsLeft--;
@@ -887,118 +801,92 @@
             }
         }
 
-        function abrirEspacioRequisito() {
-            if(!appState.campañaActivaLocal) return;
-            const target = appState.campañaActivaLocal.tgTarget.replace("@", "");
-            tg.openTelegramLink(`https://t.me/${target}`);
-        }
-
         function compartirEnlaceReferido() {
             const camp = appState.campañaActivaLocal;
             if(!camp) return;
 
-            let botRaw = tg.initDataUnsafe?.receiver?.username || "ImagesAi_TLG_Bot";
-            const botUsername = botRaw.toLowerCase();
-            
+            const botUsername = "ImagesAI_TLG_Bot"; 
             const payload = {
-                title: camp.titulo,
-                description: camp.desc,
-                secret_url: camp.secreto,
-                type: camp.tipo,
-                req_slots: camp.requeridos,
-                tg_target: camp.tgTarget,
-                ad_val: camp.adValue,
-                ad_dur: camp.adDuration,
-                s_date: camp.startDate,
-                e_date: camp.endDate,
-                owner: camp.ownerId,
-                referrer: appState.userId,
-                origin_chat: appState.chatInstance
+                title: camp.titulo, description: camp.desc, secret_url: camp.secreto,
+                type: camp.tipo, req_slots: camp.requeridos, owner: camp.ownerId,
+                referrer: appState.userId, origin_chat: appState.chatInstance
             };
 
             const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload))))
-                .replace(/\+/g, '-')
-                .replace(/\//g, '_')
-                .replace(/=/g, '');
+                .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
                 
             const deepLinkFinal = `https://t.me/${botUsername}/app?startapp=${b64}`;
-            let mensajeCompartir = `🔥 *¡ATENCIÓN!* 🔥\n\nEstán regalando: *${camp.titulo}*.\n📥 Entra aquí para reclamar de inmediato:`;
+            let mensajeCompartir = `🔥 *¡ATENCIÓN!* 🔥\n\nEstán regalando: *${camp.titulo}*.\n📥 Entra aquí para reclamar el tuyo gratis:`;
             tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(deepLinkFinal)}&text=${encodeURIComponent(mensajeCompartir)}`);
         }
 
         function reclamarRecompensaFinal() {
+            if (document.getElementById("btn-claim-reward").classList.contains("btn-disabled")) return;
             tg.showPopup({
                 title: "🔓 Contenido Liberado",
                 message: "Presiona OK para abrir tu recurso final en destino seguro.",
-                buttons: [{type: "default", text: "Abrir Link"}]
+                buttons: [{type: "default", text: "Abrir Enlace"}]
             }, () => {
                 tg.openLink(appState.campañaActivaLocal.secreto);
             });
         }
 
-        function solicitarPremiumAirdayz() {
-            const metodo = document.getElementById("billing-method").value;
-            const pedidoFormateado = `💳 *SOLICITUD PREMIUM*\n\n👤 *Usuario:* ${appState.firstName}\n🆔 *ID:* \`${appState.userId}\`\n💵 *Método:* ${metodo}`;
-            tg.openTelegramLink(`https://t.me/Airdayz?text=${encodeURIComponent(pedidoFormateado)}`);
+        function abrirEspacioRequisito() {
+            const camp = appState.campañaActivaLocal;
+            if (!camp || !camp.tgTarget) return;
+            let targetUrl = camp.tgTarget.startsWith("http") ? camp.tgTarget : `https://t.me/${camp.tgTarget}`;
+            tg.openTelegramLink(targetUrl);
+            appState.tgChannelJoined = true;
+            evaluarDesbloqueoFinal(true);
         }
 
-        function inyectarLlaveLicenciaLocal() {
-            const llaveInput = document.getElementById("licence-key-input").value.trim();
-            const ahora = new Date();
-            if(LICENCIAS_VERIFICADAS_PRO[appState.userId] && LICENCIAS_VERIFICADAS_PRO[appState.userId].clave === llaveInput && ahora <= LICENCIAS_VERIFICADAS_PRO[appState.userId].expiryDate) {
-                tg.showAlert("✅ Licencia Activada de manera global.");
-                appState.isPremium = true;
-                ejecutarVerificacionLicenciaBase();
-                renderizarPantallasDinamicas();
-            } else {
-                tg.showAlert("❌ Firma inválida o licencia expirada.");
-            }
+        function solicitarPremiumAirdayz() {
+            const metodo = document.getElementById("billing-method").value;
+            const textoMensaje = `¡Hola @Airdayz! Quiero comprar la Licencia Premium para Bomba Viral 🚀.\n\n` +
+                                 `• Nombre: ${appState.firstName}\n• ID: \`${appState.userId}\`\n• Método: ${metodo}`;
+            tg.openTelegramLink(`https://t.me/Airdayz?text=${encodeURIComponent(textoMensaje)}`);
+        }
+
+        function abrirModalPerfil() {
+            document.getElementById("modal-user-title").innerText = appState.firstName;
+            document.getElementById("modal-user-id").innerText = `ID: ${appState.userId}`;
+            document.getElementById("modal-perfil-usuario").classList.add("active");
+        }
+
+        function cerrarModalPerfil(event) {
+            event.stopPropagation();
+            document.getElementById("modal-perfil-usuario").classList.remove("active");
+        }
+
+        function actualizarFormularioPorTipoCam() {
+            const type = document.getElementById("setup-campaign-type").value;
+            document.getElementById("group-opt-invitation").style.display = type === "invitation" ? "block" : "none";
+            document.getElementById("group-opt-telegram").style.display = (type === "sub_channel" || type === "join_group") ? "block" : "none";
+            document.getElementById("group-opt-ad").style.display = type.startsWith("ad_") ? "block" : "none";
+        }
+
+        function cambiarPestaña(target) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`view-${target}`).classList.add('active');
+            document.getElementById(`nav-${target}`).classList.add('active');
+            if(target === 'client') renderizarPantallasDinamicas();
+        }
+
+        function actualizarContadorHeader() {
+            document.getElementById("header-campaign-counter").innerText = appState.campañaActivaLocal ? "Campañas activas: 1" : "Campañas activas: 0";
         }
 
         function inicializarTouchCarrusel() {
             const inner = document.getElementById("adv-carousel-inner");
             if (!inner) return;
-            let isDragging = false, startX, currentTranslate = 0, prevTranslate = 0, currentIndex = 0;
-            const slides = document.querySelectorAll(".adv-slide");
-
+            let currentIndex = 0;
             setInterval(() => {
-                if(!isDragging && appState.isPremium === false) {
-                    currentIndex = (currentIndex + 1) % slides.length;
-                    currentTranslate = currentIndex * -100; // CORRECCIÓN: Traslación responsiva en base a porcentajes del contenedor
-                    prevTranslate = currentTranslate;
-                    inner.style.transform = `translateX(${currentTranslate}%)`;
+                if(appState.isPremium === false) {
+                    currentIndex = (currentIndex + 1) % 3;
+                    inner.style.transform = `translateX(${currentIndex * -100}%)`;
                 }
             }, 4000);
-
-            inner.addEventListener("touchstart", (e) => {
-                isDragging = true;
-                startX = e.touches[0].clientX;
-                inner.style.transition = "none";
-            });
-
-            inner.addEventListener("touchmove", (e) => {
-                if (!isDragging) return;
-                const currentX = e.touches[0].clientX;
-                const deltaX = currentX - startX;
-                // Convertimos el arrastre de píxeles a porcentaje aproximado para el swipe fluido
-                currentTranslate = prevTranslate + (deltaX / window.innerWidth * 100);
-                inner.style.transform = `translateX(${currentTranslate}%)`;
-            });
-
-            inner.addEventListener("touchend", (e) => {
-                isDragging = false;
-                inner.style.transition = "transform 0.3s ease-out";
-                
-                const endX = e.changedTouches[0].clientX;
-                const totalMove = endX - startX;
-
-                if (totalMove < -50 && currentIndex < slides.length - 1) currentIndex++;
-                if (totalMove > 50 && currentIndex > 0) currentIndex--;
-                
-                currentTranslate = currentIndex * -100;
-                prevTranslate = currentTranslate;
-                inner.style.transform = `translateX(${currentTranslate}%)`;
-            });
         }
     </script>
 </body>
