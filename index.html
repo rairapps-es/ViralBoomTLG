@@ -291,8 +291,8 @@
         }
         .badge-premium { background: rgba(255, 170, 0, 0.1); color: var(--neon-amber); border: 1px solid var(--neon-amber); }
 
-        /* CORRECCIÓN DE VISIBILIDAD: Quitamos el !important del display: none */
-        .view-section { display: none; }
+        /* CORRECCIÓN DE VISIBILIDAD DE PESTAÑAS */
+        .view-section { display: none !important; }
         .view-section.active { display: block !important; animation: slideIn 0.35s forwards ease-out; }
 
         @keyframes slideIn {
@@ -379,7 +379,7 @@
 
         <div id="view-client" class="view-section active">
             <div id="card-no-campaign" class="card">
-                <h2>🎯 NO_ACTIVE_LINK</h2>
+                <h2>🎯 NO_ACTIVE_LINK!</h2>
                 <p>Inicializa este sistema a través de un nodo de encriptación P2P verificado en Telegram o genera una nueva firma desde la Consola de Administración.</p>
             </div>
 
@@ -504,7 +504,6 @@
                         <div style="font-size: 1.4rem; font-weight: bold; color: var(--neon-cyan); font-family:'Orbitron',sans-serif;" id="meta-clicks">0</div>
                     </div>
                     <div style="background: #05060f; padding: 12px; border: 1px solid rgba(255,0,85,0.1); text-align: center;">
-                        <div style="font-size: 0.7rem; color: var(--text-dark); font-family:'Orbitron',sans-serif;">VIRAL_LOOPS_SYNCED</div>
                         <div style="font-size: 1.4rem; font-weight: bold; color: var(--neon-magenta); font-family:'Orbitron',sans-serif;" id="meta-loops">0</div>
                     </div>
                 </div>
@@ -631,7 +630,13 @@
             inicializarTouchCarrusel();
             
             const backupCampLocal = localStorage.getItem("campaña_local_backup");
-            if (backupCampLocal) appState.campañaActivaLocal = JSON.parse(backupCampLocal);
+            if (backupCampLocal) {
+                try {
+                    appState.campañaActivaLocal = JSON.parse(backupCampLocal);
+                } catch(e) {
+                    localStorage.removeItem("campaña_local_backup");
+                }
+            }
 
             let chequeosEfectuados = 0;
             const intervaloChequeo = setInterval(() => {
@@ -801,11 +806,14 @@
                 let base64Clean = startParam.replace(/-/g, '+').replace(/_/g, '/');
                 while (base64Clean.length % 4) { base64Clean += '='; }
                 
-                const jsonString = decodeURIComponent(atob(base64Clean).split('').map(function(c) {
-                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                }).join(''));
-
-                const payload = JSON.parse(jsonString);
+                // CORRECCIÓN CLAVE: Decodificación segura tolerante a caracteres UTF-8 extendidos (tildes/emojis)
+                const binaryString = atob(base64Clean);
+                const bytes = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                const decodedText = new TextDecoder('utf-8').decode(bytes);
+                const payload = JSON.parse(decodedText);
 
                 if(payload && payload.secret_url) {
                     appState.campañaActivaLocal = {
@@ -890,6 +898,7 @@
             appState.referidosLogrados = 0;
             appState.adCompleted = false;
             appState.tgChannelJoined = false;
+            if(appState.adTimerInterval) { clearInterval(appState.adTimerInterval); appState.adTimerInterval = null; }
             
             renderizarPantallasDinamicas();
             actualizarContadorHeader();
@@ -1034,10 +1043,11 @@
         function evaluarDesbloqueoFinal(condicion) {
             const btnClaim = document.getElementById("btn-claim-reward");
             if(condicion) {
+                btnClaim.classList.remove("btn-disabled");
                 btnClaim.className = "btn btn-gold";
                 btnClaim.innerText = "🔓 ACCESS_GRANTED: OPEN_TARGET";
             } else {
-                btnClaim.className = "btn btn-gold btn-disabled";
+                btnClaim.classList.add("btn-disabled");
                 btnClaim.innerText = "🔒 SYSTEM_LOCKED: REQS_PENDING";
             }
         }
@@ -1054,9 +1064,15 @@
             };
 
             const jsonStr = JSON.stringify(payload);
-            const b64 = btoa(encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, function(match, p1) {
-                return String.fromCharCode('0x' + p1);
-            })).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+            
+            // CORRECCIÓN CLAVE: Serialización Base64 segura para strings complejos
+            const encoder = new TextEncoder();
+            const dataBytes = encoder.encode(jsonStr);
+            let binary = "";
+            for (let i = 0; i < dataBytes.byteLength; i++) {
+                binary += String.fromCharCode(dataBytes[i]);
+            }
+            const b64 = btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
                 
             const deepLinkFinal = `https://t.me/${botUsername}/app?startapp=${b64}`;
             let mensajeCompartir = `🔥 *⚡ DATALOCK DETECTED ⚡* 🔥\n\nDistribuyendo acceso para: *${camp.titulo}*.\n📥 Sincroniza tu ID de red aquí para reclamar la copia segura:`;
@@ -1123,19 +1139,16 @@
         }
 
         function cambiarPestana(target) {
-            // Remueve la clase active de todas las vistas
             const vistas = document.querySelectorAll('.view-section');
             vistas.forEach(el => {
                 el.classList.remove('active');
             });
             
-            // Remueve la clase active de todos los botones de navegación
             const botones = document.querySelectorAll('.nav-bar .nav-item');
             botones.forEach(el => {
                 el.classList.remove('active');
             });
             
-            // Forzar activación del contenedor destino
             const vistaObjetivo = document.getElementById(`view-${target}`);
             const botonObjetivo = document.getElementById(`nav-${target}`);
             
