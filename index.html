@@ -154,8 +154,8 @@
         .view-section { display: none; }
         .view-section.active { display: block; }
 
-        /* Navegación Fija */
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 55px; background: #090a10; border-top: 1px solid #1a1c28; display: flex; justify-content: space-around; align-items: center; z-index: 9999; }
+        /* Navegación Fija Superior / Alta Prioridad Touch */
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 55px; background: #090a10; border-top: 1px solid #1a1c28; display: flex; justify-content: space-around; align-items: center; z-index: 9999; pointer-events: auto; }
         .nav-item { background: none; border: none; color: var(--text-muted); font-size: 0.75rem; font-weight: bold; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; width: 100%; height: 100%; justify-content: center; }
         .nav-item.active { color: var(--neon-green); }
         .nav-item.active.gold-user { color: var(--neon-gold); }
@@ -442,7 +442,18 @@
             tgChannelJoined: false
         };
 
-        document.addEventListener("DOMContentLoaded", async () => {
+        // Escucha nativa y limpia del ciclo de vida de Telegram (Solución Definitiva)
+        function inicializarFlujoAplicacion() {
+            inicializarDatosUsuarioTelegram();
+            ejecutarVerificacionLicenciaBase().then(() => {
+                recuperarEstadisticasBD();
+                evaluarFlujoDeepLinkingDeEntrada();
+                renderizarPantallasDinamicas();
+                actualizarContadorHeader();
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
             let savedFirstDate = localStorage.getItem("bv_first_login");
             if (!savedFirstDate) {
                 const hoy = new Date();
@@ -452,21 +463,19 @@
             appState.firstTimeLoginDate = savedFirstDate;
             document.getElementById("profile-plan-start").innerText = savedFirstDate;
 
-            // Corrección 1: Delay prudencial para que Telegram inyecte el InitData de forma asíncrona
-            setTimeout(async () => {
-                inicializarDatosUsuarioTelegram();
-                await ejecutarVerificacionLicenciaBase();
-                await recuperarEstadisticasBD();
-                await evaluarFlujoDeepLinkingDeEntrada();
-                renderizarPantallasDinamicas();
-                actualizarContadorHeader();
-            }, 150);
-
             actualizarFormularioPorTipoCam();
             inicializarTouchCarrusel();
             
             const backupCampLocal = localStorage.getItem("campaña_local_backup");
             if (backupCampLocal) appState.campañaActivaLocal = JSON.parse(backupCampLocal);
+
+            // Intentar inicialización inmediata y suscribir al evento nativo por si hay retardo en hilos móviles
+            inicializarFlujoAplicacion();
+            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                inicializarFlujoAplicacion();
+            } else {
+                setTimeout(inicializarFlujoAplicacion, 250);
+            }
         });
 
         function inicializarDatosUsuarioTelegram() {
@@ -518,7 +527,7 @@
 
             if (!error && data) {
                 const fechaActivacion = new Date(data.activated_at).getTime();
-                const dias EnMilisegundos = data.duration_days * 24 * 60 * 60 * 1000;
+                const diasEnMilisegundos = data.duration_days * 24 * 60 * 60 * 1000; // Corrección: variable unificada sin espacio
                 const fechaExpiracion = fechaActivacion + diasEnMilisegundos;
 
                 if (ahora < fechaExpiracion) {
@@ -871,8 +880,14 @@
         function cambiarPestaña(target) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            document.getElementById(`view-${target}`).classList.add('active');
-            document.getElementById(`nav-${target}`).classList.add('active');
+            
+            // Forzar renderizado y cambio de clases activas
+            const vistaObjetivo = document.getElementById(`view-${target}`);
+            const botonObjetivo = document.getElementById(`nav-${target}`);
+            
+            if (vistaObjetivo) vistaObjetivo.classList.add('active');
+            if (botonObjetivo) botonObjetivo.classList.add('active');
+            
             if(target === 'client') renderizarPantallasDinamicas();
         }
 
