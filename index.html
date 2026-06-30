@@ -128,7 +128,7 @@
 
         /* Inputs y Selectores */
         .input-group { margin-bottom: 14px; }
-        .input-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px; display: block; font-weight: bold; font-weight: bold; }
+        .input-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px; display: block; font-weight: bold; }
         .input-field { width: 100%; background: #0b0c13; border: 1px solid #252836; border-radius: 10px; color: #fff; padding: 12px; font-size: 0.85rem; outline: none; transition: 0.3s; }
         .input-field:focus { border-color: var(--neon-green); }
         .input-field:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -155,8 +155,8 @@
         .view-section.active { display: block; }
 
         /* Navegación Fija */
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 55px; background: #090a10; border-top: 1px solid #1a1c28; display: flex; justify-content: space-around; align-items: center; z-index: 110; }
-        .nav-item { background: none; border: none; color: var(--text-muted); font-size: 0.75rem; font-weight: bold; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; height: 55px; background: #090a10; border-top: 1px solid #1a1c28; display: flex; justify-content: space-around; align-items: center; z-index: 9999; }
+        .nav-item { background: none; border: none; color: var(--text-muted); font-size: 0.75rem; font-weight: bold; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; width: 100%; height: 100%; justify-content: center; }
         .nav-item.active { color: var(--neon-green); }
         .nav-item.active.gold-user { color: var(--neon-gold); }
 
@@ -452,19 +452,21 @@
             appState.firstTimeLoginDate = savedFirstDate;
             document.getElementById("profile-plan-start").innerText = savedFirstDate;
 
-            inicializarDatosUsuarioTelegram();
-            await ejecutarVerificacionLicenciaBase();
+            // Corrección 1: Delay prudencial para que Telegram inyecte el InitData de forma asíncrona
+            setTimeout(async () => {
+                inicializarDatosUsuarioTelegram();
+                await ejecutarVerificacionLicenciaBase();
+                await recuperarEstadisticasBD();
+                await evaluarFlujoDeepLinkingDeEntrada();
+                renderizarPantallasDinamicas();
+                actualizarContadorHeader();
+            }, 150);
+
             actualizarFormularioPorTipoCam();
             inicializarTouchCarrusel();
             
             const backupCampLocal = localStorage.getItem("campaña_local_backup");
             if (backupCampLocal) appState.campañaActivaLocal = JSON.parse(backupCampLocal);
-
-            await recuperarEstadisticasBD();
-            await evaluarFlujoDeepLinkingDeEntrada();
-            
-            renderizarPantallasDinamicas();
-            actualizarContadorHeader();
         });
 
         function inicializarDatosUsuarioTelegram() {
@@ -516,7 +518,7 @@
 
             if (!error && data) {
                 const fechaActivacion = new Date(data.activated_at).getTime();
-                const diasEnMilisegundos = data.duration_days * 24 * 60 * 60 * 1000;
+                const dias EnMilisegundos = data.duration_days * 24 * 60 * 60 * 1000;
                 const fechaExpiracion = fechaActivacion + diasEnMilisegundos;
 
                 if (ahora < fechaExpiracion) {
@@ -769,6 +771,7 @@
         }
 
         function ejecutarContadorAnuncio(segundos) {
+            if (appState.adTimerInterval) clearInterval(appState.adTimerInterval);
             appState.adSecondsLeft = segundos;
             document.getElementById("ad-timer").innerText = `${appState.adSecondsLeft}s`;
             
