@@ -708,33 +708,45 @@
             desactivarInterfazPremiumVisual();
         }
 
-        function activarInterfazPremiumVisual() {
-            appState.isPremium = true;
-            document.getElementById("status-badge").innerText = "OVERLORD_VIP";
-            document.getElementById("status-badge").className = "badge badge-premium";
-            document.getElementById("profile-plan-status").innerText = "OVERLORD_VIP_RANK";
-            document.getElementById("profile-plan-status").style.color = "var(--neon-amber)";
-            document.getElementById("user-avatar-glow").style.backgroundColor = "var(--neon-amber)";
-            document.getElementById("user-avatar-glow").style.boxShadow = "0 0 10px var(--neon-amber)";
-            document.getElementById("premium-carousel-wrapper").style.display = "none";
-            document.getElementById("nav-billing").style.display = "none";
-            document.getElementById("premium-activation-key-card").style.display = "none";
-            habilitarOpcionesPremiumAdmin();
-        }
+    function activarInterfazPremiumVisual() {
+    appState.isPremium = true;
+    document.getElementById("status-badge").innerText = "OVERLORD_VIP";
+    document.getElementById("status-badge").className = "badge badge-premium";
+    document.getElementById("profile-plan-status").innerText = "OVERLORD_VIP_RANK";
+    document.getElementById("profile-plan-status").style.color = "var(--neon-amber)";
+    document.getElementById("user-avatar-glow").style.backgroundColor = "var(--neon-amber)";
+    document.getElementById("user-avatar-glow").style.boxShadow = "0 0 10px var(--neon-amber)";
+    
+    document.getElementById("premium-carousel-wrapper").style.display = "none";
+    document.getElementById("premium-activation-key-card").style.display = "none";
+    
+    // CONTROL DEL MENÚ INFERIOR (Premium Activo):
+    document.getElementById("nav-client").style.display = "flex";
+    document.getElementById("nav-admin").style.display = "flex"; // Asegura que se vea la consola
+    document.getElementById("nav-billing").style.display = "none"; // Oculta "LICENSE_UP" porque ya es Pro
+    
+    habilitarOpcionesPremiumAdmin();
+}
 
-        function desactivarInterfazPremiumVisual() {
-            appState.isPremium = false;
-            document.getElementById("status-badge").innerText = "PROT_GUEST";
-            document.getElementById("status-badge").className = "badge";
-            document.getElementById("profile-plan-status").innerText = "FREE_TIER_NODE";
-            document.getElementById("profile-plan-status").style.color = "var(--text-cyber)";
-            document.getElementById("user-avatar-glow").style.backgroundColor = "var(--neon-lime)";
-            document.getElementById("user-avatar-glow").style.boxShadow = "0 0 8px var(--neon-lime)";
-            document.getElementById("premium-carousel-wrapper").style.display = "block";
-            document.getElementById("nav-billing").style.display = "block";
-            document.getElementById("premium-activation-key-card").style.display = "block";
-            deshabilitarOpcionesPremiumAdmin();
-        }
+function desactivarInterfazPremiumVisual() {
+    appState.isPremium = false;
+    document.getElementById("status-badge").innerText = "PROT_GUEST";
+    document.getElementById("status-badge").className = "badge";
+    document.getElementById("profile-plan-status").innerText = "FREE_TIER_NODE";
+    document.getElementById("profile-plan-status").style.color = "var(--text-cyber)";
+    document.getElementById("user-avatar-glow").style.backgroundColor = "var(--neon-lime)";
+    document.getElementById("user-avatar-glow").style.boxShadow = "0 0 8px var(--neon-lime)";
+    
+    document.getElementById("premium-carousel-wrapper").style.display = "block";
+    document.getElementById("premium-activation-key-card").style.display = "block";
+    
+    // CONTROL DEL MENÚ INFERIOR (Modo Invitado):
+    document.getElementById("nav-client").style.display = "flex";
+    document.getElementById("nav-admin").style.display = "flex";   // Muestra la consola (bloqueando las opciones Pro dentro)
+    document.getElementById("nav-billing").style.display = "flex"; // Muestra "LICENSE_UP" para que puedan comprar
+    
+    deshabilitarOpcionesPremiumAdmin();
+}
 
         function habilitarOpcionesPremiumAdmin() {
             ["ad_text", "ad_image", "ad_video", "sub_channel", "join_group"].forEach(id => {
