@@ -9,17 +9,34 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap');
 
+        /* ==========================================
+           1. VARIABLES Y CONFIGURACIÓN DEL SISTEMA
+           ========================================== */
         :root {
+            /* Paleta unificada: Sustituido magenta por variantes de dorado/ámbar según feedback */
             --bg-cyber: #030308;
-            --bg-card: rgba(10, 11, 22, 0.85);
+            --bg-card: rgba(10, 11, 22, 0.95); /* Mayor opacidad para mitigar falta de blur */
+            --surface: #05060f;
+            --surface-secondary: #0d0f1d;
+            
             --neon-cyan: #00f3ff;
-            --neon-magenta: #ff0055;
-            --neon-lime: #39ff14;
             --neon-amber: #ffaa00;
+            --neon-lime: #39ff14;
+            
             --text-cyber: #e0e6ed;
+            --text-secondary: #94a3b8;
             --text-dark: #636e72;
-            --glow-cyan: 0 0 10px rgba(0, 243, 255, 0.5);
-            --glow-magenta: 0 0 10px rgba(255, 0, 85, 0.5);
+            
+            /* Sombras optimizadas (más sutiles para evitar repaints costosos en WebView) */
+            --glow-cyan: 0 0 8px rgba(0, 243, 255, 0.35);
+            --glow-amber: 0 0 8px rgba(255, 170, 0, 0.35);
+            
+            /* Escala Controlada de Z-Indices */
+            --z-low: 10;
+            --z-medium: 100;
+            --z-high: 500;
+            --z-sticky: 1000;
+            --z-modal: 2000;
         }
 
         * { 
@@ -34,39 +51,41 @@
         body { 
             background-color: var(--bg-cyber); 
             background-image: 
-                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+                linear-gradient(rgba(0, 243, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.02) 1px, transparent 1px);
             background-size: 20px 20px;
             color: var(--text-cyber); 
-            padding: 16px; 
+            padding: 16px 16px 160px 16px; 
             padding-top: 95px; 
-            padding-bottom: 160px; 
             overflow-x: hidden;
         }
 
+        /* Scanlines optimizadas sin animaciones infinitas de posición */
         body::before {
             content: " ";
             display: block;
             position: fixed;
             top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 10;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            z-index: var(--z-low);
             opacity: 0.4;
             pointer-events: none;
             background-size: 100% 4px, 6px 100%;
         }
 
-        .main-container { max-width: 460px; margin: auto; position: relative; z-index: 20; }
+        /* ==========================================
+           2. COMPONENTES DE LAYOUT Y CONTENEDORES
+           ========================================== */
+        .main-container { max-width: 460px; margin: auto; position: relative; z-index: calc(var(--z-low) + 10); }
         
         .sticky-header {
             position: fixed;
             top: 0; left: 0; right: 0;
-            z-index: 1000;
-            background: rgba(3, 3, 8, 0.9);
-            backdrop-filter: blur(8px);
+            z-index: var(--z-sticky);
+            background: rgba(3, 3, 8, 0.95);
             padding: 12px 16px;
             border-bottom: 2px solid var(--neon-cyan);
-            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+            box-shadow: 0 2px 10px rgba(0, 243, 255, 0.15);
         }
 
         .header-card {
@@ -78,7 +97,7 @@
             align-items: center;
             justify-content: space-between;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
         }
 
         .header-card:hover {
@@ -90,7 +109,7 @@
             width: 42px; height: 42px;
             border-radius: 4px;
             position: relative;
-            background: #0d0f1d;
+            background: var(--surface-secondary);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -114,58 +133,56 @@
             bottom: 0; right: 0;
             width: 10px; height: 10px;
             background: var(--neon-lime);
-            box-shadow: 0 0 8px var(--neon-lime);
+            box-shadow: 0 0 6px var(--neon-lime);
             z-index: 2;
             clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
         }
 
+        /* ==========================================
+           3. MODALES (Eliminado backdrop-filter)
+           ========================================== */
         .profile-modal {
             display: none;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(1, 1, 3, 0.95);
-            backdrop-filter: blur(10px);
-            z-index: 2000;
+            background: rgba(1, 1, 3, 0.96); /* Opacidad aumentada para suplir la falta de blur */
+            z-index: var(--z-modal);
             align-items: center;
             justify-content: center;
             padding: 20px;
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.25s ease;
         }
 
         .profile-modal.active { display: flex; opacity: 1; }
 
         .profile-card {
             background: var(--bg-card);
-            border: 2px solid var(--neon-magenta);
-            box-shadow: var(--glow-magenta);
+            border: 2px solid var(--neon-amber);
+            box-shadow: var(--glow-amber);
             clip-path: polygon(0 0, 85% 0, 100% 15%, 100% 100%, 15% 100%, 0 85%);
             width: 100%;
             max-width: 380px;
             padding: 30px 24px;
             text-align: center;
             position: relative;
-            animation: glitchOpen 0.4s cubic-bezier(0.1, 1, 0.1, 1);
-        }
-
-        @keyframes glitchOpen {
-            0% { transform: scaleY(0) skewX(20deg); opacity: 0; }
-            60% { transform: scaleY(1.2) skewX(-10deg); }
-            100% { transform: scaleY(1) skewX(0); opacity: 1; }
         }
 
         .close-modal {
             position: absolute;
             top: 10px; right: 15px;
             font-size: 1.8rem;
-            color: var(--neon-magenta);
+            color: var(--neon-amber);
             cursor: pointer;
             background: none;
             border: none;
             font-family: 'Orbitron', sans-serif;
-            text-shadow: var(--glow-magenta);
+            text-shadow: var(--glow-amber);
         }
 
+        /* ==========================================
+           4. TARJETAS Y ELEMENTOS DE FORMULARIO
+           ========================================== */
         .card { 
             background: var(--bg-card); 
             border: 1px solid rgba(0, 243, 255, 0.15); 
@@ -173,7 +190,7 @@
             margin-bottom: 20px; 
             position: relative; 
             clip-path: polygon(0 0, 92% 0, 100% 12%, 100% 100%, 8% 100%, 0 88%);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
         }
 
         .card::before {
@@ -186,15 +203,15 @@
 
         .card.premium { 
             border-color: var(--neon-amber); 
-            box-shadow: 0 0 15px rgba(255, 170, 0, 0.15); 
+            box-shadow: 0 0 10px rgba(255, 170, 0, 0.1); 
         }
-        .card.premium::before { background: var(--neon-amber); box-shadow: 0 0 10px var(--neon-amber); }
+        .card.premium::before { background: var(--neon-amber); box-shadow: 0 0 8px var(--neon-amber); }
 
         .card.viral-active { 
             border-color: var(--neon-lime); 
-            box-shadow: 0 0 15px rgba(57, 255, 20, 0.15); 
+            box-shadow: 0 0 10px rgba(57, 255, 20, 0.1); 
         }
-        .card.viral-active::before { background: var(--neon-lime); box-shadow: 0 0 10px var(--neon-lime); }
+        .card.viral-active::before { background: var(--neon-lime); box-shadow: 0 0 8px var(--neon-lime); }
 
         h2 { 
             font-family: 'Orbitron', sans-serif; 
@@ -208,7 +225,7 @@
             letter-spacing: 1px;
         }
 
-        p { font-size: 0.9rem; color: #a4b3c6; line-height: 1.6; margin-bottom: 14px; }
+        p { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 14px; }
 
         .input-group { margin-bottom: 16px; }
         .input-label { 
@@ -224,19 +241,19 @@
 
         .input-field { 
             width: 100%; 
-            background: rgba(5, 6, 15, 0.9); 
+            background: rgba(5, 6, 15, 0.95); 
             border: 1px solid rgba(0, 243, 255, 0.3); 
             color: #fff; 
             padding: 12px 14px; 
             font-size: 0.9rem; 
             outline: none; 
-            transition: all 0.25s ease;
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
             letter-spacing: 0.5px;
         }
 
         .input-field:focus { 
-            border-color: var(--neon-magenta); 
-            box-shadow: var(--glow-magenta);
+            border-color: var(--neon-amber); 
+            box-shadow: var(--glow-amber);
         }
 
         .input-field:disabled { opacity: 0.4; cursor: not-allowed; border-color: var(--text-dark); }
@@ -252,32 +269,30 @@
             font-size: 0.85rem; 
             text-transform: uppercase; 
             cursor: pointer; 
-            transition: all 0.2s ease-in-out; 
+            transition: background-color 0.2s ease, box-shadow 0.2s ease; 
             display: inline-flex; 
             align-items: center; 
             justify-content: center; 
             gap: 8px; 
             letter-spacing: 1.5px;
             position: relative;
-            overflow: hidden;
         }
 
         .btn:hover { 
-            background: rgba(0, 243, 255, 0.1); 
+            background: rgba(0, 243, 255, 0.08); 
             box-shadow: var(--glow-cyan);
-            text-shadow: var(--glow-cyan);
         }
 
-        .btn-purple { border-color: var(--neon-magenta); color: var(--neon-magenta); }
-        .btn-purple:hover { background: rgba(255, 0, 85, 0.1); box-shadow: var(--glow-magenta); text-shadow: var(--glow-magenta); }
+        .btn-purple { border-color: var(--neon-amber); color: var(--neon-amber); }
+        .btn-purple:hover { background: rgba(255, 170, 0, 0.08); box-shadow: var(--glow-amber); }
 
         .btn-gold { border-color: var(--neon-amber); color: var(--neon-amber); }
-        .btn-gold:hover { background: rgba(255, 170, 0, 0.1); box-shadow: 0 0 10px var(--neon-amber); text-shadow: 0 0 5px var(--neon-amber); }
+        .btn-gold:hover { background: rgba(255, 170, 0, 0.08); box-shadow: var(--glow-amber); }
 
         .btn-disabled { border-color: #222533 !important; color: #444966 !important; cursor: not-allowed; pointer-events: none; background: transparent !important; box-shadow: none !important; text-shadow: none !important;}
 
-        .progress-container { background: #05060f; border: 1px solid rgba(0, 243, 255, 0.2); height: 14px; width: 100%; position: relative; margin: 15px 0; overflow: hidden; }
-        .progress-bar { background: linear-gradient(90deg, var(--neon-magenta), var(--neon-lime)); height: 100%; width: 0%; transition: width 0.6s cubic-bezier(0.075, 0.82, 0.165, 1); }
+        .progress-container { background: var(--surface); border: 1px solid rgba(0, 243, 255, 0.2); height: 14px; width: 100%; position: relative; margin: 15px 0; overflow: hidden; }
+        .progress-bar { background: linear-gradient(90deg, var(--neon-amber), var(--neon-lime)); height: 100%; width: 0%; transition: width 0.4s ease-out; }
 
         .badge { 
             background: rgba(0, 243, 255, 0.1); 
@@ -291,28 +306,23 @@
         }
         .badge-premium { background: rgba(255, 170, 0, 0.1); color: var(--neon-amber); border: 1px solid var(--neon-amber); }
 
-        /* CORRECCIÓN DE VISIBILIDAD DE PESTAÑAS */
-.view-section { 
-    display: none; 
-}
-.view-section.active { 
-    display: block; 
-    animation: slideIn 0.35s forwards ease-out; 
-}
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* ==========================================
+           5. SECCIONES DE VISTA Y NAVEGACIÓN
+           ========================================== */
+        .view-section { 
+            display: none; 
+        }
+        .view-section.active { 
+            display: block; 
         }
 
         .nav-bar { 
             position: fixed; bottom: 0; left: 0; right: 0; height: 65px; 
             background: rgba(5, 6, 15, 0.98); 
-            backdrop-filter: blur(10px);
             border-top: 2px solid var(--neon-cyan); 
             display: flex; justify-content: space-around; align-items: center; 
-            z-index: 999999 !important; 
-            box-shadow: 0 -5px 15px rgba(0, 243, 255, 0.3);
+            z-index: var(--z-sticky); 
+            box-shadow: 0 -3px 10px rgba(0, 243, 255, 0.2);
         }
 
         .nav-item { 
@@ -322,28 +332,31 @@
             font-size: 0.7rem; font-weight: bold; cursor: pointer; 
             display: flex; flex-direction: column; align-items: center; gap: 6px; 
             width: 100%; height: 100%; justify-content: center;
-            transition: all 0.2s ease;
+            transition: color 0.2s ease;
             letter-spacing: 1px;
         }
 
         .nav-item.active { color: var(--neon-cyan); text-shadow: var(--glow-cyan); }
-        .nav-item.active.gold-user { color: var(--neon-amber); text-shadow: 0 0 5px var(--neon-amber); }
+        .nav-item.active.gold-user { color: var(--neon-amber); text-shadow: var(--glow-amber); }
 
         .watermark { text-align: center; font-size: 0.75rem; color: var(--text-dark); margin-top: 25px; padding: 12px; border-top: 1px dashed rgba(0,243,255,0.1); letter-spacing: 1px;}
-        .watermark a { color: var(--neon-magenta); text-decoration: none; font-weight: bold; text-shadow: var(--glow-magenta);}
+        .watermark a { color: var(--neon-amber); text-decoration: none; font-weight: bold; text-shadow: var(--glow-amber);}
 
-        .adv-carousel-wrapper { position: fixed; bottom: 65px; left: 0; right: 0; background: #030308; border-top: 1px solid rgba(255,0,85,0.3); overflow: hidden; height: 75px; z-index: 99999; display: none; }
-        .adv-carousel-inner { display: flex; width: 100%; height: 100%; transition: transform 0.4s ease-in-out; }
-        .adv-slide { min-width: 100%; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 0 20px; text-align: center; font-size: 0.85rem; font-weight: bold; color: #a5b1c2; background: linear-gradient(90deg, #05060f 0%, #0d0f1d 100%); }
+        /* ==========================================
+           6. PUBLICIDAD Y CAROUSEL (Optimizado)
+           ========================================== */
+        .adv-carousel-wrapper { position: fixed; bottom: 65px; left: 0; right: 0; background: #030308; border-top: 1px solid rgba(255,170,0,0.3); overflow: hidden; height: 75px; z-index: calc(var(--z-sticky) - 10); display: none; }
+        .adv-carousel-inner { display: flex; width: 100%; height: 100%; transition: transform 0.3s ease-out; will-change: transform; }
+        .adv-slide { min-width: 100%; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 0 20px; text-align: center; font-size: 0.85rem; font-weight: bold; color: #a5b1c2; background: linear-gradient(90deg, var(--surface) 0%, var(--surface-secondary) 100%); }
 
-        .dynamic-ad-container { background: rgba(255,0,85,0.05); border: 1px dashed var(--neon-magenta); padding: 14px; margin-bottom: 14px; text-align: center; }
-        .countdown-timer { font-family: 'Orbitron', sans-serif; font-size: 1.3rem; font-weight: bold; color: var(--neon-amber); margin-top: 6px; letter-spacing: 2px; text-shadow: 0 0 5px var(--neon-amber); }
+        .dynamic-ad-container { background: rgba(255,170,0,0.03); border: 1px dashed var(--neon-amber); padding: 14px; margin-bottom: 14px; text-align: center; }
+        .countdown-timer { font-family: 'Orbitron', sans-serif; font-size: 1.3rem; font-weight: bold; color: var(--neon-amber); margin-top: 6px; letter-spacing: 2px; text-shadow: var(--glow-amber); }
     </style>
 </head>
 <body>
 
     <div class="sticky-header">
-        <div class="header-card" onclick="abrirModalPerfil()">
+        <div class="header-card" id="btn-header-profile">
             <div style="display: flex; align-items: center; gap: 14px;">
                 <div class="user-avatar-container" id="user-avatar-box">
                     <span id="avatar-fallback">U</span>
@@ -360,14 +373,14 @@
 
     <div id="modal-perfil-usuario" class="profile-modal">
         <div class="profile-card">
-            <button class="close-modal" onclick="cerrarModalPerfil(event)">&times;</button>
+            <button class="close-modal" id="btn-close-profile-modal" aria-label="Cerrar modal de perfil">&times;</button>
             <div class="user-avatar-container" id="modal-avatar-box" style="width: 75px; height: 75px; margin: 0 auto 16px; font-size: 1.6rem;">
                 <span id="modal-avatar-fallback">U</span>
             </div>
             <h3 id="modal-user-title" style="font-family:'Orbitron', sans-serif; font-size: 1.3rem; font-weight: bold; margin-bottom: 6px;">UNKNOWN_ID</h3>
             <p id="modal-user-id" style="font-size: 0.8rem; color: var(--text-dark); margin-bottom: 20px;">NET_ADDR: -</p>
             
-            <div style="background: rgba(5,6,15,0.9); border: 1px solid rgba(255,0,85,0.3); padding: 16px; text-align: left; font-size: 0.85rem;">
+            <div style="background: rgba(5,6,15,0.9); border: 1px solid rgba(255,170,0,0.3); padding: 16px; text-align: left; font-size: 0.85rem;">
                 <div style="margin-bottom: 10px;">
                     <span style="color: var(--neon-cyan); font-family:'Orbitron', sans-serif; display: block; font-size: 0.65rem; letter-spacing: 1px;">SOCIETY_RANK:</span>
                     <span id="profile-plan-status" style="font-weight: bold;">FREE_TIER</span>
@@ -388,7 +401,7 @@
                 <p>Inicializa este sistema a través de un nodo de encriptación P2P verificado en Telegram o genera una nueva firma desde la Consola de Administración.</p>
             </div>
 
-            <div id="card-campaign-status-msg" class="card" style="display:none; border-color: var(--neon-magenta);">
+            <div id="card-campaign-status-msg" class="card" style="display:none; border-color: var(--neon-amber);">
                 <h2 id="status-msg-title">⏳ LINK_SUSPENDED</h2>
                 <p id="status-msg-desc">Este nodo de descarga temporal no ha cumplido el rango de tiempo de apertura estipulado o se encuentra expirado.</p>
             </div>
@@ -409,10 +422,10 @@
                     </div>
                 </div>
 
-                <div id="step-channel" class="input-group" style="background: rgba(5,6,15,0.5); padding: 14px; margin-bottom: 12px; display:none; border-left: 2px solid var(--neon-magenta);">
-                    <span class="input-label" id="tg-step-label" style="color: var(--neon-magenta);">NETWORK_SUBSCRIPTION</span>
+                <div id="step-channel" class="input-group" style="background: rgba(5,6,15,0.5); padding: 14px; margin-bottom: 12px; display:none; border-left: 2px solid var(--neon-amber);">
+                    <span class="input-label" id="tg-step-label" style="color: var(--neon-amber);">NETWORK_SUBSCRIPTION</span>
                     <p id="tg-step-desc" style="font-size: 0.8rem; margin-bottom: 10px;">Enlaza tu terminal de identidad a esta comunidad.</p>
-                    <button id="btn-join-channel" onclick="abrirEspacioRequisito()" class="btn btn-purple" style="padding: 8px 14px; font-size: 0.8rem;">JOIN_STATION</button>
+                    <button id="btn-join-channel" class="btn btn-purple" style="padding: 8px 14px; font-size: 0.8rem;">JOIN_STATION</button>
                 </div>
 
                 <div id="step-referrals" class="input-group" style="background: rgba(5,6,15,0.5); padding: 14px; border-left: 2px solid var(--neon-lime); display: none;">
@@ -428,8 +441,8 @@
                 </div>
 
                 <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 12px;">
-                    <button id="btn-share-viral" onclick="compartirEnlaceReferido()" class="btn">🔗 BROADCAST_LINK</button>
-                    <button id="btn-claim-reward" onclick="reclamarRecompensaFinal()" class="btn btn-gold btn-disabled">⌛ RUNNING_VALIDATION...</button>
+                    <button id="btn-share-viral" class="btn">🔗 BROADCAST_LINK</button>
+                    <button id="btn-claim-reward" class="btn btn-gold btn-disabled">⌛ RUNNING_VALIDATION...</button>
                 </div>
             </div>
         </div>
@@ -440,32 +453,32 @@
                 <p>Configura compuertas lógicas avanzadas en la red para el filtrado y viralización automatizada de archivos.</p>
                 
                 <div class="input-group">
-                    <label class="input-label">RESOURCE_IDENTIFIER</label>
+                    <label class="input-label" for="setup-title">RESOURCE_IDENTIFIER</label>
                     <input type="text" id="setup-title" class="input-field" placeholder="Ej: CYBER_DOCS_2026">
                 </div>
                 <div class="input-group">
-                    <label class="input-label">PROMPT_INSTRUCTIONS</label>
+                    <label class="input-label" for="setup-desc">PROMPT_INSTRUCTIONS</label>
                     <input type="text" id="setup-desc" class="input-field" placeholder="Ej: Realiza los desvíos obligatorios de red para desbloquear.">
                 </div>
                 <div class="input-group">
-                    <label class="input-label">DESTINATION_CIPHER_URL (DATA_TARGET)</label>
+                    <label class="input-label" for="setup-secret">DESTINATION_CIPHER_URL (DATA_TARGET)</label>
                     <input type="text" id="setup-secret" class="input-field" placeholder="Ej: https://mega.nz/file/quantum...">
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;" class="input-group">
                     <div>
-                        <label class="input-label">START_TIMESTAMP</label>
+                        <label class="input-label" for="setup-start-date">START_TIMESTAMP</label>
                         <input type="datetime-local" id="setup-start-date" class="input-field" style="font-size:0.8rem;">
                     </div>
                     <div>
-                        <label class="input-label">AUTO_KILL_TIME</label>
+                        <label class="input-label" for="setup-end-date">AUTO_KILL_TIME</label>
                         <input type="datetime-local" id="setup-end-date" class="input-field" style="font-size:0.8rem;">
                     </div>
                 </div>
 
                 <div class="input-group">
-                    <label class="input-label">CONVERSION_GATE_TYPE</label>
-                    <select id="setup-campaign-type" class="input-field" onchange="actualizarFormularioPorTipoCam()" style="background:#05060f;">
+                    <label class="input-label" for="setup-campaign-type">CONVERSION_GATE_TYPE</label>
+                    <select id="setup-campaign-type" class="input-field" style="background:#05060f;">
                         <option value="invitation">P2P Clones Propagation (Unlimited/Free)</option>
                         <option value="ad_text" id="opt-ad_text">👑 Stream Gate: Dynamic Text + Link</option>
                         <option value="ad_image" id="opt-ad_image">👑 Stream Gate: Img + Hologram Banner</option>
@@ -477,39 +490,40 @@
 
                 <div id="group-opt-invitation" class="input-group">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <label class="input-label">REQUIRED_NODES</label>
-                        <span id="req-limit-hint" style="font-size: 0.7rem; color: var(--neon-magenta); font-weight: bold; font-family:'Orbitron',sans-serif;">MAX 3 (GUEST)</span>
+                        <label class="input-label" for="setup-req-count">REQUIRED_NODES</label>
+                        <span id="req-limit-hint" style="font-size: 0.7rem; color: var(--neon-amber); font-weight: bold; font-family:'Orbitron',sans-serif;">MAX 3 (GUEST)</span>
                     </div>
                     <input type="number" id="setup-req-count" class="input-field" value="3" min="1" max="10">
                 </div>
 
                 <div id="group-opt-telegram" class="input-group" style="display:none;">
-                    <label class="input-label">TARGET_ALIAS (WITHOUT @ OR DIRECT LINK)</label>
+                    <label class="input-label" for="setup-tg-target">TARGET_ALIAS (WITHOUT @ OR DIRECT LINK)</label>
                     <input type="text" id="setup-tg-target" class="input-field" placeholder="Ej: CyberNetworkNet">
                 </div>
 
                 <div id="group-opt-ad" class="input-group" style="display:none;">
-                    <label class="input-label">STREAM_VALUE_DATA_SOURCE</label>
+                    <label class="input-label" for="setup-ad-value">STREAM_VALUE_DATA_SOURCE</label>
                     <input type="text" id="setup-ad-value" class="input-field" placeholder="Texto, link de imagen o URL de vídeo raw...">
                     
                     <div style="margin-top:12px;">
-                        <label class="input-label">LOCK_DURATION_TIME (SECONDS)</label>
+                        <label class="input-label" for="setup-ad-duration">LOCK_DURATION_TIME (SECONDS)</label>
                         <input type="number" id="setup-ad-duration" class="input-field" value="30" min="5">
                     </div>
                 </div>
 
-                <button onclick="guardarCampanaAdmin()" class="btn btn-purple">🚀 COMPILE_AND_DEPLOY</button>
+                <button id="btn-deploy-campaign" class="btn btn-purple">🚀 COMPILE_AND_DEPLOY</button>
             </div>
 
             <div class="card" id="analytics-box">
                 <h2>📊 NETWORK_PROPAGATION_METRICS</h2>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
-                    <div style="background: #05060f; padding: 12px; border: 1px solid rgba(0,243,255,0.1); text-align: center;">
+                    <div style="background: var(--surface); padding: 12px; border: 1px solid rgba(0,243,255,0.1); text-align: center;">
                         <div style="font-size: 0.7rem; color: var(--text-dark); font-family:'Orbitron',sans-serif;">TOTAL_PING_CLICKS</div>
                         <div style="font-size: 1.4rem; font-weight: bold; color: var(--neon-cyan); font-family:'Orbitron',sans-serif;" id="meta-clicks">0</div>
                     </div>
-                    <div style="background: #05060f; padding: 12px; border: 1px solid rgba(255,0,85,0.1); text-align: center;">
-                        <div style="font-size: 1.4rem; font-weight: bold; color: var(--neon-magenta); font-family:'Orbitron',sans-serif;" id="meta-loops">0</div>
+                    <div style="background: var(--surface); padding: 12px; border: 1px solid rgba(255,170,0,0.1); text-align: center;">
+                        <div style="font-size: 0.7rem; color: var(--text-dark); font-family:'Orbitron',sans-serif;">SUCCESSFUL_LOOPS</div>
+                        <div style="font-size: 1.4rem; font-weight: bold; color: var(--neon-amber); font-family:'Orbitron',sans-serif;" id="meta-loops">0</div>
                     </div>
                 </div>
                 
@@ -517,7 +531,7 @@
                     <span>📍 CONVERSION_STREAM_NODES:</span>
                     <span id="geo-premium-badge" style="font-size:0.65rem; color:var(--neon-amber); display:none; font-family:'Orbitron',sans-serif;">👑 LIVE_FEED</span>
                 </div>
-                <div id="admin-group-stats" style="background: #05060f; padding: 12px; font-size: 0.8rem; color: var(--text-dark); border: 1px solid rgba(255,255,255,0.03);">
+                <div id="admin-group-stats" style="background: var(--surface); padding: 12px; font-size: 0.8rem; color: var(--text-dark); border: 1px solid rgba(255,255,255,0.03); min-height: 40px;">
                     <span id="group-stats-placeholder">Awaiting datastream package requests...</span>
                 </div>
             </div>
@@ -528,7 +542,7 @@
                 <h2>👑 OVERLORD_ULTRA_VIP_PASS</h2>
                 <p>Anula los sistemas restrictivos del cortafuegos base y activa la inyección de flujos comerciales y conversión modular avanzada.</p>
                 
-                <ul style="font-size: 0.85rem; color: #a4b3c6; list-style: none; margin-bottom: 20px;">
+                <ul style="font-size: 0.85rem; color: var(--text-secondary); list-style: none; margin-bottom: 20px;">
                     <li style="margin-bottom: 8px; display:flex; align-items:center; gap:6px;">⚡ <span style="color:#fff">Desbloqueo total de compuertas lógicas (Anuncios y API Telegram).</span></li>
                     <li style="margin-bottom: 8px; display:flex; align-items:center; gap:6px;">⚡ <span style="color:#fff">Configuración manual de temporizadores de desencriptación.</span></li>
                     <li style="margin-bottom: 8px; display:flex; align-items:center; gap:6px;">⚡ <span style="color:#fff">Eliminación absoluta del carrusel de balizaje publicitario.</span></li>
@@ -536,654 +550,760 @@
                 </ul>
 
                 <div class="input-group">
-                    <label class="input-label">TRANSACTION_GATEWAY</label>
-                    <select id="billing-method" class="input-field" style="background: #05060f;">
+                    <label class="input-label" for="billing-method">TRANSACTION_GATEWAY</label>
+                    <select id="billing-method" class="input-field" style="background: var(--surface);">
                         <option value="Binance Pay (USDT)">Binance Corporate Pay (USDT TRC20)</option>
                         <option value="Telegram Stars (Estrellas)">Telegram Matrix Stars (Estrellas)</option>
                     </select>
                 </div>
 
-                <button onclick="solicitarPremiumAirdayz()" class="btn btn-gold">💳 REQUEST_UPLINK_ACCESS @Airdayz</button>
+                <button id="btn-request-premium" class="btn btn-gold">💳 REQUEST_UPLINK_ACCESS @Airdayz</button>
             </div>
 
-            <div class="card" id="premium-activation-key-card" style="border-color: var(--neon-magenta);">
-                <div class="input-label" style="color: var(--neon-magenta);">🔑 INJECT_LICENSE_KEYPACK</div>
+            <div class="card" id="premium-activation-key-card" style="border-color: var(--neon-amber);">
+                <div class="input-label" style="color: var(--neon-amber);">🔑 INJECT_LICENSE_KEYPACK</div>
                 <input type="text" id="licence-key-input" class="input-field" placeholder="Firma SHA256 / Llave criptográfica...">
-                <button onclick="inyectarLlaveLicenciaLocal()" class="btn btn-purple" style="margin-top: 12px;">VALIDATE_SIGNATURE</button>
+                <button id="btn-validate-license" class="btn btn-purple" style="margin-top: 12px;">VALIDATE_SIGNATURE</button>
             </div>
         </div>
 
         <div id="saas-watermark" class="watermark">
-            CORE ENGINE RUNNING ON <a href="javascript:void(0);" onclick="cambiarPestana('billing')">VIRAL_BOOM_SAAS_v4.0</a>
+            CORE ENGINE RUNNING ON <button id="btn-watermark-link" style="background:none; border:none; color:var(--neon-amber); font-weight:bold; cursor:pointer; text-shadow:var(--glow-amber);">VIRAL_BOOM_SAAS_v4.0</button>
         </div>
 
     </main> 
     
     <div id="premium-carousel-wrapper" class="adv-carousel-wrapper">
         <div id="adv-carousel-inner" class="adv-carousel-inner">
-            <div class="adv-slide" style="border-left: 4px solid var(--neon-magenta);">🔥 OVERRIDE: Gana +$50 USDT diarios en nuestro Bot Quant Trading. Desliza feed.</div>
+            <div class="adv-slide" style="border-left: 4px solid var(--neon-amber);">🔥 OVERRIDE: Gana +$50 USDT diarios en nuestro Bot Quant Trading. Desliza feed.</div>
             <div class="adv-slide" style="border-left: 4px solid var(--neon-cyan);">🚀 NET_BOOST: Multiplica canales orgánicamente con algoritmos automatizados Pro.</div>
             <div class="adv-slide" style="border-left: 4px solid var(--neon-amber);">💎 UPGRADE: Inyecta el pase de Licencia Premium y limpia este feed comercial hoy.</div>
         </div>
     </div>
 
     <nav class="nav-bar">
-        <button onclick="cambiarPestana('client')" id="nav-client" class="nav-item active">
+        <button id="nav-client" class="nav-item active">
             <span>🎯</span>NET_NODES
         </button>
-        <button onclick="cambiarPestana('admin')" id="nav-admin" class="nav-item">
+        <button id="nav-admin" class="nav-item">
             <span>⚡</span>CORE_CONSOLE
         </button>
-        <button onclick="cambiarPestana('billing')" id="nav-billing" class="nav-item">
+        <button id="nav-billing" class="nav-item">
             <span>👑</span>LICENSE_UP
         </button>
     </nav>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
-
-        const SUPABASE_URL = "https://hdvmoeuggbuxvdeoprks.supabase.co"; 
-        let supabase = null;
-        try {
-            if(window.supabase && SUPABASE_URL) {
-                const cleanKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhkdm1vZXVnZ2J1eHZkZW9wcmtzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTY4NTAwMDAsImV4cCI6MjAyNDQxMDAwMH0.c2J_cHVibslhYWJsZXMudVNYiW1fX_Bg66o9ejBYq-evg_coAQBw8d";
-                supabase = window.supabase.createClient(SUPABASE_URL, cleanKey);
+        // Centralización Segura del Almacenamiento Local (Evita accesos IO repetidos e inseguros)
+        const Storage = {
+            get(key, defaultValue) {
+                try {
+                    const item = localStorage.getItem(key);
+                    return item ? JSON.parse(item) : defaultValue;
+                } catch (e) {
+                    console.error("Error leyendo LocalStorage para clave: " + key, e);
+                    return defaultValue;
+                }
+            },
+            set(key, value) {
+                try {
+                    localStorage.setItem(key, JSON.stringify(value));
+                } catch (e) {
+                    console.error("Error escribiendo en LocalStorage para clave: " + key, e);
+                }
+            },
+            remove(key) {
+                localStorage.removeItem(key);
             }
-        } catch(err) {
-            console.error("Error al enlazar los canales de Supabase:", err);
-        }
-
-        let appState = {
-            isPremium: false,
-            userId: "99999999", 
-            username: "sin_alias",
-            firstName: "Developer",
-            chatInstance: "global_context",
-            campañaActivaLocal: null,
-            referidosLogrados: 0,
-            clicsTotalesEnlace: 0,
-            groupStats: {},
-            adTimerInterval: null,
-            adSecondsLeft: 30,
-            adCompleted: false,
-            firstTimeLoginDate: "",
-            tgChannelJoined: false
         };
 
-        async function inicializarFlujoAplicacion() {
-            inicializarDatosUsuarioTelegram();
-            await ejecutarVerificacionLicenciaBase();
-            await recuperarEstadisticasBD();
-            await evaluarFlujoDeepLinkingDeEntrada();
-            renderizarPantallasDinamicas();
-            actualizarContadorHeader();
-        }
+        const App = {
+            state: {
+                isPremium: false,
+                userId: "99999999", 
+                username: "sin_alias",
+                firstName: "Developer",
+                chatInstance: "global_context",
+                campañaActivaLocal: null,
+                referidosLogrados: 0,
+                clicsTotalesEnlace: 0,
+                groupStats: {},
+                adTimerInterval: null,
+                adSecondsLeft: 30,
+                adCompleted: false,
+                firstTimeLoginDate: "",
+                tgChannelJoined: false,
+                carouselIndex: 0,
+                carouselTimer: null,
+                isCarouselPaused: false
+            },
 
-        document.addEventListener("DOMContentLoaded", () => {
-            let savedFirstDate = localStorage.getItem("bv_first_login");
-            if (!savedFirstDate) {
-                const hoy = new Date();
-                savedFirstDate = hoy.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
-                localStorage.setItem("bv_first_login", savedFirstDate);
-            }
-            appState.firstTimeLoginDate = savedFirstDate;
-            document.getElementById("profile-plan-start").innerText = savedFirstDate;
+            supabaseClient: null,
+            tg: window.Telegram.WebApp,
 
-            actualizarFormularioPorTipoCam();
-            inicializarTouchCarrusel();
-            
-            const backupCampLocal = localStorage.getItem("campaña_local_backup");
-            if (backupCampLocal) {
+            init() {
+                this.tg.ready();
+                this.tg.expand();
+
+                const SUPABASE_URL = "https://hdvmoeuggbuxvdeoprks.supabase.co"; 
                 try {
-                    appState.campañaActivaLocal = JSON.parse(backupCampLocal);
+                    if (window.supabase && SUPABASE_URL) {
+                        const cleanKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhkdm1vZXVnZ2J1eHZkZW9wcmtzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTY4NTAwMDAsImV4cCI6MjAyNDQxMDAwMH0.c2J_cHVibslhYWJsZXMudVNYiW1fX_Bg66o9ejBYq-evg_coAQBw8d";
+                        this.supabaseClient = window.supabase.createClient(SUPABASE_URL, cleanKey);
+                    }
+                } catch(err) {
+                    console.error("Error al enlazar los canales de Supabase:", err);
+                }
+
+                this.setupDates();
+                this.bindEvents();
+                this.inicializarFlujoAplicacion();
+                this.startCarouselEngine();
+            },
+
+            setupDates() {
+                let savedFirstDate = Storage.get("bv_first_login", null);
+                if (!savedFirstDate) {
+                    const hoy = new Date();
+                    savedFirstDate = hoy.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                    Storage.set("bv_first_login", savedFirstDate);
+                }
+                this.state.firstTimeLoginDate = savedFirstDate;
+                document.getElementById("profile-plan-start").textContent = savedFirstDate;
+
+                this.state.campañaActivaLocal = Storage.get("campaña_local_backup", null);
+            },
+
+            bindEvents() {
+                // Desacoplamiento total de JS y HTML (onclick inline eliminados)
+                document.getElementById("btn-header-profile").addEventListener("click", () => this.abrirModalPerfil());
+                document.getElementById("btn-close-profile-modal").addEventListener("click", (e) => this.cerrarModalPerfil(e));
+                document.getElementById("btn-join-channel").addEventListener("click", () => this.abrirEspacioRequisito());
+                document.getElementById("btn-share-viral").addEventListener("click", () => this.compartirEnlaceReferido());
+                document.getElementById("btn-claim-reward").addEventListener("click", () => this.reclamarRecompensaFinal());
+                document.getElementById("btn-deploy-campaign").addEventListener("click", () => this.guardarCampanaAdmin());
+                document.getElementById("btn-validate-license").addEventListener("click", () => this.inyectarLlaveLicenciaLocal());
+                document.getElementById("btn-request-premium").addEventListener("click", () => this.solicitarPremiumAirdayz());
+                document.getElementById("btn-watermark-link").addEventListener("click", () => this.cambiarPestana('billing'));
+                
+                document.getElementById("setup-campaign-type").addEventListener("change", () => this.actualizarFormularioPorTipoCam());
+
+                // Botones de Navegación del TabBar
+                document.getElementById("nav-client").addEventListener("click", () => this.cambiarPestana('client'));
+                document.getElementById("nav-admin").addEventListener("click", () => this.cambiarPestana('admin'));
+                document.getElementById("nav-billing").addEventListener("click", () => this.cambiarPestana('billing'));
+
+                // Control Inteligente de Visibilidad de Pestaña para suspender el bucle del carrusel publicitario
+                document.addEventListener("visibilitychange", () => {
+                    if (document.hidden) {
+                        this.pauseCarousel();
+                    } else {
+                        this.resumeCarousel();
+                    }
+                });
+
+                // Pausar Carrusel si el usuario interactúa físicamente con él
+                const carouselWrapper = document.getElementById("premium-carousel-wrapper");
+                carouselWrapper.addEventListener("touchstart", () => this.pauseCarousel(), { passive: true });
+                carouselWrapper.addEventListener("touchend", () => {
+                    setTimeout(() => this.resumeCarousel(), 5000);
+                }, { passive: true });
+            },
+
+            async inicializarFlujoAplicacion() {
+                this.inicializarDatosUsuarioTelegram();
+                await this.ejecutarVerificacionLicenciaBase();
+                await this.recuperarEstadisticasBD();
+                await this.evaluarFlujoDeepLinkingDeEntrada();
+                this.renderizarPantallasDinamicas();
+                this.actualizarContadorHeader();
+                this.actualizarFormularioPorTipoCam();
+            },
+
+            inicializarDatosUsuarioTelegram() {
+                const u = this.tg.initDataUnsafe?.user;
+                if(u) {
+                    this.state.userId = u.id.toString();
+                    this.state.username = u.username || "sin_alias";
+                    this.state.firstName = u.first_name || "Usuario";
+                    this.state.chatInstance = this.tg.initDataUnsafe?.chat_instance || "direct_chat";
+                }
+
+                document.getElementById("user-display-name").textContent = this.state.firstName.toUpperCase();
+                const avatarBox = document.getElementById("user-avatar-box");
+                const modalAvatarBox = document.getElementById("modal-avatar-box");
+                
+                if (u && u.photo_url) {
+                    const imgExistente = avatarBox.querySelector("img");
+                    if(imgExistente) imgExistente.remove();
+                    
+                    const img = document.createElement("img");
+                    img.src = u.photo_url;
+                    img.alt = "Profile";
+                    avatarBox.appendChild(img);
+                    
+                    modalAvatarBox.innerHTML = "";
+                    const imgModal = img.cloneNode(true);
+                    modalAvatarBox.appendChild(imgModal);
+                } else {
+                    const inicial = this.state.firstName.charAt(0).toUpperCase();
+                    document.getElementById("avatar-fallback").textContent = inicial;
+                    document.getElementById("modal-avatar-fallback").textContent = inicial;
+                }
+            },
+
+            async ejecutarVerificacionLicenciaBase() {
+                const ahora = Date.now();
+                const localPremiumUntil = localStorage.getItem(`bv_premium_until_${this.state.userId}`);
+                
+                if (localPremiumUntil && parseInt(localPremiumUntil) > ahora) {
+                    this.activarInterfazPremiumVisual();
+                    return;
+                }
+
+                if(!this.supabaseClient) {
+                    this.desactivarInterfazPremiumVisual();
+                    return;
+                }
+
+                try {
+                    const { data, error } = await this.supabaseClient
+                        .from('licenses')
+                        .select('*')
+                        .eq('used_by_tg_id', this.state.userId)
+                        .eq('is_used', true);
+
+                    if (!error && data && data.length > 0) {
+                        const licenciaActiva = data[0];
+                        const fechaActivacion = new Date(licenciaActiva.activated_at).getTime();
+                        const diasEnMilisegundos = licenciaActiva.duration_days * 24 * 60 * 60 * 1000;
+                        const fechaExpiracion = fechaActivacion + diasEnMilisegundos;
+
+                        if (ahora < fechaExpiracion) {
+                            localStorage.setItem(`bv_premium_until_${this.state.userId}`, fechaExpiracion);
+                            this.activarInterfazPremiumVisual();
+                            return;
+                        }
+                    }
                 } catch(e) {
-                    localStorage.removeItem("campaña_local_backup");
+                    console.error("Fallo al consultar licencias:", e);
                 }
-            }
+                this.desactivarInterfazPremiumVisual();
+            },
 
-            let chequeosEfectuados = 0;
-            const intervaloChequeo = setInterval(() => {
-                chequeosEfectuados++;
-                if ((tg.initDataUnsafe && tg.initDataUnsafe.user) || chequeosEfectuados >= 10) {
-                    clearInterval(intervaloChequeo);
-                    inicializarFlujoAplicacion();
+            activarInterfazPremiumVisual() {
+                this.state.isPremium = true;
+                
+                // Actualizaciones de nodos parciales (Evita mutaciones pesadas de layout)
+                const statusBadge = document.getElementById("status-badge");
+                statusBadge.textContent = "OVERLORD_VIP";
+                statusBadge.className = "badge badge-premium";
+                
+                const planStatus = document.getElementById("profile-plan-status");
+                planStatus.textContent = "OVERLORD_VIP_RANK";
+                planStatus.style.color = "var(--neon-amber)";
+                
+                const avatarGlow = document.getElementById("user-avatar-glow");
+                avatarGlow.style.backgroundColor = "var(--neon-amber)";
+                avatarGlow.style.boxShadow = "var(--glow-amber)";
+                
+                document.getElementById("premium-carousel-wrapper").style.display = "none";
+                document.getElementById("premium-activation-key-card").style.display = "none";
+                
+                document.getElementById("nav-client").style.display = "flex";
+                document.getElementById("nav-admin").style.display = "flex"; 
+                document.getElementById("nav-billing").style.display = "none"; 
+                
+                this.habilitarOpcionesPremiumAdmin();
+                this.pauseCarousel();
+            },
+
+            desactivarInterfazPremiumVisual() {
+                this.state.isPremium = false;
+                
+                const statusBadge = document.getElementById("status-badge");
+                statusBadge.textContent = "PROT_GUEST";
+                statusBadge.className = "badge";
+                
+                const planStatus = document.getElementById("profile-plan-status");
+                planStatus.textContent = "FREE_TIER_NODE";
+                planStatus.style.color = "var(--text-cyber)";
+                
+                const avatarGlow = document.getElementById("user-avatar-glow");
+                avatarGlow.style.backgroundColor = "var(--neon-lime)";
+                avatarGlow.style.boxShadow = "0 0 6px var(--neon-lime)";
+                
+                document.getElementById("premium-carousel-wrapper").style.display = "block";
+                document.getElementById("premium-activation-key-card").style.display = "block";
+                
+                document.getElementById("nav-client").style.display = "flex";
+                document.getElementById("nav-admin").style.display = "flex";   
+                document.getElementById("nav-billing").style.display = "flex"; 
+                
+                this.deshabilitarOpcionesPremiumAdmin();
+            },
+
+            habilitarOpcionesPremiumAdmin() {
+                ["ad_text", "ad_image", "ad_video", "sub_channel", "join_group"].forEach(id => {
+                    const opt = document.getElementById(`opt-${id}`);
+                    if(opt) { opt.disabled = false; opt.textContent = opt.textContent.replace(" 🔒 Pro", ""); }
+                });
+                document.getElementById("setup-ad-duration").disabled = false;
+            },
+
+            deshabilitarOpcionesPremiumAdmin() {
+                ["ad_text", "ad_image", "ad_video", "sub_channel", "join_group"].forEach(id => {
+                    const opt = document.getElementById(`opt-${id}`);
+                    if(opt && !opt.textContent.includes("🔒 Pro")) { opt.disabled = true; opt.textContent += " 🔒 Pro"; }
+                });
+                document.getElementById("setup-ad-duration").disabled = true;
+            },
+
+            async recuperarEstadisticasBD() {
+                if (!this.state.campañaActivaLocal || !this.supabaseClient) return;
+                const ownerId = this.state.campañaActivaLocal.ownerId;
+
+                try {
+                    const { count, error } = await this.supabaseClient
+                        .from('referrals')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('campaign_owner_id', ownerId);
+
+                    if (!error) {
+                        this.state.referidosLogrados = count || 0;
+                        document.getElementById("meta-loops").textContent = this.state.referidosLogrados;
+                        document.getElementById("meta-clicks").textContent = Math.floor(this.state.referidosLogrados * 1.4);
+                    }
+                } catch(e) {
+                    console.error("Error recuperando estadísticas:", e);
                 }
-            }, 100);
-        });
 
-        function inicializarDatosUsuarioTelegram() {
-            const u = tg.initDataUnsafe?.user;
-            if(u) {
-                appState.userId = u.id.toString();
-                appState.username = u.username || "sin_alias";
-                appState.firstName = u.first_name || "Usuario";
-                appState.chatInstance = tg.initDataUnsafe?.chat_instance || "direct_chat";
-            }
+                const container = document.getElementById("admin-group-stats");
+                if (this.state.referidosLogrados > 0) {
+                    container.innerHTML = `<div style="display:flex; justify-content:space-between; font-family:'Orbitron',sans-serif;"><span>DATA_STREAM_FEED:</span> <span style="color:var(--neon-lime)">• CLOUD_SYNC_ON</span></div>`;
+                } else {
+                    container.textContent = "Awaiting datastream package requests...";
+                }
+            },
 
-            document.getElementById("user-display-name").innerText = appState.firstName.toUpperCase();
-            const avatarBox = document.getElementById("user-avatar-box");
-            const modalAvatarBox = document.getElementById("modal-avatar-box");
-            
-            if (u && u.photo_url) {
-                const imgExistente = avatarBox.querySelector("img");
-                if(imgExistente) imgExistente.remove();
+            async evaluarFlujoDeepLinkingDeEntrada() {
+                const startParam = this.tg.initDataUnsafe?.start_param;
+                if(!startParam) return;
+
+                try {
+                    let base64Clean = startParam.replace(/-/g, '+').replace(/_/g, '/');
+                    while (base64Clean.length % 4) { base64Clean += '='; }
+                    
+                    const binaryString = atob(base64Clean);
+                    const bytes = new Uint8Array(binaryString.length);
+                    for (let i = 0; i < binaryString.length; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
+                    }
+                    const decodedText = new TextDecoder('utf-8').decode(bytes);
+                    const payload = JSON.parse(decodedText);
+
+                    if(payload && payload.secret_url) {
+                        this.state.campañaActivaLocal = {
+                            titulo: payload.title, 
+                            desc: payload.description, 
+                            secreto: payload.secret_url,
+                            tipo: payload.type || "invitation", 
+                            requeridos: parseInt(payload.req_slots) || 3,
+                            tgTarget: payload.tg_target || "", 
+                            adValue: payload.ad_val || "", 
+                            adDuration: parseInt(payload.ad_dur) || 30,
+                            startDate: payload.s_date ? parseInt(payload.s_date) : null, 
+                            endDate: payload.e_date ? parseInt(payload.e_date) : null,
+                            ownerId: payload.owner
+                        };
+                        
+                        Storage.set("campaña_local_backup", this.state.campañaActivaLocal);
+
+                        if(payload.owner && payload.owner !== this.state.userId && this.supabaseClient) {
+                            await this.supabaseClient.from('referrals').insert([
+                                { campaign_owner_id: payload.owner, referred_user_id: this.state.userId }
+                            ]);
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error decodificando nodo cuántico:", e);
+                }
+            },
+
+            async guardarCampanaAdmin() {
+                const t = document.getElementById("setup-title").value.trim();
+                const d = document.getElementById("setup-desc").value.trim();
+                const s = document.getElementById("setup-secret").value.trim();
+                const type = document.getElementById("setup-campaign-type").value;
+                const sDate = document.getElementById("setup-start-date").value;
+                const eDate = document.getElementById("setup-end-date").value;
+
+                if(!t || !s) {
+                    this.tg.showAlert("❌ Identificador de Recurso y Enlace de Destino obligatorios.");
+                    return;
+                }
+                if(!this.supabaseClient) {
+                    this.tg.showAlert("❌ Error de comunicación: Base de datos no vinculada.");
+                    return;
+                }
+
+                let r = parseInt(document.getElementById("setup-req-count").value) || 3;
+                const adDur = parseInt(document.getElementById("setup-ad-duration").value) || 30;
+
+                const nuevaCampana = {
+                    id: this.state.userId, 
+                    title: t, 
+                    description: d, 
+                    secret_url: s, 
+                    type: type, 
+                    req_slots: r,
+                    tg_target: document.getElementById("setup-tg-target").value.trim(), 
+                    ad_value: document.getElementById("setup-ad-value").value.trim(),
+                    ad_duration: adDur, 
+                    start_date: sDate ? new Date(sDate).toISOString() : null, 
+                    end_date: eDate ? new Date(eDate).toISOString() : null
+                };
+
+                const { error } = await this.supabaseClient.from('campaigns').upsert([nuevaCampana]);
+
+                if (error) {
+                    this.tg.showAlert("❌ TRANSMISSION_ERROR: " + error.message);
+                    return;
+                }
+
+                this.state.campañaActivaLocal = {
+                    titulo: t, desc: d, secreto: s, tipo: type, requeridos: r,
+                    tgTarget: nuevaCampana.tg_target, adValue: nuevaCampana.ad_value, adDuration: adDur,
+                    startDate: nuevaCampana.start_date ? new Date(nuevaCampana.start_date).getTime() : null, 
+                    endDate: nuevaCampana.end_date ? new Date(nuevaCampana.end_date).getTime() : null, 
+                    ownerId: this.state.userId
+                };
+
+                Storage.set("campaña_local_backup", this.state.campañaActivaLocal);
+                this.tg.showAlert("🚀 NODE_COMPILED: ¡Configuración inyectada con éxito!");
                 
-                const img = document.createElement("img");
-                img.src = u.photo_url;
-                img.alt = "Profile";
-                avatarBox.appendChild(img);
+                this.state.referidosLogrados = 0;
+                this.state.adCompleted = false;
+                this.state.tgChannelJoined = false;
+                if(this.state.adTimerInterval) { clearInterval(this.state.adTimerInterval); this.state.adTimerInterval = null; }
                 
-                modalAvatarBox.innerHTML = `<img src="${u.photo_url}" alt="Profile">`;
-            } else {
-                const inicial = appState.firstName.charAt(0).toUpperCase();
-                document.getElementById("avatar-fallback").innerText = inicial;
-                document.getElementById("modal-avatar-fallback").innerText = inicial;
-            }
-        }
+                this.renderizarPantallasDinamicas();
+                this.actualizarContadorHeader();
+                this.cambiarPestana('client');
+            },
 
-        async function ejecutarVerificacionLicenciaBase() {
-            const ahora = new Date().getTime();
-            const localPremiumUntil = localStorage.getItem(`bv_premium_until_${appState.userId}`);
-            
-            if (localPremiumUntil && parseInt(localPremiumUntil) > ahora) {
-                activarInterfazPremiumVisual();
-                return;
-            }
+            async inyectarLlaveLicenciaLocal() {
+                const inputKey = document.getElementById("licence-key-input").value.trim();
+                if (!inputKey) {
+                    this.tg.showAlert("⚠️ Introduce un hash de firma válido.");
+                    return;
+                }
+                if (!this.supabaseClient) {
+                    this.tg.showAlert("❌ Canal de datos inactivo.");
+                    return;
+                }
 
-            if(!supabase) {
-                desactivarInterfazPremiumVisual();
-                return;
-            }
-
-            try {
-                const { data, error } = await supabase
+                const { data: licencia, error } = await this.supabaseClient
                     .from('licenses')
                     .select('*')
-                    .eq('used_by_tg_id', appState.userId)
-                    .eq('is_used', true);
+                    .eq('license_key', inputKey)
+                    .eq('is_used', false);
 
-                if (!error && data && data.length > 0) {
-                    const licenciaActiva = data[0];
-                    const fechaActivacion = new Date(licenciaActiva.activated_at).getTime();
-                    const diasEnMilisegundos = licenciaActiva.duration_days * 24 * 60 * 60 * 1000;
-                    const fechaExpiracion = fechaActivacion + diasEnMilisegundos;
+                if (error || !licencia || licencia.length === 0) {
+                    this.tg.showAlert("❌ Firma inválida o consumida por otra ID.");
+                    return;
+                }
 
-                    if (ahora < fechaExpiracion) {
-                        localStorage.setItem(`bv_premium_until_${appState.userId}`, fechaExpiracion);
-                        activarInterfazPremiumVisual();
+                const lic = licencia[0];
+                await this.supabaseClient.from('licenses').update({
+                    is_used: true, used_by_tg_id: this.state.userId, activated_at: new Date().toISOString()
+                }).eq('license_key', inputKey);
+
+                this.tg.showAlert("🎉 ACCESS_GRANTED: ¡Llave del Núcleo Validada con éxito!");
+                localStorage.setItem(`bv_premium_until_${this.state.userId}`, new Date().getTime() + (lic.duration_days * 24 * 60 * 60 * 1000));
+                this.activarInterfazPremiumVisual();
+                this.cambiarPestana('admin');
+            },
+
+            /* MOTOR DE RENDEREADO MOTORIZADO PARCIALMENTE (Uso de textContent y Fragmentos Seguros) */
+            renderizarPantallasDinamicas() {
+                const camp = this.state.campañaActivaLocal;
+                const cardNoCam = document.getElementById("card-no-campaign");
+                const cardUnlock = document.getElementById("card-viral-unlock");
+                const cardStatusMsg = document.getElementById("card-campaign-status-msg");
+
+                if(!camp) {
+                    cardNoCam.style.display = "block";
+                    cardUnlock.style.display = "none";
+                    cardStatusMsg.style.display = "none";
+                    return;
+                }
+
+                const ahora = Date.now();
+                if(camp.startDate && ahora < camp.startDate) {
+                    cardNoCam.style.display = "none";
+                    cardUnlock.style.display = "none";
+                    cardStatusMsg.style.display = "block";
+                    document.getElementById("status-msg-title").textContent = "⏳ TIME_LOCK_ACTIVE";
+                    document.getElementById("status-msg-desc").textContent = `Uplink sincronizado para abrirse el: ${new Date(camp.startDate).toLocaleString()}`;
+                    return;
+                }
+                if(camp.endDate && ahora > camp.endDate) {
+                    cardNoCam.style.display = "none";
+                    cardUnlock.style.display = "none";
+                    cardStatusMsg.style.display = "block";
+                    document.getElementById("status-msg-title").textContent = "⌛ NODE_EXPIRED";
+                    document.getElementById("status-msg-desc").textContent = "El ciclo de vida útil asignado a esta firma digital ha finalizado.";
+                    return;
+                }
+
+                cardNoCam.style.display = "none";
+                cardStatusMsg.style.display = "none";
+                cardUnlock.style.display = "block";
+
+                document.getElementById("viral-title").textContent = camp.titulo.toUpperCase();
+                document.getElementById("viral-desc").textContent = camp.desc;
+                document.getElementById("viral-type-badge").textContent = camp.tipo.toUpperCase();
+
+                document.getElementById("step-referrals").style.display = "none";
+                document.getElementById("step-channel").style.display = "none";
+                document.getElementById("step-dynamic-ad").style.display = "none";
+                document.getElementById("btn-share-viral").style.display = "none";
+
+                if(camp.tipo === "invitation") {
+                    document.getElementById("step-referrals").style.display = "block";
+                    document.getElementById("btn-share-viral").style.display = "block";
+                    
+                    const porcentaje = Math.min((this.state.referidosLogrados / camp.requeridos) * 100, 100);
+                    document.getElementById("progress-text").textContent = `${this.state.referidosLogrados} / ${camp.requeridos} CLONES`;
+                    document.getElementById("progress-bar-fill").style.width = `${porcentaje}%`;
+
+                    this.evaluarDesbloqueoFinal(this.state.referidosLogrados >= camp.requeridos);
+                } else if(camp.tipo === "sub_channel" || camp.tipo === "join_group") {
+                    document.getElementById("step-channel").style.display = "block";
+                    document.getElementById("tg-step-label").textContent = camp.tipo === "sub_channel" ? "STATION_SUBSCRIPTION" : "CLUSTER_TUNNELING";
+                    document.getElementById("tg-step-desc").textContent = `Sincroniza terminal con el alias @${camp.tgTarget || 'comunidad'} para abrir compuerta.`;
+                    this.evaluarDesbloqueoFinal(this.state.tgChannelJoined); 
+                } else if(camp.tipo.startsWith("ad_")) {
+                    document.getElementById("step-dynamic-ad").style.display = "block";
+                    const adRender = document.getElementById("ad-content-render");
+                    
+                    adRender.innerHTML = ""; // Limpieza profunda preventiva de nodos
+                    if(camp.tipo === "ad_text") {
+                        const txtSpan = document.createElement("span");
+                        txtSpan.style.color = "#fff";
+                        txtSpan.style.fontWeight = "bold";
+                        txtSpan.textContent = camp.adValue;
+                        adRender.appendChild(txtSpan);
+                    } else if(camp.tipo === "ad_image") {
+                        const adImg = document.createElement("img");
+                        adImg.src = camp.adValue;
+                        adImg.style.width = "100%";
+                        adImg.style.maxHeight = "160px";
+                        adImg.style.objectFit = "cover";
+                        adImg.style.border = "1px solid var(--neon-cyan)";
+                        adRender.appendChild(adImg);
+                    } else if(camp.tipo === "ad_video") {
+                        const adVid = document.createElement("video");
+                        adVid.src = camp.adValue;
+                        adVid.autoplay = true;
+                        adVid.muted = true;
+                        adVid.loop = true;
+                        adVid.playsInline = true;
+                        adVid.style.width = "100%";
+                        adVid.style.maxHeight = "160px";
+                        adVid.style.objectFit = "cover";
+                        adVid.style.border = "1px solid var(--neon-amber)";
+                        adRender.appendChild(adVid);
+                    }
+
+                    if(!this.state.adCompleted && !this.state.adTimerInterval) {
+                        this.ejecutarContadorAnuncio(camp.adDuration);
+                    } else if(this.state.adCompleted) {
+                        document.getElementById("ad-timer").textContent = "DECRYPTED";
+                        this.evaluarDesbloqueoFinal(true);
+                    }
+                }
+            },
+
+            ejecutarContadorAnuncio(segundos) {
+                if (this.state.adTimerInterval) clearInterval(this.state.adTimerInterval);
+                this.state.adSecondsLeft = segundos;
+                document.getElementById("ad-timer").textContent = `${this.state.adSecondsLeft}s`;
+                
+                const btnClaim = document.getElementById("btn-claim-reward");
+                btnClaim.className = "btn btn-gold btn-disabled";
+                btnClaim.textContent = "⏳ PARSING_STREAM_DATA...";
+
+                this.state.adTimerInterval = setInterval(() => {
+                    this.state.adSecondsLeft--;
+                    if(this.state.adSecondsLeft <= 0) {
+                        clearInterval(this.state.adTimerInterval);
+                        this.state.adTimerInterval = null;
+                        this.state.adCompleted = true;
+                        document.getElementById("ad-timer").textContent = "DECRYPTED";
+                        this.renderizarPantallasDinamicas();
+                    } else {
+                        document.getElementById("ad-timer").textContent = `${this.state.adSecondsLeft}s`;
+                    }
+                }, 1000);
+            },
+
+            evaluarDesbloqueoFinal(condicion) {
+                const btnClaim = document.getElementById("btn-claim-reward");
+                if(condicion) {
+                    btnClaim.classList.remove("btn-disabled");
+                    btnClaim.className = "btn btn-gold";
+                    btnClaim.textContent = "🔓 ACCESS_GRANTED: OPEN_TARGET";
+                } else {
+                    btnClaim.classList.add("btn-disabled");
+                    btnClaim.textContent = "🔒 SYSTEM_LOCKED: REQS_PENDING";
+                }
+            },
+
+            compartirEnlaceReferido() {
+                const camp = this.state.campañaActivaLocal;
+                if(!camp) return;
+
+                const botUsername = "ImagesAI_TLG_Bot"; 
+                const payload = {
+                    title: camp.titulo, description: camp.desc, secret_url: camp.secreto,
+                    type: camp.tipo, req_slots: camp.requeridos, owner: camp.ownerId,
+                    referrer: this.state.userId, origin_chat: this.state.chatInstance
+                };
+
+                const jsonStr = JSON.stringify(payload);
+                const encoder = new TextEncoder();
+                const dataBytes = encoder.encode(jsonStr);
+                let binary = "";
+                for (let i = 0; i < dataBytes.byteLength; i++) {
+                    binary += String.fromCharCode(dataBytes[i]);
+                }
+                const b64 = btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+                    
+                const deepLinkFinal = `https://t.me/${botUsername}/app?startapp=${b64}`;
+                let mensajeCompartir = `🔥 *⚡ DATALOCK DETECTED ⚡* 🔥\n\nDistribuyendo acceso para: *${camp.titulo}*.\n📥 Sincroniza tu ID de red aquí para reclamar la copia segura:`;
+                this.tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(deepLinkFinal)}&text=${encodeURIComponent(mensajeCompartir)}`);
+            },
+
+            reclamarRecompensaFinal() {
+                if (document.getElementById("btn-claim-reward").classList.contains("btn-disabled")) return;
+                this.tg.showPopup({
+                    title: "🔓 LINK_UNLOCKED",
+                    message: "Protocolo de desencriptación exitoso. Abre el túnel seguro hacia el destino de los datos.",
+                    buttons: [{type: "default", text: "REDIRECT_STATION"}]
+                }, () => {
+                    this.tg.openLink(this.state.campañaActivaLocal.secreto);
+                });
+            },
+
+            abrirEspacioRequisito() {
+                const camp = this.state.campañaActivaLocal;
+                if (!camp || !camp.tgTarget) return;
+                let targetUrl = camp.tgTarget.startsWith("http") ? camp.tgTarget : `https://t.me/${camp.tgTarget}`;
+                this.tg.openTelegramLink(targetUrl);
+                this.state.tgChannelJoined = true;
+                this.evaluarDesbloqueoFinal(true);
+            },
+
+            solicitarPremiumAirdayz() {
+                const metodo = document.getElementById("billing-method").value;
+                const textoMensaje = `¡Hola @Airdayz! Solicito pasaporte Overlord Premium para Bomba Viral 🚀.\n\n` +
+                                     `• ID_Firma: \`${this.state.userId}\`\n• Gateway_Metodo: ${metodo}`;
+                this.tg.openTelegramLink(`https://t.me/Airdayz?text=${encodeURIComponent(textoMensaje)}`);
+            },
+
+            abrirModalPerfil() {
+                document.getElementById("modal-user-title").textContent = this.state.firstName.toUpperCase();
+                document.getElementById("modal-user-id").textContent = `NET_ADDR: ${this.state.userId}`;
+                
+                const modal = document.getElementById("modal-perfil-usuario");
+                modal.style.display = "flex"; 
+                
+                // Forzar lectura layout mínima para aplicar animación de opacidad por CSS
+                modal.offsetHeight;
+                modal.classList.add("active");
+            },
+
+            cerrarModalPerfil(event) {
+                if (event) event.stopPropagation();
+                const modal = document.getElementById("modal-perfil-usuario");
+                modal.classList.remove("active");
+                
+                setTimeout(() => {
+                    if (!modal.classList.contains('active')) {
+                        modal.style.display = 'none';
+                    }
+                }, 250); 
+            },
+
+            actualizarFormularioPorTipoCam() {
+                const type = document.getElementById("setup-campaign-type").value;
+                document.getElementById("group-opt-invitation").style.display = type === "invitation" ? "block" : "none";
+                document.getElementById("group-opt-telegram").style.display = (type === "sub_channel" || type === "join_group") ? "block" : "none";
+                document.getElementById("group-opt-ad").style.display = type.startsWith("ad_") ? "block" : "none";
+            },
+
+            cambiarPestana(target) {
+                const vistas = document.querySelectorAll('.view-section');
+                vistas.forEach(el => {
+                    el.classList.remove('active');
+                    el.style.display = "none";
+                });
+                
+                const botones = document.querySelectorAll('.nav-bar .nav-item');
+                botones.forEach(el => {
+                    el.classList.remove('active');
+                });
+                
+                const vistaObjetivo = document.getElementById(`view-${target}`);
+                const botonObjetivo = document.getElementById(`nav-${target}`);
+                
+                if (vistaObjetivo) {
+                    vistaObjetivo.classList.add('active');
+                    vistaObjetivo.style.display = "block";
+                }
+                if (botonObjetivo) {
+                    botonObjetivo.classList.add('active');
+                }
+                
+                if(target === 'client') this.renderizarPantallasDinamicas();
+            },
+
+            actualizarContadorHeader() {
+                document.getElementById("header-campaign-counter").textContent = this.state.campañaActivaLocal ? "CORE_UNITS: 1" : "CORE_UNITS: 0";
+            },
+
+            /* MOTOR DEL CARRUSEL DE ANUNCIOS OPTIMIZADO CONTRA CONSUMO DE CPU */
+            startCarouselEngine() {
+                const inner = document.getElementById("adv-carousel-inner");
+                if (!inner) return;
+
+                const runCarouselTick = () => {
+                    if(this.state.isPremium || this.state.isCarouselPaused || document.hidden) {
                         return;
                     }
-                }
-            } catch(e) {
-                console.error("Fallo al consultar licencias:", e);
+                    this.state.carouselIndex = (this.state.carouselIndex + 1) % 3;
+                    inner.style.transform = `translateX(${this.state.carouselIndex * -100}%)`;
+                };
+
+                // Uso controlado de setInterval con interruptores lógicos de visibilidad
+                this.state.carouselTimer = setInterval(runCarouselTick, 4000);
+            },
+
+            pauseCarousel() {
+                this.state.isCarouselPaused = true;
+            },
+
+            resumeCarousel() {
+                this.state.isCarouselPaused = false;
             }
-            desactivarInterfazPremiumVisual();
-        }
+        };
 
-        function activarInterfazPremiumVisual() {
-            appState.isPremium = true;
-            document.getElementById("status-badge").innerText = "OVERLORD_VIP";
-            document.getElementById("status-badge").className = "badge badge-premium";
-            document.getElementById("profile-plan-status").innerText = "OVERLORD_VIP_RANK";
-            document.getElementById("profile-plan-status").style.color = "var(--neon-amber)";
-            document.getElementById("user-avatar-glow").style.backgroundColor = "var(--neon-amber)";
-            document.getElementById("user-avatar-glow").style.boxShadow = "0 0 10px var(--neon-amber)";
-            
-            document.getElementById("premium-carousel-wrapper").style.display = "none";
-            document.getElementById("premium-activation-key-card").style.display = "none";
-            
-            document.getElementById("nav-client").style.display = "flex";
-            document.getElementById("nav-admin").style.display = "flex"; 
-            document.getElementById("nav-billing").style.display = "none"; 
-            
-            habilitarOpcionesPremiumAdmin();
-        }
-
-        function desactivarInterfazPremiumVisual() {
-            appState.isPremium = false;
-            document.getElementById("status-badge").innerText = "PROT_GUEST";
-            document.getElementById("status-badge").className = "badge";
-            document.getElementById("profile-plan-status").innerText = "FREE_TIER_NODE";
-            document.getElementById("profile-plan-status").style.color = "var(--text-cyber)";
-            document.getElementById("user-avatar-glow").style.backgroundColor = "var(--neon-lime)";
-            document.getElementById("user-avatar-glow").style.boxShadow = "0 0 8px var(--neon-lime)";
-            
-            document.getElementById("premium-carousel-wrapper").style.display = "block";
-            document.getElementById("premium-activation-key-card").style.display = "block";
-            
-            document.getElementById("nav-client").style.display = "flex";
-            document.getElementById("nav-admin").style.display = "flex";   
-            document.getElementById("nav-billing").style.display = "flex"; 
-            
-            deshabilitarOpcionesPremiumAdmin();
-        }
-
-        function habilitarOpcionesPremiumAdmin() {
-            ["ad_text", "ad_image", "ad_video", "sub_channel", "join_group"].forEach(id => {
-                const opt = document.getElementById(`opt-${id}`);
-                if(opt) { opt.disabled = false; opt.innerText = opt.innerText.replace(" 🔒 Pro", ""); }
-            });
-            document.getElementById("setup-ad-duration").disabled = false;
-        }
-
-        function deshabilitarOpcionesPremiumAdmin() {
-            ["ad_text", "ad_image", "ad_video", "sub_channel", "join_group"].forEach(id => {
-                const opt = document.getElementById(`opt-${id}`);
-                if(opt && !opt.innerText.includes("🔒 Pro")) { opt.disabled = true; opt.innerText += " 🔒 Pro"; }
-            });
-            document.getElementById("setup-ad-duration").disabled = true;
-        }
-
-        async function recuperarEstadisticasBD() {
-            if (!appState.campañaActivaLocal || !supabase) return;
-            const ownerId = appState.campañaActivaLocal.ownerId;
-
-            try {
-                const { count, error } = await supabase
-                    .from('referrals')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('campaign_owner_id', ownerId);
-
-                if (!error) {
-                    appState.referidosLogrados = count || 0;
-                    document.getElementById("meta-loops").innerText = appState.referidosLogrados;
-                    document.getElementById("meta-clicks").innerText = Math.floor(appState.referidosLogrados * 1.4);
-                }
-            } catch(e) {
-                console.error("Error recuperando estadísticas:", e);
-            }
-
-            const container = document.getElementById("admin-group-stats");
-            if (appState.referidosLogrados > 0) {
-                container.innerHTML = `<div style="display:flex; justify-content:space-between; font-family:'Orbitron',sans-serif;"><span>DATA_STREAM_FEED:</span> <span style="color:var(--neon-lime)">• CLOUD_SYNC_ON</span></div>`;
-            } else {
-                container.innerText = "Awaiting datastream package requests...";
-            }
-        }
-
-        async function evaluarFlujoDeepLinkingDeEntrada() {
-            const startParam = tg.initDataUnsafe?.start_param;
-            if(!startParam) return;
-
-            try {
-                let base64Clean = startParam.replace(/-/g, '+').replace(/_/g, '/');
-                while (base64Clean.length % 4) { base64Clean += '='; }
-                
-                // CORRECCIÓN CLAVE: Decodificación segura tolerante a caracteres UTF-8 extendidos (tildes/emojis)
-                const binaryString = atob(base64Clean);
-                const bytes = new Uint8Array(binaryString.length);
-                for (let i = 0; i < binaryString.length; i++) {
-                    bytes[i] = binaryString.charCodeAt(i);
-                }
-                const decodedText = new TextDecoder('utf-8').decode(bytes);
-                const payload = JSON.parse(decodedText);
-
-                if(payload && payload.secret_url) {
-                    appState.campañaActivaLocal = {
-                        titulo: payload.title, 
-                        desc: payload.description, 
-                        secreto: payload.secret_url,
-                        tipo: payload.type || "invitation", 
-                        requeridos: parseInt(payload.req_slots) || 3,
-                        tgTarget: payload.tg_target || "", 
-                        adValue: payload.ad_val || "", 
-                        adDuration: parseInt(payload.ad_dur) || 30,
-                        startDate: payload.s_date ? parseInt(payload.s_date) : null, 
-                        endDate: payload.e_date ? parseInt(payload.e_date) : null,
-                        ownerId: payload.owner
-                    };
-                    
-                    localStorage.setItem("campaña_local_backup", JSON.stringify(appState.campañaActivaLocal));
-
-                    if(payload.owner && payload.owner !== appState.userId && supabase) {
-                        await supabase.from('referrals').insert([
-                            { campaign_owner_id: payload.owner, referred_user_id: appState.userId }
-                        ]);
-                    }
-                }
-            } catch (e) {
-                console.error("Error decodificando nodo cuántico:", e);
-            }
-        }
-
-        async function guardarCampanaAdmin() {
-            const t = document.getElementById("setup-title").value.trim();
-            const d = document.getElementById("setup-desc").value.trim();
-            const s = document.getElementById("setup-secret").value.trim();
-            const type = document.getElementById("setup-campaign-type").value;
-            const sDate = document.getElementById("setup-start-date").value;
-            const eDate = document.getElementById("setup-end-date").value;
-
-            if(!t || !s) {
-                tg.showAlert("❌ Identificador de Recurso y Enlace de Destino obligatorios.");
-                return;
-            }
-            if(!supabase) {
-                tg.showAlert("❌ Error de comunicación: Base de datos no vinculada.");
-                return;
-            }
-
-            let r = parseInt(document.getElementById("setup-req-count").value) || 3;
-            const adDur = parseInt(document.getElementById("setup-ad-duration").value) || 30;
-
-            const nuevaCampana = {
-                id: appState.userId, 
-                title: t, 
-                description: d, 
-                secret_url: s, 
-                type: type, 
-                req_slots: r,
-                tg_target: document.getElementById("setup-tg-target").value.trim(), 
-                ad_value: document.getElementById("setup-ad-value").value.trim(),
-                ad_duration: adDur, 
-                start_date: sDate ? new Date(sDate).toISOString() : null, 
-                end_date: eDate ? new Date(eDate).toISOString() : null
-            };
-
-            const { error } = await supabase.from('campaigns').upsert([nuevaCampana]);
-
-            if (error) {
-                tg.showAlert("❌ TRANSMISSION_ERROR: " + error.message);
-                return;
-            }
-
-            appState.campañaActivaLocal = {
-                titulo: t, desc: d, secreto: s, tipo: type, requeridos: r,
-                tgTarget: nuevaCampana.tg_target, adValue: nuevaCampana.ad_value, adDuration: adDur,
-                startDate: nuevaCampana.start_date ? new Date(nuevaCampana.start_date).getTime() : null, 
-                endDate: nuevaCampana.end_date ? new Date(nuevaCampana.end_date).getTime() : null, 
-                ownerId: appState.userId
-            };
-
-            localStorage.setItem("campaña_local_backup", JSON.stringify(appState.campañaActivaLocal));
-            tg.showAlert("🚀 NODE_COMPILED: ¡Configuración inyectada con éxito!");
-            
-            appState.referidosLogrados = 0;
-            appState.adCompleted = false;
-            appState.tgChannelJoined = false;
-            if(appState.adTimerInterval) { clearInterval(appState.adTimerInterval); appState.adTimerInterval = null; }
-            
-            renderizarPantallasDinamicas();
-            actualizarContadorHeader();
-            cambiarPestana('client');
-        }
-
-        async function inyectarLlaveLicenciaLocal() {
-            const inputKey = document.getElementById("licence-key-input").value.trim();
-            if (!inputKey) {
-                tg.showAlert("⚠️ Introduce un hash de firma válido.");
-                return;
-            }
-            if (!supabase) {
-                tg.showAlert("❌ Canal de datos inactivo.");
-                return;
-            }
-
-            const { data: licencia, error } = await supabase
-                .from('licenses')
-                .select('*')
-                .eq('license_key', inputKey)
-                .eq('is_used', false);
-
-            if (error || !licencia || licencia.length === 0) {
-                tg.showAlert("❌ Firma inválida o consumida por otra ID.");
-                return;
-            }
-
-            const lic = licencia[0];
-            await supabase.from('licenses').update({
-                is_used: true, used_by_tg_id: appState.userId, activated_at: new Date().toISOString()
-            }).eq('license_key', inputKey);
-
-            tg.showAlert("🎉 ACCESS_GRANTED: ¡Llave del Núcleo Validada con éxito!");
-            localStorage.setItem(`bv_premium_until_${appState.userId}`, new Date().getTime() + (lic.duration_days * 24 * 60 * 60 * 1000));
-            activarInterfazPremiumVisual();
-            cambiarPestana('admin');
-        }
-
-        function renderizarPantallasDinamicas() {
-            const camp = appState.campañaActivaLocal;
-            const cardNoCam = document.getElementById("card-no-campaign");
-            const cardUnlock = document.getElementById("card-viral-unlock");
-            const cardStatusMsg = document.getElementById("card-campaign-status-msg");
-
-            if(!camp) {
-                cardNoCam.style.display = "block";
-                cardUnlock.style.display = "none";
-                cardStatusMsg.style.display = "none";
-                return;
-            }
-
-            const ahora = new Date().getTime();
-            if(camp.startDate && ahora < camp.startDate) {
-                cardNoCam.style.display = "none";
-                cardUnlock.style.display = "none";
-                cardStatusMsg.style.display = "block";
-                document.getElementById("status-msg-title").innerText = "⏳ TIME_LOCK_ACTIVE";
-                document.getElementById("status-msg-desc").innerText = `Uplink sincronizado para abrirse el: ${new Date(camp.startDate).toLocaleString()}`;
-                return;
-            }
-            if(camp.endDate && ahora > camp.endDate) {
-                cardNoCam.style.display = "none";
-                cardUnlock.style.display = "none";
-                cardStatusMsg.style.display = "block";
-                document.getElementById("status-msg-title").innerText = "⌛ NODE_EXPIRED";
-                document.getElementById("status-msg-desc").innerText = "El ciclo de vida útil asignado a esta firma digital ha finalizado.";
-                return;
-            }
-
-            cardNoCam.style.display = "none";
-            cardStatusMsg.style.display = "none";
-            cardUnlock.style.display = "block";
-
-            document.getElementById("viral-title").innerText = camp.titulo.toUpperCase();
-            document.getElementById("viral-desc").innerText = camp.desc;
-            document.getElementById("viral-type-badge").innerText = camp.tipo.toUpperCase();
-
-            document.getElementById("step-referrals").style.display = "none";
-            document.getElementById("step-channel").style.display = "none";
-            document.getElementById("step-dynamic-ad").style.display = "none";
-            document.getElementById("btn-share-viral").style.display = "none";
-
-            if(camp.tipo === "invitation") {
-                document.getElementById("step-referrals").style.display = "block";
-                document.getElementById("btn-share-viral").style.display = "block";
-                
-                const porcentaje = Math.min((appState.referidosLogrados / camp.requeridos) * 100, 100);
-                document.getElementById("progress-text").innerText = `${appState.referidosLogrados} / ${camp.requeridos} CLONES`;
-                document.getElementById("progress-bar-fill").style.width = `${porcentaje}%`;
-
-                evaluarDesbloqueoFinal(appState.referidosLogrados >= camp.requeridos);
-            } else if(camp.tipo === "sub_channel" || camp.tipo === "join_group") {
-                document.getElementById("step-channel").style.display = "block";
-                document.getElementById("tg-step-label").innerText = camp.tipo === "sub_channel" ? "STATION_SUBSCRIPTION" : "CLUSTER_TUNNELING";
-                document.getElementById("tg-step-desc").innerText = `Sincroniza terminal con el alias @${camp.tgTarget || 'comunidad'} para abrir compuerta.`;
-                evaluarDesbloqueoFinal(appState.tgChannelJoined); 
-            } else if(camp.tipo.startsWith("ad_")) {
-                document.getElementById("step-dynamic-ad").style.display = "block";
-                const adRender = document.getElementById("ad-content-render");
-                
-                if(camp.tipo === "ad_text") {
-                    adRender.innerHTML = `<span style="color:#fff; font-weight:bold;">${camp.adValue}</span>`;
-                } else if(camp.tipo === "ad_image") {
-                    adRender.innerHTML = `<img src="${camp.adValue}" style="width:100%; max-height:160px; object-fit:cover; border:1px solid var(--neon-cyan); box-shadow: var(--glow-cyan);">`;
-                } else if(camp.tipo === "ad_video") {
-                    adRender.innerHTML = `<video src="${camp.adValue}" autoplay muted loop playsinline style="width:100%; max-height:160px; object-fit:cover; border:1px solid var(--neon-magenta);"></video>`;
-                }
-
-                if(!appState.adCompleted && !appState.adTimerInterval) {
-                    ejecutarContadorAnuncio(camp.adDuration);
-                } else if(appState.adCompleted) {
-                    document.getElementById("ad-timer").innerText = "DECRYPTED";
-                    evaluarDesbloqueoFinal(true);
-                }
-            }
-        }
-
-        function ejecutarContadorAnuncio(segundos) {
-            if (appState.adTimerInterval) clearInterval(appState.adTimerInterval);
-            appState.adSecondsLeft = segundos;
-            document.getElementById("ad-timer").innerText = `${appState.adSecondsLeft}s`;
-            
-            const btnClaim = document.getElementById("btn-claim-reward");
-            btnClaim.className = "btn btn-gold btn-disabled";
-            btnClaim.innerText = "⏳ PARSING_STREAM_DATA...";
-
-            appState.adTimerInterval = setInterval(() => {
-                appState.adSecondsLeft--;
-                if(appState.adSecondsLeft <= 0) {
-                    clearInterval(appState.adTimerInterval);
-                    appState.adTimerInterval = null;
-                    appState.adCompleted = true;
-                    document.getElementById("ad-timer").innerText = "DECRYPTED";
-                    renderizarPantallasDinamicas();
-                } else {
-                    document.getElementById("ad-timer").innerText = `${appState.adSecondsLeft}s`;
-                }
-            }, 1000);
-        }
-
-        function evaluarDesbloqueoFinal(condicion) {
-            const btnClaim = document.getElementById("btn-claim-reward");
-            if(condicion) {
-                btnClaim.classList.remove("btn-disabled");
-                btnClaim.className = "btn btn-gold";
-                btnClaim.innerText = "🔓 ACCESS_GRANTED: OPEN_TARGET";
-            } else {
-                btnClaim.classList.add("btn-disabled");
-                btnClaim.innerText = "🔒 SYSTEM_LOCKED: REQS_PENDING";
-            }
-        }
-
-        function compartirEnlaceReferido() {
-            const camp = appState.campañaActivaLocal;
-            if(!camp) return;
-
-            const botUsername = "ImagesAI_TLG_Bot"; 
-            const payload = {
-                title: camp.titulo, description: camp.desc, secret_url: camp.secreto,
-                type: camp.tipo, req_slots: camp.requeridos, owner: camp.ownerId,
-                referrer: appState.userId, origin_chat: appState.chatInstance
-            };
-
-            const jsonStr = JSON.stringify(payload);
-            
-            // CORRECCIÓN CLAVE: Serialización Base64 segura para strings complejos
-            const encoder = new TextEncoder();
-            const dataBytes = encoder.encode(jsonStr);
-            let binary = "";
-            for (let i = 0; i < dataBytes.byteLength; i++) {
-                binary += String.fromCharCode(dataBytes[i]);
-            }
-            const b64 = btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-                
-            const deepLinkFinal = `https://t.me/${botUsername}/app?startapp=${b64}`;
-            let mensajeCompartir = `🔥 *⚡ DATALOCK DETECTED ⚡* 🔥\n\nDistribuyendo acceso para: *${camp.titulo}*.\n📥 Sincroniza tu ID de red aquí para reclamar la copia segura:`;
-            tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(deepLinkFinal)}&text=${encodeURIComponent(mensajeCompartir)}`);
-        }
-
-        function reclamarRecompensaFinal() {
-            if (document.getElementById("btn-claim-reward").classList.contains("btn-disabled")) return;
-            tg.showPopup({
-                title: "🔓 LINK_UNLOCKED",
-                message: "Protocolo de desencriptación exitoso. Abre el túnel seguro hacia el destino de los datos.",
-                buttons: [{type: "default", text: "REDIRECT_STATION"}]
-            }, () => {
-                tg.openLink(appState.campañaActivaLocal.secreto);
-            });
-        }
-
-        function abrirEspacioRequisito() {
-            const camp = appState.campañaActivaLocal;
-            if (!camp || !camp.tgTarget) return;
-            let targetUrl = camp.tgTarget.startsWith("http") ? camp.tgTarget : `https://t.me/${camp.tgTarget}`;
-            tg.openTelegramLink(targetUrl);
-            appState.tgChannelJoined = true;
-            evaluarDesbloqueoFinal(true);
-        }
-
-        function solicitarPremiumAirdayz() {
-            const metodo = document.getElementById("billing-method").value;
-            const textoMensaje = `¡Hola @Airdayz! Solicito pasaporte Overlord Premium para Bomba Viral 🚀.\n\n` +
-                                 `• ID_Firma: \`${appState.userId}\`\n• Gateway_Metodo: ${metodo}`;
-            tg.openTelegramLink(`https://t.me/Airdayz?text=${encodeURIComponent(textoMensaje)}`);
-        }
-
-        function abrirModalPerfil() {
-            document.getElementById("modal-user-title").innerText = appState.firstName.toUpperCase();
-            document.getElementById("modal-user-id").innerText = `NET_ADDR: ${appState.userId}`;
-            
-            const modal = document.getElementById("modal-perfil-usuario");
-            modal.style.display = "flex"; 
-            
-            setTimeout(() => {
-                modal.classList.add("active");
-            }, 10);
-        }
-
-        function cerrarModalPerfil(event) {
-            if (event) event.stopPropagation();
-            const modal = document.getElementById("modal-perfil-usuario");
-            
-            modal.classList.remove("active");
-            
-            setTimeout(() => {
-                if (!modal.classList.contains('active')) {
-                    modal.style.display = 'none';
-                }
-            }, 300); 
-        }
-
-        function actualizarFormularioPorTipoCam() {
-            const type = document.getElementById("setup-campaign-type").value;
-            document.getElementById("group-opt-invitation").style.display = type === "invitation" ? "block" : "none";
-            document.getElementById("group-opt-telegram").style.display = (type === "sub_channel" || type === "join_group") ? "block" : "none";
-            document.getElementById("group-opt-ad").style.display = type.startsWith("ad_") ? "block" : "none";
-        }
-
-        function cambiarPestana(target) {
-    const vistas = document.querySelectorAll('.view-section');
-    vistas.forEach(el => {
-        el.classList.remove('active');
-        el.style.display = "none"; // Fuerza el ocultamiento limpio
-    });
-    
-    const botones = document.querySelectorAll('.nav-bar .nav-item');
-    botones.forEach(el => {
-        el.classList.remove('active');
-    });
-    
-    const vistaObjetivo = document.getElementById(`view-${target}`);
-    const botonObjetivo = document.getElementById(`nav-${target}`);
-    
-    if (vistaObjetivo) {
-        vistaObjetivo.classList.add('active');
-        vistaObjetivo.style.display = "block"; // Fuerza la muestra de la sección activa
-    }
-    if (botonObjetivo) {
-        botonObjetivo.classList.add('active');
-    }
-    
-    if(target === 'client') renderizarPantallasDinamicas();
-}
-
-        function actualizarContadorHeader() {
-            document.getElementById("header-campaign-counter").innerText = appState.campañaActivaLocal ? "CORE_UNITS: 1" : "CORE_UNITS: 0";
-        }
-
-        function inicializarTouchCarrusel() {
-            const inner = document.getElementById("adv-carousel-inner");
-            if (!inner) return;
-            let currentIndex = 0;
-            setInterval(() => {
-                if(appState.isPremium === false) {
-                    currentIndex = (currentIndex + 1) % 3;
-                    inner.style.transform = `translateX(${currentIndex * -100}%)`;
-                }
-            }, 4000);
-        }
+        // Único punto de entrada tras la carga limpia del árbol del DOM
+        document.addEventListener("DOMContentLoaded", () => {
+            App.init();
+        });
     </script>
 </body>
 </html>
