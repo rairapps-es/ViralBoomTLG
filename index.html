@@ -19,7 +19,7 @@
             --text-cyber: #e0e6ed;
             --text-dark: #636e72;
             --glow-cyan: 0 0 10px rgba(0, 243, 255, 0.5);
-            --glow-magenta: 0 0 10px rgba(ff, 0, 85, 0.5);
+            --glow-magenta: 0 0 10px rgba(255, 0, 85, 0.5);
         }
 
         * { 
@@ -28,6 +28,7 @@
             padding: 0; 
             font-family: 'Rajdhani', sans-serif; 
             user-select: none;
+            -webkit-user-select: none;
         }
 
         body { 
@@ -43,22 +44,21 @@
             overflow-x: hidden;
         }
 
-        /* ANIMACIÓN DE ESCANEO DE PANTALLA CRT */
+        /* CORREGIDO: z-index reducido para no bloquear clics en WebViews */
         body::before {
             content: " ";
             display: block;
             position: fixed;
             top: 0; left: 0; bottom: 0; right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 99999;
+            z-index: 10;
             opacity: 0.4;
             pointer-events: none;
             background-size: 100% 4px, 6px 100%;
         }
 
-        .app-container { max-width: 460px; margin: auto; }
+        .app-container { max-width: 460px; margin: auto; position: relative; z-index: 20; }
         
-        /* BARRA SUPERIOR FUTURISTA */
         .sticky-header {
             position: fixed;
             top: 0; left: 0; right: 0;
@@ -120,7 +120,6 @@
             clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
         }
 
-        /* MODAL CYBERPUNK */
         .profile-modal {
             display: none;
             position: fixed;
@@ -168,7 +167,6 @@
             text-shadow: var(--glow-magenta);
         }
 
-        /* TARJETAS MULTIDISEÑO */
         .card { 
             background: var(--bg-card); 
             border: 1px solid rgba(0, 243, 255, 0.15); 
@@ -213,7 +211,6 @@
 
         p { font-size: 0.9rem; color: #a4b3c6; line-height: 1.6; margin-bottom: 14px; }
 
-        /* INPUTS Y SELECTORES */
         .input-group { margin-bottom: 16px; }
         .input-label { 
             font-family: 'Orbitron', sans-serif;
@@ -245,7 +242,6 @@
 
         .input-field:disabled { opacity: 0.4; cursor: not-allowed; border-color: var(--text-dark); }
 
-        /* BOTONES NEON HOLOGRÁFICOS */
         .btn { 
             width: 100%; 
             background: transparent; 
@@ -281,11 +277,9 @@
 
         .btn-disabled { border-color: #222533 !important; color: #444966 !important; cursor: not-allowed; pointer-events: none; background: transparent !important; box-shadow: none !important; text-shadow: none !important;}
 
-        /* BARRA DE PROGRESO MATRICIAL */
         .progress-container { background: #05060f; border: 1px solid rgba(0, 243, 255, 0.2); height: 14px; width: 100%; position: relative; margin: 15px 0; overflow: hidden; }
         .progress-bar { background: linear-gradient(90deg, var(--neon-magenta), var(--neon-lime)); height: 100%; width: 0%; transition: width 0.6s cubic-bezier(0.075, 0.82, 0.165, 1); }
 
-        /* BADGES */
         .badge { 
             background: rgba(0, 243, 255, 0.1); 
             color: var(--neon-cyan); 
@@ -298,7 +292,6 @@
         }
         .badge-premium { background: rgba(255, 170, 0, 0.1); color: var(--neon-amber); border: 1px solid var(--neon-amber); }
 
-        /* SECCIONES VISTAS */
         .view-section { display: none; animation: slideIn 0.35s forwards ease-out; }
         .view-section.active { display: block; }
 
@@ -307,13 +300,14 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* BARRA DE NAVEGACIÓN INFERIOR CYBER */
+        /* CORREGIDO: z-index superior a body::before para asegurar clics */
         .nav-bar { 
             position: fixed; bottom: 0; left: 0; right: 0; height: 65px; 
             background: rgba(5, 6, 15, 0.95); 
             backdrop-filter: blur(10px);
             border-top: 2px solid var(--neon-cyan); 
-            display: flex; justify-content: space-around; align-items: center; z-index: 9999; 
+            display: flex; justify-content: space-around; align-items: center; 
+            z-index: 10000; 
             box-shadow: 0 -5px 15px rgba(0, 243, 255, 0.15);
         }
 
@@ -334,7 +328,6 @@
         .watermark { text-align: center; font-size: 0.75rem; color: var(--text-dark); margin-top: 25px; padding: 12px; border-top: 1px dashed rgba(0,243,255,0.1); letter-spacing: 1px;}
         .watermark a { color: var(--neon-magenta); text-decoration: none; font-weight: bold; text-shadow: var(--glow-magenta);}
 
-        /* ANUNCIOS */
         .adv-carousel-wrapper { position: fixed; bottom: 65px; left: 0; right: 0; background: #030308; border-top: 1px solid rgba(255,0,85,0.3); overflow: hidden; height: 75px; z-index: 105; display: none; }
         .adv-carousel-inner { display: flex; width: 100%; height: 100%; transition: transform 0.4s ease-in-out; }
         .adv-slide { min-width: 100%; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 0 20px; text-align: center; font-size: 0.85rem; font-weight: bold; color: #a5b1c2; background: linear-gradient(90deg, #05060f 0%, #0d0f1d 100%); }
@@ -558,7 +551,7 @@
         </div>
 
         <div id="saas-watermark" class="watermark">
-            CORE ENGINE RUNNING ON <a href="javascript:void(0);" onclick="cambiarPestaña('billing')">VIRAL_BOOM_SAAS_v4.0</a>
+            CORE ENGINE RUNNING ON <a href="javascript:void(0);" onclick="cambiarPestana('billing')">VIRAL_BOOM_SAAS_v4.0</a>
         </div>
 
         <div id="premium-carousel-wrapper" class="adv-carousel-wrapper">
@@ -570,13 +563,13 @@
         </div>
 
         <nav class="nav-bar">
-            <button onclick="cambiarPestaña('client')" id="nav-client" class="nav-item active">
+            <button onclick="cambiarPestana('client')" id="nav-client" class="nav-item active">
                 <span>🎯</span>NET_NODES
             </button>
-            <button onclick="cambiarPestaña('admin')" id="nav-admin" class="nav-item">
+            <button onclick="cambiarPestana('admin')" id="nav-admin" class="nav-item">
                 <span>⚡</span>CORE_CONSOLE
             </button>
-            <button onclick="cambiarPestaña('billing')" id="nav-billing" class="nav-item">
+            <button onclick="cambiarPestana('billing')" id="nav-billing" class="nav-item">
                 <span>👑</span>LICENSE_UP
             </button>
         </nav>
@@ -588,16 +581,10 @@
         tg.ready();
         tg.expand();
 
-        // 🛡️ CONFIGURACIÓN DEL CLIENTE SUPABASE COMPILADO DE FORMA DINÁMICA
-        // Se recomienda rellenar estas variables directamente de forma segura antes del despliegue.
         const SUPABASE_URL = "https://hdvmoeuggbuxvdeoprks.supabase.co"; 
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhkdm1vZXVnZ2J1eHZkZW9wcmtzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTY4NTAwMDAsImV4cCI6MjAyNDQxMDAwMH0.YourActualCleanKeyHereIfChanged_OrKeepOriginal"; 
-
-        // Inicialización condicionada tolerante a fallos
         let supabase = null;
         try {
             if(window.supabase && SUPABASE_URL) {
-                // Aquí usamos el valor real recuperado del código base de manera directa
                 const cleanKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhkdm1vZXVnZ2J1eHZkZW9wcmtzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTY4NTAwMDAsImV4cCI6MjAyNDQxMDAwMH0.c2J_cHVibslhYWJsZXMudVNYiW1fX_Bg66o9ejBYq-evg_coAQBw8d";
                 supabase = window.supabase.createClient(SUPABASE_URL, cleanKey);
             }
@@ -875,7 +862,7 @@
             
             renderizarPantallasDinamicas();
             actualizarContadorHeader();
-            cambiarPestaña('client');
+            cambiarPestana('client');
         }
 
         async function inyectarLlaveLicenciaLocal() {
@@ -899,7 +886,7 @@
             tg.showAlert("🎉 ACCESS_GRANTED: ¡Llave del Núcleo Validada con éxito!");
             localStorage.setItem(`bv_premium_until_${appState.userId}`, new Date().getTime() + (lic.duration_days * 24 * 60 * 60 * 1000));
             activarInterfazPremiumVisual();
-            cambiarPestaña('admin');
+            cambiarPestana('admin');
         }
 
         function renderizarPantallasDinamicas() {
@@ -1079,7 +1066,8 @@
             document.getElementById("group-opt-ad").style.display = type.startsWith("ad_") ? "block" : "none";
         }
 
-        function cambiarPestaña(target) {
+        /* CORREGIDO: Renombrada a cambiarPestana sin caracteres especiales */
+        function cambiarPestana(target) {
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             
