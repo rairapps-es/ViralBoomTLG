@@ -1032,7 +1032,7 @@
                 }
             },
 
-            async guardarCampanaAdmin() {
+                    async guardarCampanaAdmin() {
                 const t = document.getElementById("setup-title").value.trim();
                 const d = document.getElementById("setup-desc").value.trim();
                 const s = document.getElementById("setup-secret").value.trim();
@@ -1040,8 +1040,10 @@
                 
                 const sDateRaw = document.getElementById("setup-start-date").value;
                 const eDateRaw = document.getElementById("setup-end-date").value;
-                const sDate = sDateRaw ? sDateRaw.trim() : "";
-                const eDate = eDateRaw ? eDateRaw.trim() : "";
+
+                // 🌟 CORRECCIÓN: Declaración correcta de las variables ISO para evitar errores de referencia
+                const startDateISO = sDateRaw ? new Date(sDateRaw).toISOString() : null;
+                const endDateISO = eDateRaw ? new Date(eDateRaw).toISOString() : null;
 
                 if(!t || !s) {
                     if(this.tg) this.tg.showAlert("❌ Identificador de Recurso y Enlace de Destino obligatorios.");
@@ -1064,51 +1066,46 @@
                     }
                 }
                 
-                // ... dentro de guardarCampanaAdmin() ...
+                let r = parseInt(document.getElementById("setup-req-count").value) || 3;
+                const adDur = parseInt(document.getElementById("setup-ad-duration").value) || 30;
 
-const type = document.getElementById("setup-campaign-type").value;
-let r = parseInt(document.getElementById("setup-req-count").value) || 3;
-const adDur = parseInt(document.getElementById("setup-ad-duration").value) || 30;
+                let tgTargetFinal = "";
+                let adValueFinal = "";
+                let reqSlotsFinal = 0;
+                let adDurationFinal = 0;
 
-// Filtrado estricto antes de empaquetar para la base de datos
-let tgTargetFinal = "";
-let adValueFinal = "";
-let reqSlotsFinal = 0;
-let adDurationFinal = 0;
+                if (type === "invitation") {
+                    reqSlotsFinal = r;
+                } else if (type === "sub_channel" || type === "join_group") {
+                    tgTargetFinal = document.getElementById("setup-tg-target").value.trim();
+                    if (!tgTargetFinal) {
+                        if(this.tg) this.tg.showAlert("❌ TARGET_ALIAS es obligatorio para este protocolo.");
+                        return;
+                    }
+                } else if (type.startsWith("ad_")) {
+                    adValueFinal = document.getElementById("setup-ad-value").value.trim();
+                    adDurationFinal = adDur;
+                    if (!adValueFinal) {
+                        if(this.tg) this.tg.showAlert("❌ STREAM_VALUE_DATA_SOURCE no puede estar vacío.");
+                        return;
+                    }
+                }
 
-if (type === "invitation") {
-    reqSlotsFinal = r;
-} else if (type === "sub_channel" || type === "join_group") {
-    tgTargetFinal = document.getElementById("setup-tg-target").value.trim();
-    if (!tgTargetFinal) {
-        if(this.tg) this.tg.showAlert("❌ TARGET_ALIAS es obligatorio para este protocolo.");
-        return;
-    }
-} else if (type.startsWith("ad_")) {
-    adValueFinal = document.getElementById("setup-ad-value").value.trim();
-    adDurationFinal = adDur;
-    if (!adValueFinal) {
-        if(this.tg) this.tg.showAlert("❌ STREAM_VALUE_DATA_SOURCE no puede estar vacío.");
-        return;
-    }
-}
-
-const nuevaCampana = {
-    id: this.state.userId + "_" + Date.now(), 
-    owner_id: this.state.userId, 
-    title: t, 
-    description: d, 
-    secret_url: s, 
-    type: type, 
-    req_slots: reqSlotsFinal,
-    tg_target: tgTargetFinal, 
-    ad_value: adValueFinal,
-    ad_duration: adDurationFinal, 
-    start_date: startDateISO, 
-    end_date: endDateISO,
-    status: 'activa'
-};
-// ... prosigue con el await this.supabaseClient.from('campaigns').upsert([nuevaCampana]) ...
+                const nuevaCampana = {
+                    id: this.state.userId + "_" + Date.now(), 
+                    owner_id: this.state.userId, 
+                    title: t, 
+                    description: d, 
+                    secret_url: s, 
+                    type: type, 
+                    req_slots: reqSlotsFinal,
+                    tg_target: tgTargetFinal, 
+                    ad_value: adValueFinal,
+                    ad_duration: adDurationFinal, 
+                    start_date: startDateISO, 
+                    end_date: endDateISO,
+                    status: 'activa'
+                };
 
                 try {
                     const { error } = await this.supabaseClient.from('campaigns').upsert([nuevaCampana]);
@@ -1144,39 +1141,6 @@ const nuevaCampana = {
                 this.renderizarPantallasDinamicas();
                 this.actualizarContadorHeader();
                 this.cambiarPestana('client');
-            },
-
-            async inyectarLlaveLicenciaLocal() {
-                const inputKey = document.getElementById("licence-key-input").value.trim();
-                if (!inputKey) {
-                    if(this.tg) this.tg.showAlert("⚠️ Introduce un hash de firma válido.");
-                    return;
-                }
-                if (!this.supabaseClient) {
-                    if(this.tg) this.tg.showAlert("❌ Canal de datos inactivo.");
-                    return;
-                }
-
-                const { data: licencia, error } = await this.supabaseClient
-                    .from('licenses')
-                    .select('*')
-                    .eq('license_key', inputKey)
-                    .eq('is_used', false);
-
-                if (error || !licencia || licencia.length === 0) {
-                    if(this.tg) this.tg.showAlert("❌ Firma inválida o consumida por otra ID.");
-                    return;
-                }
-
-                const lic = licencia[0];
-                await this.supabaseClient.from('licenses').update({
-                    is_used: true, used_by_tg_id: this.state.userId, activated_at: new Date().toISOString()
-                }).eq('license_key', inputKey);
-
-                if(this.tg) this.tg.showAlert("🎉 ACCESS_GRANTED: ¡Llave del Núcleo Validada con éxito!");
-                localStorage.setItem(`bv_premium_until_${this.state.userId}`, new Date().getTime() + (lic.duration_days * 24 * 60 * 60 * 1000));
-                this.activarInterfazPremiumVisual();
-                this.cambiarPestana('admin');
             },
 
             renderizarPantallasDinamicas() {
