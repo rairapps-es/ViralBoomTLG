@@ -1012,6 +1012,20 @@
                     return;
                 }
 
+// --- Inserta esto al inicio de guardarCampanaAdmin() ---
+if (!this.state.isPremium) {
+    // Verificar en Supabase cuántas campañas tiene ya este owner_id
+    const { data: existentes } = await this.supabaseClient
+        .from('campaigns')
+        .select('id')
+        .eq('owner_id', this.state.userId);
+
+    if (existentes && existentes.length >= 1) {
+        if(this.tg) this.tg.showAlert("🔒 LÍMITE ALCANZADO: Los usuarios gratuitos solo pueden desplegar 1 nodo en la red. Consigue una Licencia Premium.");
+        return; // Detiene la creación
+    }
+}
+                
                 let r = parseInt(document.getElementById("setup-req-count").value) || 3;
                 const adDur = parseInt(document.getElementById("setup-ad-duration").value) || 30;
 
