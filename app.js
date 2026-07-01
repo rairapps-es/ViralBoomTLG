@@ -277,7 +277,7 @@
             if(statusBadge) { statusBadge.textContent = "PLAN_GRATIS"; statusBadge.className = "badge"; }
             
             const planStatus = document.getElementById("profile-plan-status");
-            if(planStatus) { planStatus.textContent = "GRATIS_RANK"; planStatus.style.color = "var(--text-cyber)"; }
+            if(planStatus) { planStatus.textContent = "PLAN_GRATIS"; planStatus.style.color = "var(--text-cyber)"; }
             
             const avatarGlow = document.getElementById("user-avatar-glow");
             if(avatarGlow) { avatarGlow.style.backgroundColor = "var(--neon-lime)"; avatarGlow.style.boxShadow = "0 0 6px var(--neon-lime)"; }
@@ -648,10 +648,10 @@
             if(condicion) {
                 btnClaim.classList.remove("btn-disabled");
                 btnClaim.className = "btn btn-gold";
-                btnClaim.textContent = "🔓 ACCESSO_DESBLOQUEADO: ABIERTO";
+                btnClaim.textContent = "🔓 ACCESSO_DESBLOQUEADO";
             } else {
                 btnClaim.classList.add("btn-disabled");
-                btnClaim.textContent = "🔒 SISTEMA BLOQUEADO: PENDIENTE";
+                btnClaim.textContent = "🔒 DESBLOQUEAR_ACCESO";
             }
         },
 
