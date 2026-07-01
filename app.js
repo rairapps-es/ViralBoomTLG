@@ -204,6 +204,26 @@
             }
         },
 
+                // PÉGALO AQUÍ, DENTRO DEL OBJETO APP:
+        async dispararAlertaSegura(accion, mensaje) {
+            if (!this.supabaseClient) return;
+
+            try {
+                // Llama de forma remota a la función SQL segura que creamos en el panel
+                const { data, error } = await this.supabaseClient.rpc('disparar_alerta_bot', {
+                    user_id: this.state.userId,
+                    username: this.state.username,
+                    accion: accion,
+                    mensaje: mensaje
+                });
+
+                if (error) throw error;
+                console.log("🛰️ ALERT_ENGINE: Notificación despachada con éxito.");
+            } catch (err) {
+                console.error("🚨 ALERT_ERROR:", err);
+            }
+        },
+
         async ejecutarVerificacionLicenciaBase() {
             const ahora = Date.now();
             const localPremiumUntil = localStorage.getItem(`bv_premium_until_${this.state.userId}`);
