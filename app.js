@@ -1,5 +1,5 @@
 /**
- * CYBER_SECURITY ENGINE P2P
+ * CYBER_SECURITY ENGINE P2P - OPTIMIZED INTEGRITY EDITION
  * Encapsulado bajo un entorno léxico cerrado (IIFE) para evitar la manipulación de estados desde la consola global.
  */
 (function () {
@@ -208,7 +208,6 @@
             if (!this.supabaseClient) return;
 
             try {
-                // Ejecución remota del RPC asíncrono
                 const { data, error } = await this.supabaseClient.rpc('disparar_alerta_bot', {
                     user_id: this.state.userId,
                     username: this.state.username,
@@ -407,13 +406,22 @@
         },
 
         async guardarCampanaAdmin() {
-            const t = document.getElementById("setup-title").value.trim();
-            const d = document.getElementById("setup-desc").value.trim();
-            const s = document.getElementById("setup-secret").value.trim();
-            const type = document.getElementById("setup-campaign-type").value;
+            const setupTitleEl = document.getElementById("setup-title");
+            const setupDescEl = document.getElementById("setup-desc");
+            const setupSecretEl = document.getElementById("setup-secret");
+            const setupCampaignTypeEl = document.getElementById("setup-campaign-type");
+            const setupStartDateEl = document.getElementById("setup-start-date");
+            const setupEndDateEl = document.getElementById("setup-end-date");
+            const setupReqCountEl = document.getElementById("setup-req-count");
+            const setupAdDurationEl = document.getElementById("setup-ad-duration");
+
+            const t = setupTitleEl ? setupTitleEl.value.trim() : "";
+            const d = setupDescEl ? setupDescEl.value.trim() : "";
+            const s = setupSecretEl ? setupSecretEl.value.trim() : "";
+            const type = setupCampaignTypeEl ? setupCampaignTypeEl.value : "invitation";
             
-            const sDateRaw = document.getElementById("setup-start-date").value;
-            const eDateRaw = document.getElementById("setup-end-date").value;
+            const sDateRaw = setupStartDateEl ? setupStartDateEl.value : "";
+            const eDateRaw = setupEndDateEl ? setupEndDateEl.value : "";
 
             const startDateISO = sDateRaw ? new Date(sDateRaw).toISOString() : null;
             const endDateISO = eDateRaw ? new Date(eDateRaw).toISOString() : null;
@@ -439,8 +447,8 @@
                 }
             }
             
-            let r = parseInt(document.getElementById("setup-req-count").value) || 3;
-            const adDur = parseInt(document.getElementById("setup-ad-duration").value) || 30;
+            let r = (setupReqCountEl ? parseInt(setupReqCountEl.value) : 0) || 3;
+            const adDur = (setupAdDurationEl ? parseInt(setupAdDurationEl.value) : 0) || 30;
 
             let tgTargetFinal = "";
             let adValueFinal = "";
@@ -450,13 +458,15 @@
             if (type === "invitation") {
                 reqSlotsFinal = r;
             } else if (type === "sub_channel" || type === "join_group") {
-                tgTargetFinal = document.getElementById("setup-tg-target").value.trim();
+                const tgTargetEl = document.getElementById("setup-tg-target");
+                tgTargetFinal = tgTargetEl ? tgTargetEl.value.trim() : "";
                 if (!tgTargetFinal) {
                     if(this.tg) this.tg.showAlert("❌ USUARIO es obligatorio para este protocolo.");
                     return;
                 }
             } else if (type.startsWith("ad_")) {
-                adValueFinal = document.getElementById("setup-ad-value").value.trim();
+                const adValueEl = document.getElementById("setup-ad-value");
+                adValueFinal = adValueEl ? adValueEl.value.trim() : "";
                 adDurationFinal = adDur;
                 if (!adValueFinal) {
                     if(this.tg) this.tg.showAlert("❌ STREAM_VALUE_DATA_SOURCE no puede estar vacío.");
@@ -503,9 +513,6 @@
 
             Storage.set("campaña_local_backup", this.state.campañaActivaLocal);
             
-            // =========================================================
-            // 🔥 CONTROL DE FLUJO ASÍNCRONO SEGURO CON LA BASE DE DATOS
-            // =========================================================
             try {
                 if(this.tg) this.tg.showAlert("🚀 PROCESANDO TRANSMISIÓN: Subiendo metadatos...");
                 await this.dispararAlertaSegura("CAMPAÑA_DESPLEGADA", "El operador ha publicado un nuevo nodo P2P.");
@@ -564,8 +571,10 @@
                 if(cardUnlock) cardUnlock.style.display = "none";
                 if(cardStatusMsg) {
                     cardStatusMsg.style.display = "block";
-                    document.getElementById("status-msg-title").textContent = "⏳ TIEMPO_DEL_BLOQUEO";
-                    document.getElementById("status-msg-desc").textContent = `Uplink sincronizado para abrirse el: ${new Date(camp.startDate).toLocaleString()}`;
+                    const sTitle = document.getElementById("status-msg-title");
+                    const sDesc = document.getElementById("status-msg-desc");
+                    if(sTitle) sTitle.textContent = "⏳ TIEMPO_DEL_BLOQUEO";
+                    if(sDesc) sDesc.textContent = `Uplink sincronizado para abrirse el: ${new Date(camp.startDate).toLocaleString()}`;
                 }
                 return;
             }
@@ -574,8 +583,10 @@
                 if(cardUnlock) cardUnlock.style.display = "none";
                 if(cardStatusMsg) {
                     cardStatusMsg.style.display = "block";
-                    document.getElementById("status-msg-title").textContent = "⌛ LA CAMPAÑA EXPIRÓ";
-                    document.getElementById("status-msg-desc").textContent = "El ciclo de vida útil asignado a esta firma digital ha finalizado.";
+                    const sTitle = document.getElementById("status-msg-title");
+                    const sDesc = document.getElementById("status-msg-desc");
+                    if(sTitle) sTitle.textContent = "⌛ LA CAMPAÑA EXPIRÓ";
+                    if(sDesc) sDesc.textContent = "El ciclo de vida útil asignado a esta firma digital ha finalizado.";
                 }
                 return;
             }
@@ -663,10 +674,12 @@
                     clearInterval(this.state.adTimerInterval);
                     this.state.adTimerInterval = null;
                     this.state.adCompleted = true;
-                    if(adTimer) adTimer.textContent = "DECRYPTED";
+                    const adTimerEnd = document.getElementById("ad-timer");
+                    if(adTimerEnd) adTimerEnd.textContent = "DECRYPTED";
                     this.renderizarPantallasDinamicas();
                 } else {
-                    if(adTimer) adTimer.textContent = `${this.state.adSecondsLeft}s`;
+                    const adTimerTick = document.getElementById("ad-timer");
+                    if(adTimerTick) adTimerTick.textContent = `${this.state.adSecondsLeft}s`;
                 }
             }, 1000);
         },
@@ -718,7 +731,9 @@
                 message: "Protocolo de desencriptación exitoso. Abre el túnel seguro hacia el destino de los datos.",
                 buttons: [{type: "default", text: "REDIRECCIÓN CANAL"}]
             }, () => {
-                this.tg.openLink(this.state.campañaActivaLocal.secreto);
+                if(this.state.campañaActivaLocal && this.state.campañaActivaLocal.secreto) {
+                    this.tg.openLink(this.state.campañaActivaLocal.secreto);
+                }
             });
         },
 
@@ -772,7 +787,8 @@
 
         solicitarPremiumAirdayz() {
             if(!this.tg) return;
-            const metodo = document.getElementById("billing-method").value;
+            const billingMethodEl = document.getElementById("billing-method");
+            const metodo = billingMethodEl ? billingMethodEl.value : "not_specified";
             const textoMensaje = `¡Hola @Airdayz! Solicito pasaporte Overlord Premium para ViralBoom 🚀.\n\n` +
                                  `• ID_Firma: \`${this.state.userId}\`\n• Metodo_Pago: ${metodo}`;
             this.tg.openTelegramLink(`https://t.me/Airdayz?text=${encodeURIComponent(textoMensaje)}`);
@@ -866,6 +882,7 @@
         },
 
         startCarouselEngine() {
+            if (this.state.carouselTimer) clearInterval(this.state.carouselTimer);
             const inner = document.getElementById("adv-carousel-inner");
             if (!inner) return;
 
@@ -910,11 +927,17 @@
         const campana = AdminState.campanas.find(c => c.id === campanaId);
         if (!campana) return;
 
-        document.getElementById("edit-campaign-id").value = campana.id;
-        document.getElementById("edit-title").value = campana.title;
-        document.getElementById("edit-desc").value = campana.description || "";
-        document.getElementById("edit-secret").value = campana.secret_url || "";
-        document.getElementById("edit-campaign-type").value = campana.type;
+        const editId = document.getElementById("edit-campaign-id");
+        const editTitle = document.getElementById("edit-title");
+        const editDesc = document.getElementById("edit-desc");
+        const editSecret = document.getElementById("edit-secret");
+        const editType = document.getElementById("edit-campaign-type");
+
+        if(editId) editId.value = campana.id;
+        if(editTitle) editTitle.value = campana.title;
+        if(editDesc) editDesc.value = campana.description || "";
+        if(editSecret) editSecret.value = campana.secret_url || "";
+        if(editType) editType.value = campana.type;
 
         const modal = document.getElementById("modal-editor-admin");
         if(modal) {
@@ -936,27 +959,27 @@
         const db = App.supabaseClient;
         if (!db) return;
 
-        const id = document.getElementById("edit-campaign-id").value;
-        const title = document.getElementById("edit-title").value.trim();
-        const description = document.getElementById("edit-desc").value.trim();
-        const secret_url = document.getElementById("edit-secret").value.trim();
-        const type = document.getElementById("edit-campaign-type").value;
+        const editIdVal = document.getElementById("edit-campaign-id")?.value;
+        const titleVal = document.getElementById("edit-title")?.value.trim();
+        const descriptionVal = document.getElementById("edit-desc")?.value.trim();
+        const secretUrlVal = document.getElementById("edit-secret")?.value.trim();
+        const typeVal = document.getElementById("edit-campaign-type")?.value;
 
-        if (!title || !secret_url) {
+        if (!titleVal || !secretUrlVal || !editIdVal) {
             alert("Identificador y URL destino son obligatorios.");
             return;
         }
 
         db.from('campaigns').update({
-            title, description, secret_url, type
-        }).eq('id', id).then(({ error }) => {
+            title: titleVal, description: descriptionVal, secret_url: secretUrlVal, type: typeVal
+        }).eq('id', editIdVal).then(({ error }) => {
             if (error) throw error;
 
-            if (App.state.campañaActivaLocal && App.state.campañaActivaLocal.ownerId === id.split('_')[0]) {
-                App.state.campañaActivaLocal.titulo = title;
-                App.state.campañaActivaLocal.desc = description;
-                App.state.campañaActivaLocal.secreto = secret_url;
-                App.state.campañaActivaLocal.tipo = type;
+            if (App.state.campañaActivaLocal && App.state.campañaActivaLocal.ownerId === editIdVal.split('_')[0]) {
+                App.state.campañaActivaLocal.titulo = titleVal;
+                App.state.campañaActivaLocal.desc = descriptionVal;
+                App.state.campañaActivaLocal.secreto = secretUrlVal;
+                App.state.campañaActivaLocal.tipo = typeVal;
                 Storage.set("campaña_local_backup", App.state.campañaActivaLocal);
             }
 
@@ -1115,7 +1138,7 @@
                 renderizarTablaAdmin();
             }
         } catch(e) {
-            console.error("Error cargando campañas en el Administrador:", e);
+            console.error("Error cargando campañas en el Administrator:", e);
         }
     };
 
@@ -1193,20 +1216,25 @@
         `;
         contenedor.innerHTML = html;
 
-        // Bindeo dinámico seguro para mitigar handlers inline inseguros en el HTML generado
-        document.getElementById("admin-search-input").value = AdminState.filtros.buscador;
-        document.getElementById("admin-search-input").addEventListener("input", function() {
-            AdminState.filtros.buscador = this.value;
-            renderizarTablaAdmin();
-        });
+        const searchInput = document.getElementById("admin-search-input");
+        if(searchInput) {
+            searchInput.value = AdminState.filtros.buscador;
+            searchInput.addEventListener("input", function() {
+                AdminState.filtros.buscador = this.value;
+                renderizarTablaAdmin();
+            });
+        }
 
-        document.getElementById("th-select-all").addEventListener("click", function() {
-            toggleSeleccionarTodas(this.checked);
-        });
+        const selectAllCheckbox = document.getElementById("th-select-all");
+        if(selectAllCheckbox) {
+            selectAllCheckbox.addEventListener("click", function() {
+                toggleSeleccionarTodas(this.checked);
+            });
+        }
 
-        document.getElementById("btn-mass-play").addEventListener("click", () => ejecutarAccionMasiva('PLAY'));
-        document.getElementById("btn-mass-pause").addEventListener("click", () => ejecutarAccionMasiva('PAUSAR'));
-        document.getElementById("btn-mass-wipe").addEventListener("click", () => ejecutarAccionMasiva('ELIMINAR'));
+        document.getElementById("btn-mass-play")?.addEventListener("click", () => ejecutarAccionMasiva('PLAY'));
+        document.getElementById("btn-mass-pause")?.addEventListener("click", () => ejecutarAccionMasiva('PAUSAR'));
+        document.getElementById("btn-mass-wipe")?.addEventListener("click", () => ejecutarAccionMasiva('ELIMINAR'));
 
         document.querySelectorAll(".admin-row-checkbox").forEach(el => {
             el.addEventListener("click", function() {
