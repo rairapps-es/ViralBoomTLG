@@ -1454,16 +1454,67 @@ function renderAccionesUsuario(campana, esPremium) {
     return botones;
 }
 
+/* ==========================================================
+   PROCESADORES DE CAMBIOS DE ESTADO (SUPER ADMIN)
+   ========================================================== */
+
+// 1. PROCESADOR PARA LAS ACCIONES INDIVIDUALES DEL DESPLEGABLE DE LA TABLA
+async function ejecutarAccionIndividual(campanaId, accion) {
+    const db = App.supabaseClient;
+    if (!db) {
+        alert("La conexión con Supabase no está lista.");
+        return;
+    }
+    if (!accion) return; // Si seleccionan "Acciones...", no hace nada
+
+    try {
+        if (accion === 'toggle_pausa') {
+            // Buscamos la campaña en nuestro estado local para saber su estado actual
+            const campana = AdminState.campanas.find(c => c.id === campanaId);
+            const nuevoEstado = campana && campana.status === 'activa' ? 'en_pausa' : 'activa';
+            
+            const { error } = await db.from('campaigns').update({ status: nuevoEstado }).eq('id', campanaId);
+            if (error) throw error;
+            alert(`⚙️ Nodo cambiado a: ${nuevoEstado.toUpperCase()}`);
+            
+        } else if (accion === 'toggle_destacar') {
+            const campana = AdminState.campanas.find(c => c.id === campanaId);
+            const nuevoDestacado = campana ? !c.is_sponsored : true;
+            
+            const { error } = await db.from('campaigns').update({ is_sponsored: nuevoDestacado }).eq('id', campanaId);
+            if (error) throw error;
+            alert(nuevoDestacado ? "⭐ Campaña destacada con éxito." : "❌ Destacado removido.");
+
+        } else if (accion === 'eliminar') {
+            const confirmar = window.confirm("⚠️ ¿Estás seguro de que deseas eliminar permanentemente esta campaña?");
+            if (!confirmar) return;
+            
+            const { error } = await db.from('campaigns').delete().eq('id', campanaId);
+            if (error) throw error;
+            alert("🗑️ Campaña eliminada de la base de datos.");
+        } else if (accion === 'editar') {
+            alert("✏️ Función de edición en desarrollo. Usa la consola de creación para sobreescribir.");
+            return;
+        }
+
+        // RECARGA OBLIGATORIA: Volvemos a pedir los datos a Supabase para redibujar la tabla con el nuevo estado
+        await cargarCampanasAdminFuerza();
+
+    } catch (err) {
+        console.error("Error en acción individual:", err);
+        alert("Fallo al actualizar el nodo individual: " + err.message);
+    }
+}
+
+// 2. CORRECCIÓN DE LA FUNCIÓN MASIVA (Asegurando el refresco visual)
 async function ejecutarAccionMasiva(accion) {
-    // Usamos el cliente de Supabase instanciado en tu objeto App principal
     const db = App.supabaseClient; 
     if (!db) {
         alert("La conexión con Supabase no está lista.");
         return;
     }
-
     if (AdminState.seleccionadas.length === 0) {
-        alert("Por favor, selecciona al menos una campaña.");
+        alert("Por favor, selecciona al menos una campaña usando los checkboxes.");
         return;
     }
 
@@ -1482,10 +1533,6 @@ async function ejecutarAccionMasiva(accion) {
             textoAlerta = `▶️ PASARÁ ESTO: Se reactivarán ${AdminState.seleccionadas.length} campañas.`;
             objetoActualizacion = { status: 'activa' };
             break;
-        case 'DESTACAR':
-            textoAlerta = `⭐ PASARÁ ESTO: Se marcarán ${AdminState.seleccionadas.length} campañas como destacadas.`;
-            objetoActualizacion = { is_sponsored: true };
-            break;
     }
 
     const confirmar = window.confirm(`${textoAlerta}\n\n¿Deseas continuar con los cambios masivos?`);
@@ -1500,12 +1547,12 @@ async function ejecutarAccionMasiva(accion) {
             if (error) throw error;
         }
 
-        alert("🚀 Sistema actualizado con éxito.");
-        AdminState.seleccionadas = [];
-        await cargarCampanasAdminFuerza(); 
+        alert("🚀 Sistema masivo actualizado con éxito.");
+        AdminState.seleccionadas = []; // Limpiamos los checkboxes
+        await cargarCampanasAdminFuerza(); // <-- AQUÍ CORREGIDO: Llama a la función de recarga real
     } catch (err) {
         console.error("Error en acción masiva:", err);
-        alert("Hubo un error al aplicar los cambios en Supabase: " + err.message);
+        alert("Hubo un error al aplicar los cambios masivos: " + err.message);
     }
 }
 
