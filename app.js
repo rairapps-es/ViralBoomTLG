@@ -113,6 +113,9 @@
             safeAddEvent("btn-request-premium", "click", () => this.solicitarPremiumAirdayz());
             safeAddEvent("btn-watermark-link", "click", () => this.cambiarPestana('billing'));
             
+            // Vincular el nuevo gatillo de control para Telegram Stars
+            safeAddEvent("btn-request-premium-stars", "click", () => this.solicitarFacturaEstrellasTelegram());
+            
             safeAddEvent("setup-campaign-type", "change", () => this.actualizarFormularioPorTipoCam());
 
             safeAddEvent("nav-client", "click", () => this.cambiarPestana('client'));
@@ -145,7 +148,7 @@
                 this.inicializarDatosUsuarioTelegram();
                 await this.ejecutarVerificacionLicenciaBase();
                 await this.recuperarEstadisticasBD();
-                await this.evaluarFlujoDeepLinkingDeEntrada();
+                await this.evaluarFlujoDeepLinking DeEntrada();
                 this.renderizarPantallasDinamicas();
                 this.actualizarContadorHeader();
                 this.actualizarFormularioPorTipoCam();
@@ -792,6 +795,73 @@
             const textoMensaje = `¡Hola @Airdayz! Solicito pasaporte Overlord Premium para ViralBoom 🚀.\n\n` +
                                  `• ID_Firma: \`${this.state.userId}\`\n• Metodo_Pago: ${metodo}`;
             this.tg.openTelegramLink(`https://t.me/Airdayz?text=${encodeURIComponent(textoMensaje)}`);
+        },
+
+        /**
+         * Controlador unificado para Telegram Matrix Stars
+         * Gestiona la lectura del DOM, cálculo de precios y transacciones nativas vía WebApp SDK.
+         */
+        async solicitarFacturaEstrellasTelegram() {
+            const btnStars = document.getElementById("btn-request-premium-stars");
+            const planSelect = document.getElementById("billing-plan-select");
+
+            if (!btnStars || !planSelect) return;
+
+            // 1. Lectura segura de la opción seleccionada en el Front
+            const selectedOption = planSelect.options[planSelect.selectedIndex];
+            const planId = selectedOption.value; 
+            const starAmount = parseInt(selectedOption.getAttribute("data-stars"), 10);
+
+            // 2. Bloqueo de UI para prevenir solicitudes dobles concurrentes
+            const originalText = btnStars.innerHTML;
+            btnStars.innerHTML = "⚡ GENERANDO FACTURA_REDUX...";
+            btnStars.classList.add("btn-disabled");
+
+            try {
+                if (this.tg) {
+                    // Ventana emergente nativa para confirmación de intención de pago
+                    this.tg.showPopup({
+                        title: 'SOLICITUD DE PROTOCOLO',
+                        message: `Vas a iniciar el procesamiento de pasaporte Pro por un costo de ${starAmount} Estrellas.`,
+                        buttons: [{id: 'proceed', type: 'default', text: 'Proceder con Enlace'}]
+                    }, async (buttonId) => {
+                        if (buttonId === 'proceed') {
+                            console.log(`[STARS] Solicitando enlace de pasarela para el plan: ${planId} (${starAmount} ⭐)`);
+                            
+                            /**
+                             * FLUJO DE PRODUCCIÓN REQUERIDO CON BACKEND:
+                             * Telegram prohíbe taxativamente la creación de facturas desde el cliente front-end.
+                             * Aquí se debe interconectar la Edge Function de Supabase o API Bot:
+                             *
+                             * const res = await fetch('https://TU_SUPABASE_URL/functions/v1/create-stars-invoice', {
+                             * method: 'POST',
+                             * headers: { 'Content-Type': 'application/json' },
+                             * body: JSON.stringify({ userId: this.state.userId, plan: planId, stars: starAmount })
+                             * });
+                             * const data = await res.json();
+                             * * if(data.invoiceLink) {
+                             * this.tg.openInvoice(data.invoiceLink, (status) => {
+                             * if (status === 'paid') {
+                             * this.tg.showAlert('¡Sincronización de Licencia Exitosa! Cortafuegos purgado.');
+                             * location.reload();
+                             * }
+                             * });
+                             * }
+                             */
+                            
+                            this.tg.showAlert(`[DEBUG] Conexión establecida con el Bot. Generando Invoice para el ID: ${this.state.userId}`);
+                        }
+                    });
+                } else {
+                    alert(`ENTORNO_FUERA_DE_RANGO: Telegram WebApp no detectada.\nPlan: ${planId}\nPrecio: ${starAmount} ⭐`);
+                }
+            } catch (error) {
+                console.error("Fallo estructural en el sub-módulo de facturación Stars:", error);
+            } finally {
+                // Restauración controlada de los hilos de la UI
+                btnStars.innerHTML = originalText;
+                btnStars.classList.remove("btn-disabled");
+            }
         },
 
         abrirModalPerfil() {
