@@ -407,121 +407,127 @@
         },
 
         async guardarCampanaAdmin() {
-            const t = document.getElementById("setup-title").value.trim();
-            const d = document.getElementById("setup-desc").value.trim();
-            const s = document.getElementById("setup-secret").value.trim();
-            const type = document.getElementById("setup-campaign-type").value;
-            
-            const sDateRaw = document.getElementById("setup-start-date").value;
-            const eDateRaw = document.getElementById("setup-end-date").value;
+    const t = document.getElementById("setup-title").value.trim();
+    const d = document.getElementById("setup-desc").value.trim();
+    const s = document.getElementById("setup-secret").value.trim();
+    const type = document.getElementById("setup-campaign-type").value;
+    
+    const sDateRaw = document.getElementById("setup-start-date").value;
+    const eDateRaw = document.getElementById("setup-end-date").value;
 
-            const startDateISO = sDateRaw ? new Date(sDateRaw).toISOString() : null;
-            const endDateISO = eDateRaw ? new Date(eDateRaw).toISOString() : null;
+    const startDateISO = sDateRaw ? new Date(sDateRaw).toISOString() : null;
+    const endDateISO = eDateRaw ? new Date(eDateRaw).toISOString() : null;
 
-            if(!t || !s) {
-                if(this.tg) this.tg.showAlert("❌ Identificador de Recurso y Enlace de Destino obligatorios.");
-                return;
-            }
-            if(!this.supabaseClient) {
-                if(this.tg) this.tg.showAlert("❌ Error de comunicación: Base de datos no vinculada.");
-                return;
-            }
+    if(!t || !s) {
+        if(this.tg) this.tg.showAlert("❌ Identificador de Recurso y Enlace de Destino obligatorios.");
+        return;
+    }
+    if(!this.supabaseClient) {
+        if(this.tg) this.tg.showAlert("❌ Error de comunicación: Base de datos no vinculada.");
+        return;
+    }
 
-            if (!this.state.isPremium) {
-                const { data: existentes } = await this.supabaseClient
-                    .from('campaigns')
-                    .select('id')
-                    .eq('owner_id', this.state.userId);
+    // 🛡️ CORTAFUEGOS DE SEGURIDAD PERIMETRAL: Valida restricciones del Plan Gratis
+    if (!this.state.isPremium && (type === "sub_channel" || type === "join_group" || type.startsWith("ad_"))) {
+        if(this.tg) this.tg.showAlert("🔒 PROTOCOLO RESTRINGIDO: El tipo de campaña seleccionado requiere una suscripción Premium activa.");
+        return;
+    }
 
-                if (existentes && existentes.length >= 1) {
-                    if(this.tg) this.tg.showAlert("🔒 LÍMITE ALCANZADO: Los usuarios gratuitos solo pueden publicar 1 campaña al mismo tiempo en la red. Consigue una Licencia Premium.");
-                    return;
-                }
-            }
-            
-            let r = parseInt(document.getElementById("setup-req-count").value) || 3;
-            const adDur = parseInt(document.getElementById("setup-ad-duration").value) || 30;
+    if (!this.state.isPremium) {
+        const { data: existentes } = await this.supabaseClient
+            .from('campaigns')
+            .select('id')
+            .eq('owner_id', this.state.userId);
 
-            let tgTargetFinal = "";
-            let adValueFinal = "";
-            let reqSlotsFinal = 0;
-            let adDurationFinal = 0;
+        if (existentes && existentes.length >= 1) {
+            if(this.tg) this.tg.showAlert("🔒 LÍMITE ALCANZADO: Los usuarios gratuitos solo pueden publicar 1 campaña al mismo tiempo en la red. Consigue una Licencia Premium.");
+            return;
+        }
+    }
+    
+    let r = parseInt(document.getElementById("setup-req-count").value) || 3;
+    const adDur = parseInt(document.getElementById("setup-ad-duration").value) || 30;
 
-            if (type === "invitation") {
-                reqSlotsFinal = r;
-            } else if (type === "sub_channel" || type === "join_group") {
-                tgTargetFinal = document.getElementById("setup-tg-target").value.trim();
-                if (!tgTargetFinal) {
-                    if(this.tg) this.tg.showAlert("❌ USUARIO/CANAL es obligatorio para este protocolo.");
-                    return;
-                }
-                // Limpieza del alias por si el usuario premium introduce el enlace completo o incluye el @
-                tgTargetFinal = tgTargetFinal.replace("https://t.me/", "").replace("@", "");
-            } else if (type.startsWith("ad_")) {
-                adValueFinal = document.getElementById("setup-ad-value").value.trim();
-                adDurationFinal = adDur;
-                if (!adValueFinal) {
-                    if(this.tg) this.tg.showAlert("❌ STREAM_VALUE_DATA_SOURCE no puede estar vacío.");
-                    return;
-                }
-            }
+    let tgTargetFinal = "";
+    let adValueFinal = "";
+    let reqSlotsFinal = 0;
+    let adDurationFinal = 0;
 
-            const nuevaCampana = {
-                id: this.state.userId + "_" + Date.now(), 
-                owner_id: this.state.userId, 
-                title: t, 
-                description: d, 
-                secret_url: s, 
-                type: type, 
-                req_slots: reqSlotsFinal,
-                tg_target: tgTargetFinal, 
-                ad_value: adValueFinal,
-                ad_duration: adDurationFinal, 
-                start_date: startDateISO, 
-                end_date: endDateISO,
-                status: 'activa'
-            };
+    if (type === "invitation") {
+        reqSlotsFinal = r;
+    } else if (type === "sub_channel" || type === "join_group") {
+        tgTargetFinal = document.getElementById("setup-tg-target").value.trim();
+        if (!tgTargetFinal) {
+            if(this.tg) this.tg.showAlert("❌ USUARIO/CANAL es obligatorio para este protocolo.");
+            return;
+        }
+        // Limpieza del alias por si el usuario premium introduce el enlace completo o incluye el @
+        tgTargetFinal = tgTargetFinal.replace("https://t.me/", "").replace("@", "");
+    } else if (type.startsWith("ad_")) {
+        adValueFinal = document.getElementById("setup-ad-value").value.trim();
+        adDurationFinal = adDur;
+        if (!adValueFinal) {
+            if(this.tg) this.tg.showAlert("❌ STREAM_VALUE_DATA_SOURCE no puede estar vacío.");
+            return;
+        }
+    }
 
-            try {
-                const { error } = await this.supabaseClient.from('campaigns').upsert([nuevaCampana]);
+    const nuevaCampana = {
+        id: this.state.userId + "_" + Date.now(), 
+        owner_id: this.state.userId, 
+        title: t, 
+        description: d, 
+        secret_url: s, 
+        type: type, 
+        req_slots: reqSlotsFinal,
+        tg_target: tgTargetFinal, 
+        ad_value: adValueFinal,
+        ad_duration: adDurationFinal, 
+        start_date: startDateISO, 
+        end_date: endDateISO,
+        status: 'activa'
+    };
 
-                if (error) {
-                    if(this.tg) this.tg.showAlert("❌ Error de Supabase:\n" + error.message + "\nCódigo: " + error.code);
-                    return;
-                }
-            } catch (catchError) {
-                if(this.tg) this.tg.showAlert("🚨 Fallo de Red Crítico:\n" + catchError.message);
-                return;
-            }
+    try {
+        const { error } = await this.supabaseClient.from('campaigns').upsert([nuevaCampana]);
 
-            this.state.campañaActivaLocal = {
-                titulo: t, desc: d, secreto: s, tipo: type, requeridos: r,
-                tgTarget: nuevaCampana.tg_target, adValue: nuevaCampana.ad_value, adDuration: adDur,
-                startDate: nuevaCampana.start_date ? new Date(nuevaCampana.start_date).getTime() : null, 
-                endDate: nuevaCampana.end_date ? new Date(nuevaCampana.end_date).getTime() : null, 
-                ownerId: this.state.userId,
-                status: nuevaCampana.status
-            };
+        if (error) {
+            if(this.tg) this.tg.showAlert("❌ Error de Supabase:\n" + error.message + "\nCódigo: " + error.code);
+            return;
+        }
+    } catch (catchError) {
+        if(this.tg) this.tg.showAlert("🚨 Fallo de Red Crítico:\n" + catchError.message);
+        return;
+    }
 
-            Storage.set("campaña_local_backup", this.state.campañaActivaLocal);
-            
-            try {
-                if(this.tg) this.tg.showAlert("🚀 PROCESANDO TRANSMISIÓN: Subiendo metadatos...");
-                await this.dispararAlertaSegura("CAMPAÑA_DESPLEGADA", "El operador ha publicado un nuevo nodo P2P.");
-            } catch(alertErr) {
-                if(this.tg) this.tg.showAlert("⚠️ Alerta enviada con advertencia de red: " + alertErr.message);
-            }
-            
-            this.state.referidosLogrados = 0;
-            this.state.adCompleted = false;
-            this.state.tgChannelJoined = false;
-            this.state.verificationInProgress = false;
-            if(this.state.adTimerInterval) { clearInterval(this.state.adTimerInterval); this.state.adTimerInterval = null; }
-            
-            this.renderizarPantallasDinamicas();
-            this.actualizarContadorHeader();
-            this.cambiarPestana('client');
-        },
+    this.state.campañaActivaLocal = {
+        titulo: t, desc: d, secreto: s, tipo: type, requeridos: r,
+        tgTarget: nuevaCampana.tg_target, adValue: nuevaCampana.ad_value, adDuration: adDur,
+        startDate: nuevaCampana.start_date ? new Date(nuevaCampana.start_date).getTime() : null, 
+        endDate: nuevaCampana.end_date ? new Date(nuevaCampana.end_date).getTime() : null, 
+        ownerId: this.state.userId,
+        status: nuevaCampana.status
+    };
+
+    Storage.set("campaña_local_backup", this.state.campañaActivaLocal);
+    
+    try {
+        if(this.tg) this.tg.showAlert("🚀 PROCESANDO TRANSMISIÓN: Subiendo metadatos...");
+        await this.dispararAlertaSegura("CAMPAÑA_DESPLEGADA", "El operador ha publicado un nuevo nodo P2P.");
+    } catch(alertErr) {
+        if(this.tg) this.tg.showAlert("⚠️ Alerta enviada con advertencia de red: " + alertErr.message);
+    }
+
+    this.state.referidosLogrados = 0;
+    this.state.adCompleted = false;
+    this.state.tgChannelJoined = false;
+    this.state.verificationInProgress = false;
+    if(this.state.adTimerInterval) { clearInterval(this.state.adTimerInterval); this.state.adTimerInterval = null; }
+    
+    this.renderizarPantallasDinamicas();
+    this.actualizarContadorHeader();
+    this.cambiarPestana('client');
+}
 
         renderizarPantallasDinamicas() {
             const camp = this.state.campañaActivaLocal;
@@ -793,37 +799,31 @@
          * Interconecta la WebApp con la API del bot de forma segura a través de RPC o tu Edge API.
          */
         async verificarSuscripcionRealServidor() {
-            const camp = this.state.campañaActivaLocal;
-            if (!camp || !camp.tgTarget || !this.supabaseClient) return false;
+    const camp = this.state.campañaActivaLocal;
+    if (!camp || !camp.tgTarget || !this.supabaseClient) return false;
 
-            try {
-                // Opción A: Mediante RPC seguro en Supabase que orquesta la llamada hacia la API de Telegram del bot
-                const { data, error } = await this.supabaseClient.rpc('verificar_miembro_chat', {
-                    tg_user_id: this.state.userId,
-                    target_chat: camp.tgTarget
-                });
+    try {
+        // CORRECCIÓN: Los nombres de los parámetros deben coincidir exactamente con tu función SQL de Supabase
+        const { data, error } = await this.supabaseClient.rpc('verificar_miembro_chat', {
+            telegram_user_id: this.state.userId,
+            // Asegúrate de que tu función SQL modificada acepte el chat_id dinámico.
+            chat_id_param: camp.tgTarget 
+        });
 
-                if (!error && data && data.is_member === true) {
-                    return true;
-                }
-
-                // Opción B (Fallback / Alternativa Edge): Si usas una URL directa de tu API en vez de RPC, descomenta las líneas siguientes:
-                /*
-                const resp = await fetch('https://hdvmoeugbbuxvdeoprks.supabase.co/functions/v1/verify-tg-sub', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId: this.state.userId, targetChat: camp.tgTarget })
-                });
-                const resData = await resp.json();
-                return !!resData.isMember;
-                */
-                
-                return false;
-            } catch (err) {
-                console.error("Fallo del cortafuegos de verificación remota:", err);
-                return false;
+        // La API de Telegram devuelve un objeto con un campo 'ok' y un 'result' que contiene 'status'
+        if (!error && data && data.ok === true) {
+            const status = data.result.status;
+            // 'creator', 'administrator', 'member' significan que el usuario ESTÁ en el canal
+            if (['creator', 'administrator', 'member'].includes(status)) {
+                return true;
             }
-        },
+        }
+        return false;
+    } catch (err) {
+        console.error("Fallo del cortafuegos de verificación remota:", err);
+        return false;
+    }
+}
 
         solicitarPremiumEstrellasBot() {
             if (!this.tg) return;
