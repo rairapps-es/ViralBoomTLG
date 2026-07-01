@@ -1117,10 +1117,10 @@
                 </div>
 
                 <div class="masive-actions" style="background: #0d0f1d; padding: 10px; margin-bottom: 15px; border: 1px dashed var(--neon-amber); display: flex; gap: 10px; align-items: center; flex-wrap:wrap;">
-                    <span style="font-size:0.8rem; font-weight: bold; color: #94a3b8;">ACCIONES EN BLOQUE:</span>
+                    <span style="font-size:0.8rem; font-weight: bold; color: #94a3b8;"></span>
                     <button id="btn-mass-play" style="background: #1b4322; color: #39ff14; padding: 6px 12px; border: 1px solid #39ff14; cursor: pointer; font-family:'Orbitron'; font-size:0.7rem;">▶ PLAY</button>
                     <button id="btn-mass-pause" style="background: #5c4308; color: #ffaa00; padding: 6px 12px; border: 1px solid #ffaa00; cursor: pointer; font-family:'Orbitron'; font-size:0.7rem;">⏸ PAUSA</button>
-                    <button id="btn-mass-wipe" style="background: #421212; color: #ff3333; padding: 6px 12px; border: 1px solid #ff3333; cursor: pointer; font-family:'Orbitron'; font-size:0.7rem;">🗑️ WIPE OUT</button>
+                    <button id="btn-mass-wipe" style="background: #421212; color: #ff3333; padding: 6px 12px; border: 1px solid #ff3333; cursor: pointer; font-family:'Orbitron'; font-size:0.7rem;">🗑️ ELIMINAR</button>
                 </div>
 
                 <div style="overflow-x: auto;">
