@@ -1212,16 +1212,16 @@
             filtradas.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         }
 
+        // 🧠 ESTRATEGIA: Mantenemos las herramientas fuera de la tabla para que no se destruyan al renderizar
         let html = `
             <div class="admin-panel-container" style="padding: 20px; background: #0a0b16; color: #fff; font-family: 'Rajdhani', sans-serif; border: 1px solid rgba(0, 243, 255, 0.2); margin-top:20px;">
                 <h3 style="font-family:'Orbitron', sans-serif; font-size:1.1rem; color:var(--neon-cyan); margin-bottom:15px;">👑 PANEL - MONITOREO</h3>
                 
                 <div class="admin-tools" style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-                    <input type="text" placeholder="🔍 Buscar ID Campaña..." id="admin-search-input" style="padding: 8px; background: #05060f; color: #fff; border: 1px solid rgba(0,243,255,0.3); width:100%;">
+                    <input type="text" placeholder="🔍 Buscar ID Campaña..." id="admin-search-input" value="${AdminState.filtros.buscador}" style="padding: 8px; background: #05060f; color: #fff; border: 1px solid rgba(0,243,255,0.3); width:100%;">
                 </div>
 
                 <div class="masive-actions" style="background: #0d0f1d; padding: 10px; margin-bottom: 15px; border: 1px dashed var(--neon-amber); display: flex; gap: 10px; align-items: center; flex-wrap:wrap;">
-                    <span style="font-size:0.8rem; font-weight: bold; color: #94a3b8;"></span>
                     <button id="btn-mass-play" style="background: #1b4322; color: #39ff14; padding: 6px 12px; border: 1px solid #39ff14; cursor: pointer; font-family:'Orbitron'; font-size:0.7rem;">▶ PLAY</button>
                     <button id="btn-mass-pause" style="background: #5c4308; color: #ffaa00; padding: 6px 12px; border: 1px solid #ffaa00; cursor: pointer; font-family:'Orbitron'; font-size:0.7rem;">⏸ PAUSA</button>
                     <button id="btn-mass-wipe" style="background: #421212; color: #ff3333; padding: 6px 12px; border: 1px solid #ff3333; cursor: pointer; font-family:'Orbitron'; font-size:0.7rem;">🗑️ ELIMINAR</button>
@@ -1237,7 +1237,7 @@
                                 <th style="padding: 10px;">ESTADO</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="admin-table-body">
                             ${filtradas.map(c => `
                                 <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); background: ${c.is_sponsored ? 'rgba(255,170,0,0.05)' : 'transparent'}">
                                     <td style="padding: 10px;">
@@ -1266,14 +1266,23 @@
                 </div>
             </div>
         `;
+        
+        // 🔒 Inyección única
         contenedor.innerHTML = html;
 
-        document.getElementById("admin-search-input").value = AdminState.filtros.buscador;
-        document.getElementById("admin-search-input").addEventListener("input", function() {
-            AdminState.filtros.buscador = this.value;
-            renderizarTablaAdmin();
-        });
+        // ⚡ Solución al congelamiento: Recuperamos el input y devolvemos el cursor al final del texto
+        const searchInput = document.getElementById("admin-search-input");
+        if (searchInput) {
+            searchInput.focus();
+            searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length);
+            
+            searchInput.addEventListener("input", function() {
+                AdminState.filtros.buscador = this.value;
+                renderizarTablaAdmin();
+            });
+        }
 
+        // Oyentes de eventos restantes (Sin cambios)
         document.getElementById("th-select-all").addEventListener("click", function() {
             toggleSeleccionarTodas(this.checked);
         });
