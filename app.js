@@ -770,11 +770,34 @@
             }
         },
 
-        solicitarPremiumAirdayz() {
-            if(!this.tg) return;
-            const metodo = document.getElementById("billing-method").value;
+                solicitarPremiumAirdayz() {
+            if (!this.tg) return;
+
+            // 1. Capturamos el plan (tiempo/precio) y el método de pago desde el HTML
+            const planSelect = document.getElementById("billing-plan");
+            const metodoSelect = document.getElementById("billing-method");
+
+            const planSeleccionado = planSelect ? planSelect.value : "mensual_default";
+            const metodoPago = metodoSelect ? metodoSelect.value : "paypal";
+
+            // 2. Si elige pagar con Estrellas de Telegram (SendPulse Flow)
+            if (metodoPago === "stars_sendpulse") {
+                const botUsername = "ViralBoomBot"; // <-- Reemplaza por el alias de tu Bot real sin el @
+                
+                // Generamos el deep link nativo indicándole el plan elegido para que SendPulse procese el flujo correcto
+                const deepLinkStars = `https://t.me/${botUsername}?start=${planSeleccionado}`;
+                
+                // Usamos el SDK oficial de Telegram WebApps para redirigir e iniciar el bot de golpe
+                this.tg.openTelegramLink(deepLinkStars);
+                return;
+            }
+
+            // 3. Flujo alternativo para PayPal o métodos manuales antiguos (Soporte directo)
             const textoMensaje = `¡Hola @Airdayz! Solicito pasaporte Overlord Premium para ViralBoom 🚀.\n\n` +
-                                 `• ID_Firma: \`${this.state.userId}\`\n• Metodo_Pago: ${metodo}`;
+                                 `• ID_Firma: \`${this.state.userId}\`\n` +
+                                 `• Plan Elegido: ${planSeleccionado.toUpperCase()}\n` +
+                                 `• Metodo_Pago: ${metodoPago.toUpperCase()}`;
+
             this.tg.openTelegramLink(`https://t.me/Airdayz?text=${encodeURIComponent(textoMensaje)}`);
         },
 
