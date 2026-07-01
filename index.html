@@ -444,7 +444,7 @@
                 </div>
                 <div>
                     <div id="user-display-name" style="font-family:'Orbitron', sans-serif; font-weight: bold; font-size: 0.95rem; letter-spacing: 0.5px;">SYSTEM_USER</div>
-                    <div id="header-campaign-counter" style="font-size: 0.75rem; color: var(--text-dark); margin-top: 2px;">CAMPAÑAS: 0</div>
+                    <div id="header-campaign-counter" style="font-size: 0.75rem; color: var(--text-dark); margin-top: 2px;">MIS CAMPAÑAS: 0</div>
                 </div>
             </div>
             <span id="status-badge" class="badge">PLAN GRATIS</span>
@@ -462,11 +462,11 @@
             
             <div style="background: rgba(5,6,15,0.9); border: 1px solid rgba(255,170,0,0.3); padding: 16px; text-align: left; font-size: 0.85rem;">
                 <div style="margin-bottom: 10px;">
-                    <span style="color: var(--neon-cyan); font-family:'Orbitron', sans-serif; display: block; font-size: 0.65rem; letter-spacing: 1px;">RANK:</span>
+                    <span style="color: var(--neon-cyan); font-family:'Orbitron', sans-serif; display: block; font-size: 0.65rem; letter-spacing: 1px;">PLAN:</span>
                     <span id="profile-plan-status" style="font-weight: bold;">PLAN GRATIS</span>
                 </div>
                 <div>
-                    <span style="color: var(--text-dark); font-family:'Orbitron', sans-serif; display: block; font-size: 0.65rem; letter-spacing: 1px;">NET_ENTRY_TIMESTAMP:</span>
+                    <span style="color: var(--text-dark); font-family:'Orbitron', sans-serif; display: block; font-size: 0.65rem; letter-spacing: 1px;">INICIO DE SUSCRIPCIÓN:</span>
                     <span id="profile-plan-start" style="color: #b2bec3;">-</span>
                 </div>
             </div>
@@ -523,7 +523,7 @@
 
             <div id="card-viral-unlock" class="card viral-active" style="display: none;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                    <h2 id="viral-title">🎁 DATA_LOCK</h2>
+                    <h2 id="viral-title">🎁 CONTENIDO BLOQUEADO</h2>
                     <span class="badge" id="viral-type-badge">SEGURO</span>
                 </div>
                 <p id="viral-desc">Completa los protocolos requeridos por la estación emisora para descifrar el destino final.</p>
@@ -538,17 +538,17 @@
                 </div>
 
                 <div id="step-channel" class="input-group" style="background: rgba(5,6,15,0.5); padding: 14px; margin-bottom: 12px; display:none; border-left: 2px solid var(--neon-amber);">
-                    <span class="input-label" id="tg-step-label" style="color: var(--neon-amber);">NETWORK_SUBSCRIPTION</span>
-                    <p id="tg-step-desc" style="font-size: 0.8rem; margin-bottom: 10px;">Enlaza tu terminal de identidad a esta comunidad.</p>
-                    <button id="btn-join-channel" class="btn btn-purple" style="padding: 8px 14px; font-size: 0.8rem;">JOIN_STATION</button>
+                    <span class="input-label" id="tg-step-label" style="color: var(--neon-amber);">SUSCRIPCIÓN CANAL</span>
+                    <p id="tg-step-desc" style="font-size: 0.8rem; margin-bottom: 10px;">Únete a esta comunidad para desbloquear el contenido.</p>
+                    <button id="btn-join-channel" class="btn btn-purple" style="padding: 8px 14px; font-size: 0.8rem;">UNIRME AHORA</button>
                 </div>
 
                 <div id="step-referrals" class="input-group" style="background: rgba(5,6,15,0.5); padding: 14px; border-left: 2px solid var(--neon-lime); display: none;">
-                    <span class="input-label" style="color: var(--neon-lime);">PROPAGATION_P2P</span>
-                    <p style="font-size: 0.8rem; margin-bottom: 6px;">Propaga este enlace. Los terminales destino deben abrir la interfaz.</p>
+                    <span class="input-label" style="color: var(--neon-lime);">PROPAGACIÓN_P2P</span>
+                    <p style="font-size: 0.8rem; margin-bottom: 6px;">Comparte tu enlace. Los invitados deben abrir la app</p>
                     <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-top: 12px; font-weight: bold; font-family:'Orbitron',sans-serif;">
                         <span>CONECTADOS:</span>
-                        <span id="progress-text">0 / 3 INVITADOS</span>
+                        <span id="progress-text">0 / 3</span>
                     </div>
                     <div class="progress-container">
                         <div id="progress-bar-fill" class="progress-bar"></div>
@@ -557,16 +557,16 @@
 
                 <div class="campaign-timestamps">
                     <div class="timestamp-box">
-                        <span>🗓️ Fecha Inicio</span>
+                        <span>🗓️ Inicio</span>
                         <var id="client-start-date">-</var>
                     </div>
                     <div class="timestamp-box">
-                        <span>⌛ Fecha Expiración</span>
+                        <span>⌛ Expira</span>
                         <var id="client-end-date">-</var>
                     </div>
                 </div>
                 <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 12px;">
-                    <button id="btn-share-viral" class="btn">🔗 BROADCAST_LINK</button>
+                    <button id="btn-share-viral" class="btn">🔗 COMPARTIR_LINK</button>
                     <button id="btn-claim-reward" class="btn btn-gold btn-disabled">⌛ PROCESANDO VALIDACIÓN...</button>
                 </div>
             </div>
@@ -605,18 +605,18 @@
                     <label class="input-label" for="setup-campaign-type">TIPO DE CAMPAÑA</label>
                     <select id="setup-campaign-type" class="input-field" style="background:#05060f;">
                         <option value="invitation">P2P Clones Propagation (Unlimited/Free)</option>
-                        <option value="ad_text" id="opt-ad_text">👑 Stream Gate: Dynamic Text + Link</option>
+                        <option value="ad_text" id="opt-ad_text">👑 Stream Gate: Text Dinámico + Link</option>
                         <option value="ad_image" id="opt-ad_image">👑 Stream Gate: Img + Hologram Banner</option>
-                        <option value="ad_video" id="opt-ad_video">👑 Stream Gate: Video Cyber Feed</option>
-                        <option value="sub_channel" id="opt-sub_channel">👑 Telegram API: Channel Join</option>
-                        <option value="join_group" id="opt-join_group">👑 Telegram API: Group Injection</option>
+                        <option value="ad_video" id="opt-ad_video">👑 Stream Gate: Video Cyber</option>
+                        <option value="sub_channel" id="opt-sub_channel">👑 Telegram API: Suscripción Canal</option>
+                        <option value="join_group" id="opt-join_group">👑 Telegram API: Unirse Grupo</option>
                     </select>
                 </div>
 
                 <div id="group-opt-invitation" class="input-group">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <label class="input-label" for="setup-req-count">REQUIRED_NODES</label>
-                        <span id="req-limit-hint" style="font-size: 0.7rem; color: var(--neon-amber); font-weight: bold; font-family:'Orbitron',sans-serif;">MAX 3 (INVITADOS)</span>
+                        <label class="input-label" for="setup-req-count">INVITADOS NECESARIOS</label>
+                        <span id="req-limit-hint" style="font-size: 0.7rem; color: var(--neon-amber); font-weight: bold; font-family:'Orbitron',sans-serif;">MAX 3</span>
                     </div>
                     <input type="number" id="setup-req-count" class="input-field" value="3" min="1" max="10">
                 </div>
@@ -631,7 +631,7 @@
                     <input type="text" id="setup-ad-value" class="input-field" placeholder="Texto, link de imagen o URL de vídeo raw...">
                     
                     <div style="margin-top:12px;">
-                        <label class="input-label" for="setup-ad-duration">DURACIÓN DEL BLOQUEO (SECONDS)</label>
+                        <label class="input-label" for="setup-ad-duration">DURACIÓN DEL BLOQUEO (SEGUNDOS)</label>
                         <input type="number" id="setup-ad-duration" class="input-field" value="30" min="5">
                     </div>
                 </div>
