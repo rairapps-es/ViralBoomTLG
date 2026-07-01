@@ -458,7 +458,7 @@
                 <span id="modal-avatar-fallback">U</span>
             </div>
             <h3 id="modal-user-title" style="font-family:'Orbitron', sans-serif; font-size: 1.3rem; font-weight: bold; margin-bottom: 6px;">UNKNOWN_ID</h3>
-            <p id="modal-user-id" style="font-size: 0.8rem; color: var(--text-dark); margin-bottom: 20px;">addr: -</p>
+            <p id="modal-user-id" style="font-size: 0.8rem; color: var(--text-dark); margin-bottom: 20px;">ID: -</p>
             
             <div style="background: rgba(5,6,15,0.9); border: 1px solid rgba(255,170,0,0.3); padding: 16px; text-align: left; font-size: 0.85rem;">
                 <div style="margin-bottom: 10px;">
@@ -476,7 +476,7 @@
     <div id="modal-editor-admin" class="profile-modal">
         <div class="profile-card" style="max-width: 420px; text-align: left; border-color: var(--neon-cyan); box-shadow: var(--glow-cyan); clip-path: none;">
             <button class="close-modal" id="btn-close-editor-modal" style="color: var(--neon-cyan); text-shadow: var(--glow-cyan);">&times;</button>
-            <h3 style="font-family:'Orbitron', sans-serif; font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; color: var(--neon-cyan); text-transform: uppercase;">✏️ EDITOR_NODO</h3>
+            <h3 style="font-family:'Orbitron', sans-serif; font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; color: var(--neon-cyan); text-transform: uppercase;">✏️ EDITAR CAMPAÑA</h3>
             
             <input type="hidden" id="edit-campaign-id">
             
@@ -523,8 +523,8 @@
 
             <div id="card-viral-unlock" class="card viral-active" style="display: none;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                    <h2 id="viral-title">🎁 ENCRYPTED_DATA_LOCK</h2>
-                    <span class="badge" id="viral-type-badge">SECURE</span>
+                    <h2 id="viral-title">🎁 DATA_LOCK</h2>
+                    <span class="badge" id="viral-type-badge">SEGURO</span>
                 </div>
                 <p id="viral-desc">Completa los protocolos requeridos por la estación emisora para descifrar el destino final.</p>
 
@@ -557,24 +557,24 @@
 
                 <div class="campaign-timestamps">
                     <div class="timestamp-box">
-                        <span>🛰️ Start_Time</span>
+                        <span>🗓️ Fecha Inicio</span>
                         <var id="client-start-date">-</var>
                     </div>
                     <div class="timestamp-box">
-                        <span>🚨 Expiration_Time</span>
+                        <span>⌛ Fecha Expiración</span>
                         <var id="client-end-date">-</var>
                     </div>
                 </div>
                 <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 12px;">
                     <button id="btn-share-viral" class="btn">🔗 BROADCAST_LINK</button>
-                    <button id="btn-claim-reward" class="btn btn-gold btn-disabled">⌛ RUNNING_VALIDATION...</button>
+                    <button id="btn-claim-reward" class="btn btn-gold btn-disabled">⌛ PROCESANDO VALIDACIÓN...</button>
                 </div>
             </div>
         </div>
 
         <div id="view-admin" class="view-section">
             <div class="card" id="admin-creator-card">
-                <h2>⚡ PROTOCOL_DESIGNER</h2>
+                <h2>⚡ CREAR CAMPAÑA</h2>
                 <p>Configura compuertas lógicas avanzadas en la red para el filtrado y viralización automatizada de archivos.</p>
                 
                 <div class="input-group">
@@ -592,11 +592,11 @@
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;" class="input-group">
                     <div>
-                        <label class="input-label" for="setup-start-date">START_TIMESTAMP</label>
+                        <label class="input-label" for="setup-start-date">INICIO</label>
                         <input type="datetime-local" id="setup-start-date" class="input-field" style="font-size:0.8rem;">
                     </div>
                     <div>
-                        <label class="input-label" for="setup-end-date">AUTO_KILL_TIME</label>
+                        <label class="input-label" for="setup-end-date">FINALIZA</label>
                         <input type="datetime-local" id="setup-end-date" class="input-field" style="font-size:0.8rem;">
                     </div>
                 </div>
@@ -622,12 +622,12 @@
                 </div>
 
                 <div id="group-opt-telegram" class="input-group" style="display:none;">
-                    <label class="input-label" for="setup-tg-target">TARGET_ALIAS (SIN @ O LINK DIRECTO)</label>
+                    <label class="input-label" for="setup-tg-target">USUARIO (SIN @ O LINK DIRECTO)</label>
                     <input type="text" id="setup-tg-target" class="input-field" placeholder="Ej: CyberNetworkNet">
                 </div>
 
                 <div id="group-opt-ad" class="input-group" style="display:none;">
-                    <label class="input-label" for="setup-ad-value">STREAM_VALUE_DATA_SOURCE</label>
+                    <label class="input-label" for="setup-ad-value">CONTENIDO BLOQUEADO: (Texto, link o URL de vídeo)</label>
                     <input type="text" id="setup-ad-value" class="input-field" placeholder="Texto, link de imagen o URL de vídeo raw...">
                     
                     <div style="margin-top:12px;">
@@ -636,7 +636,7 @@
                     </div>
                 </div>
 
-                <button id="btn-deploy-campaign" class="btn btn-purple">🚀 COMPILE_AND_DEPLOY</button>
+                <button id="btn-deploy-campaign" class="btn btn-purple">🚀 PUBLICAR CAMPAÑA</button>
             </div>
 
             <div class="card" id="analytics-box">
@@ -647,7 +647,7 @@
                         <div style="font-size: 1.4rem; font-weight: bold; color: var(--neon-cyan); font-family:'Orbitron',sans-serif;" id="meta-clicks">0</div>
                     </div>
                     <div style="background: var(--surface); padding: 12px; border: 1px solid rgba(255,170,0,0.1); text-align: center;">
-                        <div style="font-size: 0.7rem; color: var(--text-dark); font-family:'Orbitron',sans-serif;">SUCCESSFUL_LOOPS</div>
+                        <div style="font-size: 0.7rem; color: var(--text-dark); font-family:'Orbitron',sans-serif;">TOTAL_LOOPS</div>
                         <div style="font-size: 1.4rem; font-weight: bold; color: var(--neon-amber); font-family:'Orbitron',sans-serif;" id="meta-loops">0</div>
                     </div>
                 </div>
@@ -676,7 +676,7 @@
                 </ul>
 
                 <div class="input-group">
-                    <label class="input-label" for="billing-method">TRANSACTION_GATEWAY</label>
+                    <label class="input-label" for="billing-method">SELECCIONA MÉTODO DE FE PAGO</label>
                     <select id="billing-method" class="input-field" style="background: var(--surface);">
                         <option value="Binance Pay (USDT)">Binance Corporate Pay (USDT TRC20)</option>
                         <option value="Telegram Stars (Estrellas)">Telegram Matrix Stars (Estrellas)</option>
@@ -689,7 +689,7 @@
             <div class="card" id="premium-activation-key-card" style="border-color: var(--neon-amber);">
                 <div class="input-label" style="color: var(--neon-amber);">🔑 INJECTAR_LICENCIA_KEY</div>
                 <input type="text" id="licence-key-input" class="input-field" placeholder="Firma SHA256 / Llave criptográfica...">
-                <button id="btn-validate-license" class="btn btn-purple" style="margin-top: 12px;">VALIDATE_SIGNATURE</button>
+                <button id="btn-validate-license" class="btn btn-purple" style="margin-top: 12px;">VALIDAR_FIRMA</button>
             </div>
         </div>
 
