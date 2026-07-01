@@ -533,6 +533,8 @@
                     <span id="group-stats-placeholder">Awaiting datastream package requests...</span>
                 </div>
             </div>
+<div id="super-admin-panel" style="margin-top: 20px;"></div>
+
         </div>
 
         <div id="view-billing" class="view-section">
@@ -1385,8 +1387,251 @@ const cleanKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
         };
 
         document.addEventListener("DOMContentLoaded", () => {
-            App.init();
-        });
+    App.init();
+}); // <- Aquí debe cerrar con llave, paréntesis y punto y coma
+        
+        /* ==========================================================
+   NÚCLEO INDEPENDIENTE: CONTROL SUPER-ADMIN DE CAMPAÑAS
+   ========================================================== */
+const AdminState = {
+    campanas: [],
+    seleccionadas: [], 
+    filtros: {
+        buscador: '',
+        orden: 'nuevas',
+        tipo: 'todas',
+        destacadas: 'todas'
+    }
+};
+
+function reportarCampana(campanaId, titulo, ownerId) {
+    const miUsuarioTelegram = "Airdayz"; // Modificado con tu @ de Telegram
+    const usuarioReportante = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || "Desconocido";
+    const nombreReportante = window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || "Usuario";
+
+    const mensaje = `🚨 *REPORTE DE CAMPAÑA*\n\n` +
+                    `• *ID Campaña:* ${campanaId}\n` +
+                    `• *Título:* ${titulo}\n` +
+                    `• *Owner ID:* ${ownerId}\n` +
+                    `• *Reportado por:* ${nombreReportante} (ID: ${usuarioReportante})`;
+
+    const urlTelegram = `https://t.me/${miUsuarioTelegram}?text=${encodeURIComponent(mensaje)}`;
+    
+    if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.openTelegramLink(urlTelegram);
+    } else {
+        window.window.open(urlTelegram, '_blank');
+    }
+}
+
+function puedePausarPremium(fechaFinStr) {
+    if (!fechaFinStr) return false;
+    const fechaFin = new Date(fechaFinStr);
+    const ahora = new Date();
+    const diferenciaHoras = (fechaFin - ahora) / (1000 * 60 * 60);
+    return diferenciaHoras >= 72;
+}
+
+function renderAccionesUsuario(campana, esPremium) {
+    if (!esPremium) {
+        return `<span class="badge-disabled">Modo Gratis: Esperando finalización</span>`;
+    }
+
+    let botones = '';
+    if (campana.status === 'activa') {
+        if (puedePausarPremium(campana.fecha_fin)) {
+            botones += `<button onclick="cambiarEstadoCampana('${campana.id}', 'en_pausa')">⏸️ Pausar</button>`;
+        } else {
+            botones += `<span class="text-mini">⏳ Bloqueado (<72h)</span>`;
+        }
+    } else if (campana.status === 'en_pausa') {
+        botones += `<button onclick="cambiarEstadoCampana('${campana.id}', 'activa')">▶️ Play</button>`;
+    }
+
+    botones += `<button class="btn-danger" onclick="confirmarEliminarUsuario('${campana.id}')">🗑️ Eliminar</button>`;
+    botones += `<button onclick="abrirEditorCampana('${campana.id}')">✏️ Editar</button>`;
+
+    return botones;
+}
+
+async function ejecutarAccionMasiva(accion) {
+    // Usamos el cliente de Supabase instanciado en tu objeto App principal
+    const db = App.supabaseClient; 
+    if (!db) {
+        alert("La conexión con Supabase no está lista.");
+        return;
+    }
+
+    if (AdminState.seleccionadas.length === 0) {
+        alert("Por favor, selecciona al menos una campaña.");
+        return;
+    }
+
+    let textoAlerta = '';
+    let objetoActualizacion = {};
+
+    switch(accion) {
+        case 'ELIMINAR':
+            textoAlerta = `⚠️ PASARÁ ESTO: Se eliminarán permanentemente ${AdminState.seleccionadas.length} campañas de la base de datos.`;
+            break;
+        case 'PAUSAR':
+            textoAlerta = `⏸️ PASARÁ ESTO: Se pausarán ${AdminState.seleccionadas.length} campañas de la red.`;
+            objetoActualizacion = { status: 'en_pausa' };
+            break;
+        case 'PLAY':
+            textoAlerta = `▶️ PASARÁ ESTO: Se reactivarán ${AdminState.seleccionadas.length} campañas.`;
+            objetoActualizacion = { status: 'activa' };
+            break;
+        case 'DESTACAR':
+            textoAlerta = `⭐ PASARÁ ESTO: Se marcarán ${AdminState.seleccionadas.length} campañas como destacadas.`;
+            objetoActualizacion = { is_sponsored: true };
+            break;
+    }
+
+    const confirmar = window.confirm(`${textoAlerta}\n\n¿Deseas continuar con los cambios masivos?`);
+    if (!confirmar) return;
+
+    try {
+        if (accion === 'ELIMINAR') {
+            const { error } = await db.from('campaigns').delete().in('id', AdminState.seleccionadas);
+            if (error) throw error;
+        } else {
+            const { error } = await db.from('campaigns').update(objetoActualizacion).in('id', AdminState.seleccionadas);
+            if (error) throw error;
+        }
+
+        alert("🚀 Sistema actualizado con éxito.");
+        AdminState.seleccionadas = [];
+        await cargarCampanasAdminFuerza(); 
+    } catch (err) {
+        console.error("Error en acción masiva:", err);
+        alert("Hubo un error al aplicar los cambios en Supabase: " + err.message);
+    }
+}
+
+// Función puente para descargar las campañas reales de tu Supabase
+async function cargarCampanasAdminFuerza() {
+    if (!App.supabaseClient) return;
+    try {
+        const { data, error } = await App.supabaseClient.from('campaigns').select('*');
+        if (!error && data) {
+            // Mapeamos los nombres de columnas de tu BD a la estructura que espera la tabla
+            AdminState.campanas = data.map(c => ({
+                id: c.id,
+                owner_id: c.owner_id,
+                title: c.title,
+                description: c.description,
+                type: c.type,
+                created_at: c.start_date || new Date().toISOString(),
+                fecha_fin: c.end_date || new Date().toISOString(),
+                status: c.status || 'activa',
+                is_sponsored: c.is_sponsored || false,
+                owner_name: "Nodo Terminal",
+                owner_avatar: ""
+            }));
+            renderizarTablaAdmin();
+        }
+    } catch(e) {
+        console.error("Error cargando campañas en el Administrador:", e);
+    }
+}
+
+function renderizarTablaAdmin() {
+    const contenedor = document.getElementById("super-admin-panel");
+    if (!contenedor) return;
+    
+    let filtradas = AdminState.campanas.filter(c => {
+        const coincideBusqueda = c.id.includes(AdminState.filtros.buscador) || c.owner_id.includes(AdminState.filtros.buscador);
+        const coincideTipo = AdminState.filtros.tipo === 'todas' || c.type === AdminState.filtros.tipo;
+        const coincideDestacada = AdminState.filtros.destacadas === 'todas' || 
+            (AdminState.filtros.destacadas === 'si' && c.is_sponsored) || 
+            (AdminState.filtros.destacadas === 'no' && !c.is_sponsored);
+        
+        return coincideBusqueda && coincideTipo && coincideDestacada;
+    });
+
+    if (AdminState.filtros.orden === 'nuevas') {
+        filtradas.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    }
+
+    let html = `
+        <div class="admin-panel-container" style="padding: 20px; background: #0a0b16; color: #fff; font-family: 'Rajdhani', sans-serif; border: 1px solid rgba(0, 243, 255, 0.2); margin-top:20px;">
+            <h3 style="font-family:'Orbitron', sans-serif; font-size:1.1rem; color:var(--neon-cyan); margin-bottom:15px;">👑 OVERLORD CORE PANEL - CENTRAL DE MONITOREO</h3>
+            
+            <div class="admin-tools" style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <input type="text" placeholder="🔍 Buscar ID Nodo..." value="${AdminState.filtros.buscador}" oninput="AdminState.filtros.buscador = this.value; renderizarTablaAdmin();" style="padding: 8px; background: #05060f; color: #fff; border: 1px solid rgba(0,243,255,0.3); width:100%;">
+            </div>
+
+            <div class="masive-actions" style="background: #0d0f1d; padding: 10px; margin-bottom: 15px; border: 1px dashed var(--neon-amber); display: flex; gap: 10px; align-items: center; flex-wrap:wrap;">
+                <span style="font-size:0.8rem; font-weight: bold; color: #94a3b8;">ACCIONES EN BLOQUE:</span>
+                <button onclick="ejecutarAccionMasiva('PLAY')" style="background: #1b4322; color: #39ff14; padding: 6px 12px; border: 1px solid #39ff14; cursor: pointer; font-family:'Orbitron'; font-size:0.7rem;">▶ PLAY</button>
+                <button onclick="ejecutarAccionMasiva('PAUSAR')" style="background: #5c4308; color: #ffaa00; padding: 6px 12px; border: 1px solid #ffaa00; cursor: pointer; font-family:'Orbitron'; font-size:0.7rem;">⏸ PAUSA</button>
+                <button onclick="ejecutarAccionMasiva('ELIMINAR')" style="background: #421212; color: #ff3333; padding: 6px 12px; border: 1px solid #ff3333; cursor: pointer; font-family:'Orbitron'; font-size:0.7rem;">🗑️ WIPE OUT</button>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size:0.85rem;">
+                    <thead>
+                        <tr style="background: #0d0f1d; border-bottom: 2px solid rgba(0,243,255,0.3);">
+                            <th style="padding: 10px;"><input type="checkbox" onclick="toggleSeleccionarTodas(this.checked)"></th>
+                            <th style="padding: 10px;">PROPIETARIO</th>
+                            <th style="padding: 10px;">CAMPAÑA</th>
+                            <th style="padding: 10px;">ESTADO</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${filtradas.map(c => `
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); background: ${c.is_sponsored ? 'rgba(255,170,0,0.05)' : 'transparent'}">
+                                <td style="padding: 10px;">
+                                    <input type="checkbox" ${AdminState.seleccionadas.includes(c.id) ? 'checked' : ''} onclick="toggleSeleccionCampana('${c.id}')">
+                                </td>
+                                <td style="padding: 10px;">
+                                    <div style="font-weight: bold;">${c.owner_name}</div>
+                                    <div style="font-size: 10px; color: #636e72;">ID: ${c.owner_id}</div>
+                                </td>
+                                <td style="padding: 10px;">
+                                    <div style="font-weight: bold; color: var(--neon-cyan);">${c.title}</div>
+                                    <div style="font-size: 11px; color: #94a3b8;">${c.type}</div>
+                                </td>
+                                <td style="padding: 10px;">
+                                    <span style="padding: 2px 6px; font-size: 10px; font-weight: bold; background: ${c.status === 'activa' ? '#1b4322' : '#5c4308'}">
+                                        ${c.status.toUpperCase()}
+                                    </span>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+    contenedor.innerHTML = html;
+}
+
+function toggleSeleccionCampana(id) {
+    const index = AdminState.seleccionadas.indexOf(id);
+    if (index > -1) {
+        AdminState.seleccionadas.splice(index, 1);
+    } else {
+        AdminState.seleccionadas.push(id);
+    }
+    renderizarTablaAdmin();
+}
+
+function toggleSeleccionarTodas(checked) {
+    if (checked) {
+        AdminState.seleccionadas = AdminState.campanas.map(c => c.id);
+    } else {
+        AdminState.seleccionadas = [];
+    }
+    renderizarTablaAdmin();
+}
+
+// Disparador de enganche: acopla la carga cuando cambias a la pestaña de administración
+document.getElementById("nav-admin")?.addEventListener("click", () => {
+    setTimeout(() => { cargarCampanasAdminFuerza(); }, 200);
+});
+
     </script>
 </body>
 </html>
