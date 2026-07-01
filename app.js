@@ -1203,7 +1203,7 @@
         }
     };
 
-    renderizarTablaAdmin = function() {
+                    renderizarTablaAdmin = function() {
         const contenedor = document.getElementById("super-admin-panel");
         if (!contenedor) return;
         
@@ -1221,85 +1221,83 @@
             filtradas.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         }
 
-        // 🧠 ESTRATEGIA: Mantenemos las herramientas fuera de la tabla para que no se destruyan al renderizar
-        let html = `
-            <div class="admin-panel-container" style="padding: 20px; background: #0a0b16; color: #fff; font-family: 'Rajdhani', sans-serif; border: 1px solid rgba(0, 243, 255, 0.2); margin-top:20px;">
-                <h3 style="font-family:'Orbitron', sans-serif; font-size:1.1rem; color:var(--neon-cyan); margin-bottom:15px;">👑 PANEL - MONITOREO</h3>
-                
-                <div class="admin-tools" style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-                    <input type="text" placeholder="🔍 Buscar ID Campaña..." id="admin-search-input" value="${AdminState.filtros.buscador}" style="padding: 8px; background: #05060f; color: #fff; border: 1px solid rgba(0,243,255,0.3); width:100%;">
-                </div>
+        // 🧠 ESTRATEGIA SEGURA: Si el contenedor base no tiene los controles, los pintamos UNA SOLA VEZ.
+        if (!document.getElementById("admin-search-input")) {
+            contenedor.innerHTML = `
+                <div class="admin-panel-container" style="padding: 20px; background: #0a0b16; color: #fff; font-family: 'Rajdhani', sans-serif; border: 1px solid rgba(0, 243, 255, 0.2); margin-top:20px;">
+                    <h3 style="font-family:'Orbitron', sans-serif; font-size:1.1rem; color:var(--neon-cyan); margin-bottom:15px;">👑 PANEL - MONITOREO</h3>
+                    
+                    <div class="admin-tools" style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+                        <input type="text" placeholder="🔍 Buscar ID Campaña..." id="admin-search-input" value="" style="padding: 8px; background: #05060f; color: #fff; border: 1px solid rgba(0,243,255,0.3); width:100%;">
+                    </div>
 
-                <div class="masive-actions" style="background: #0d0f1d; padding: 10px; margin-bottom: 15px; border: 1px dashed var(--neon-amber); display: flex; gap: 10px; align-items: center; flex-wrap:wrap;">
-                    <button id="btn-mass-play" style="background: #1b4322; color: #39ff14; padding: 6px 12px; border: 1px solid #39ff14; cursor: pointer; font-family:'Orbitron'; font-size:0.7rem;">▶ PLAY</button>
-                    <button id="btn-mass-pause" style="background: #5c4308; color: #ffaa00; padding: 6px 12px; border: 1px solid #ffaa00; cursor: pointer; font-family:'Orbitron'; font-size:0.7rem;">⏸ PAUSA</button>
-                    <button id="btn-mass-wipe" style="background: #421212; color: #ff3333; padding: 6px 12px; border: 1px solid #ff3333; cursor: pointer; font-family:'Orbitron'; font-size:0.7rem;">🗑️ ELIMINAR</button>
-                </div>
+                    <div class="masive-actions" style="background: #0d0f1d; padding: 10px; margin-bottom: 15px; border: 1px dashed var(--neon-amber); display: flex; gap: 10px; align-items: center; flex-wrap:wrap;">
+                        <button id="btn-mass-play" style="background: #1b4322; color: #39ff14; padding: 6px 12px; border: 1px solid #39ff14; cursor: pointer; font-family:'Orbitron'; font-size:0.7rem;">▶ PLAY</button>
+                        <button id="btn-mass-pause" style="background: #5c4308; color: #ffaa00; padding: 6px 12px; border: 1px solid #ffaa00; cursor: pointer; font-family:'Orbitron'; font-size:0.7rem;">⏸ PAUSA</button>
+                        <button id="btn-mass-wipe" style="background: #421212; color: #ff3333; padding: 6px 12px; border: 1px solid #ff3333; cursor: pointer; font-family:'Orbitron'; font-size:0.7rem;">🗑️ ELIMINAR</button>
+                    </div>
 
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size:0.85rem;">
-                        <thead>
-                            <tr style="background: #0d0f1d; border-bottom: 2px solid rgba(0,243,255,0.3);">
-                                <th style="padding: 10px;"><input type="checkbox" id="th-select-all"></th>
-                                <th style="padding: 10px;">USUARIO</th>
-                                <th style="padding: 10px;">CAMPAÑA</th>
-                                <th style="padding: 10px;">ESTADO</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-table-body">
-                            ${filtradas.map(c => `
-                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); background: ${c.is_sponsored ? 'rgba(255,170,0,0.05)' : 'transparent'}">
-                                    <td style="padding: 10px;">
-                                        <input type="checkbox" class="admin-row-checkbox" data-id="${c.id}" ${AdminState.seleccionadas.includes(c.id) ? 'checked' : ''}>
-                                    </td>
-                                    <td style="padding: 10px;">
-                                        <div style="font-weight: bold;">Nodo</div>
-                                        <div style="font-size: 10px; color: #636e72;">ID: ${c.owner_id}</div>
-                                    </td>
-                                    <td style="padding: 10px;">
-                                        <div class="btn-edit-trigger" data-id="${c.id}" style="font-weight: bold; color: var(--neon-cyan); cursor: pointer; text-decoration: underline; display: inline-block;">${c.title}</div>
-                                        <div style="font-size: 11px; color: #8a2be2;">Tipo: ${c.type} | Cam_ID: ${c.id}</div>
-                                    </td>
-                                    <td style="padding: 10px;">
-                                        <select class="admin-action-select" data-id="${c.id}" style="background: ${c.status === 'activa' ? '#1b4322' : '#5c4308'}; color: #fff; border: 1px solid rgba(255,255,255,0.2); font-family: 'Orbitron'; font-size: 10px; padding: 4px; font-weight: bold; cursor:pointer;">
-                                            <option value="" disabled selected>${c.status.toUpperCase()}</option>
-                                            <option value="toggle_pausa">${c.status === 'activa' ? '⏸️ PAUSAR' : '▶️ ACTIVAR'}</option>
-                                            <option value="toggle_destacar">${c.is_sponsored ? '❌ DES-DESTACAR' : '⭐ DESTACAR'}</option>
-                                            <option value="eliminar">🗑️ ELIMINAR</option>
-                                        </select>
-                                    </td>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size:0.85rem;">
+                            <thead>
+                                <tr style="background: #0d0f1d; border-bottom: 2px solid rgba(0,243,255,0.3);">
+                                    <th style="padding: 10px;"><input type="checkbox" id="th-select-all"></th>
+                                    <th style="padding: 10px;">USUARIO</th>
+                                    <th style="padding: 10px;">CAMPAÑA</th>
+                                    <th style="padding: 10px;">ESTADO</th>
                                 </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody id="admin-table-body"></tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
-        `;
-        
-        // 🔒 Inyección única
-        contenedor.innerHTML = html;
+            `;
 
-        // ⚡ Solución al congelamiento: Recuperamos el input y devolvemos el cursor al final del texto
-        const searchInput = document.getElementById("admin-search-input");
-        if (searchInput) {
-            searchInput.focus();
-            searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length);
-            
+            // El listener se asigna UNA SOLA VEZ en la vida del nodo
+            const searchInput = document.getElementById("admin-search-input");
             searchInput.addEventListener("input", function() {
                 AdminState.filtros.buscador = this.value;
-                renderizarTablaAdmin();
+                renderizarTablaAdmin(); // Ahora solo actualizará el tbody seguro
             });
+
+            document.getElementById("th-select-all").addEventListener("click", function() {
+                toggleSeleccionarTodas(this.checked);
+            });
+
+            document.getElementById("btn-mass-play").addEventListener("click", () => ejecutarAccionMasiva('PLAY'));
+            document.getElementById("btn-mass-pause").addEventListener("click", () => ejecutarAccionMasiva('PAUSAR'));
+            document.getElementById("btn-mass-wipe").addEventListener("click", () => ejecutarAccionMasiva('ELIMINAR'));
         }
 
-        // Oyentes de eventos restantes (Sin cambios)
-        document.getElementById("th-select-all").addEventListener("click", function() {
-            toggleSeleccionarTodas(this.checked);
-        });
+        // ⚡ RENDERIZADO EXCLUSIVO DEL CUERPO (Previene bloqueos de UI)
+        const tbody = document.getElementById("admin-table-body");
+        if (tbody) {
+            tbody.innerHTML = filtradas.map(c => `
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); background: ${c.is_sponsored ? 'rgba(255,170,0,0.05)' : 'transparent'}">
+                    <td style="padding: 10px;">
+                        <input type="checkbox" class="admin-row-checkbox" data-id="${c.id}" ${AdminState.seleccionadas.includes(c.id) ? 'checked' : ''}>
+                    </td>
+                    <td style="padding: 10px;">
+                        <div style="font-weight: bold;">Nodo</div>
+                        <div style="font-size: 10px; color: #636e72;">ID: ${c.owner_id}</div>
+                    </td>
+                    <td style="padding: 10px;">
+                        <div class="btn-edit-trigger" data-id="${c.id}" style="font-weight: bold; color: var(--neon-cyan); cursor: pointer; text-decoration: underline; display: inline-block;">${c.title}</div>
+                        <div style="font-size: 11px; color: #8a2be2;">Tipo: ${c.type} | Cam_ID: ${c.id}</div>
+                    </td>
+                    <td style="padding: 10px;">
+                        <select class="admin-action-select" data-id="${c.id}" style="background: ${c.status === 'activa' ? '#1b4322' : '#5c4308'}; color: #fff; border: 1px solid rgba(255,255,255,0.2); font-family: 'Orbitron'; font-size: 10px; padding: 4px; font-weight: bold; cursor:pointer;">
+                            <option value="" disabled selected>${c.status.toUpperCase()}</option>
+                            <option value="toggle_pausa">${c.status === 'activa' ? '⏸️ PAUSAR' : '▶️ ACTIVAR'}</option>
+                            <option value="toggle_destacar">${c.is_sponsored ? '❌ DES-DESTACAR' : '⭐ DESTACAR'}</option>
+                            <option value="eliminar">🗑️ ELIMINAR</option>
+                        </select>
+                    </td>
+                </tr>
+            `).join('');
+        }
 
-        document.getElementById("btn-mass-play").addEventListener("click", () => ejecutarAccionMasiva('PLAY'));
-        document.getElementById("btn-mass-pause").addEventListener("click", () => ejecutarAccionMasiva('PAUSAR'));
-        document.getElementById("btn-mass-wipe").addEventListener("click", () => ejecutarAccionMasiva('ELIMINAR'));
-
+        // Re-vinculamos los eventos de las filas dinámicas
         document.querySelectorAll(".admin-row-checkbox").forEach(el => {
             el.addEventListener("click", function() {
                 toggleSeleccionCampana(this.getAttribute("data-id"));
