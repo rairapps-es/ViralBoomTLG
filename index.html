@@ -533,8 +533,7 @@
                     <span id="group-stats-placeholder">Awaiting datastream package requests...</span>
                 </div>
             </div>
-<div id="super-admin-panel" style="margin-top: 20px;"></div>
-
+            <div id="super-admin-panel" style="margin-top: 20px;"></div>
         </div>
 
         <div id="view-billing" class="view-section">
@@ -648,9 +647,8 @@
                     this.tg.expand();
                 }
 
-                // Configuración correcta con tus datos reales de Supabase
-const SUPABASE_URL = "https://hdvmoeugbbuxvdeoprks.supabase.co"; 
-const cleanKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhkdm1vZXVnYmJ1eHZkZW9wcmtzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3NjM5OTEsImV4cCI6MjA5ODMzOTk5MX0.6Qx4LsduzdjHcDcFtGPQrq3tnxQndMAmG-PS2Iay6SU";
+                const SUPABASE_URL = "https://hdvmoeugbbuxvdeoprks.supabase.co"; 
+                const cleanKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhkdm1vZXVnYmJ1eHZkZW9wcmtzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3NjM5OTEsImV4cCI6MjA5ODMzOTk5MX0.6Qx4LsduzdjHcDcFtGPQrq3tnxQndMAmG-PS2Iay6SU";
                 
                 try {
                     if (window.supabase && SUPABASE_URL && cleanKey) {
@@ -910,52 +908,52 @@ const cleanKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
             },
 
             async evaluarFlujoDeepLinkingDeEntrada() {
-    if (!this.tg) return;
-    const startParam = this.tg.initDataUnsafe?.start_param;
-    if (!startParam) return;
+                if (!this.tg) return;
+                const startParam = this.tg.initDataUnsafe?.start_param;
+                if (!startParam) return;
 
-    try {
-        let base64Clean = startParam.replace(/-/g, '+').replace(/_/g, '/');
-        while (base64Clean.length % 4) { 
-            base64Clean += '='; 
-        }
-        
-        const binaryString = atob(base64Clean);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-            bytes[i] = binaryString.charCodeAt(i);
-        }
-        const decodedText = new TextDecoder('utf-8').decode(bytes);
-        const payload = JSON.parse(decodedText);
+                try {
+                    let base64Clean = startParam.replace(/-/g, '+').replace(/_/g, '/');
+                    while (base64Clean.length % 4) { 
+                        base64Clean += '='; 
+                    }
+                    
+                    const binaryString = atob(base64Clean);
+                    const bytes = new Uint8Array(binaryString.length);
+                    for (let i = 0; i < binaryString.length; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
+                    }
+                    const decodedText = new TextDecoder('utf-8').decode(bytes);
+                    const payload = JSON.parse(decodedText);
 
-        if (payload && payload.secret_url) {
-            this.state.campañaActivaLocal = {
-                titulo: payload.title, 
-                desc: payload.description, 
-                secreto: payload.secret_url,
-                tipo: payload.type || "invitation", 
-                requeridos: parseInt(payload.req_slots) || 3,
-                tgTarget: payload.tg_target || "", 
-                adValue: payload.ad_val || "", 
-                adDuration: parseInt(payload.ad_dur) || 30,
-                startDate: payload.s_date ? parseInt(payload.s_date) : null, 
-                endDate: payload.e_date ? parseInt(payload.e_date) : null,
-                ownerId: payload.owner,
-                status: payload.status || 'activa'
-            };
-            
-            Storage.set("campaña_local_backup", this.state.campañaActivaLocal);
+                    if (payload && payload.secret_url) {
+                        this.state.campañaActivaLocal = {
+                            titulo: payload.title, 
+                            desc: payload.description, 
+                            secreto: payload.secret_url,
+                            tipo: payload.type || "invitation", 
+                            requeridos: parseInt(payload.req_slots) || 3,
+                            tgTarget: payload.tg_target || "", 
+                            adValue: payload.ad_val || "", 
+                            adDuration: parseInt(payload.ad_dur) || 30,
+                            startDate: payload.s_date ? parseInt(payload.s_date) : null, 
+                            endDate: payload.e_date ? parseInt(payload.e_date) : null,
+                            ownerId: payload.owner,
+                            status: payload.status || 'activa'
+                        };
+                        
+                        Storage.set("campaña_local_backup", this.state.campañaActivaLocal);
 
-            if (payload.owner && payload.owner !== this.state.userId && this.supabaseClient) {
-                await this.supabaseClient.from('referrals').insert([
-                    { campaign_owner_id: payload.owner, referred_user_id: this.state.userId }
-                ]);
-            }
-        }
-    } catch (e) {
-        console.error("Error decodificando nodo cuántico:", e);
-    }
-},
+                        if (payload.owner && payload.owner !== this.state.userId && this.supabaseClient) {
+                            await this.supabaseClient.from('referrals').insert([
+                                { campaign_owner_id: payload.owner, referred_user_id: this.state.userId }
+                            ]);
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error decodificando nodo cuántico:", e);
+                }
+            },
 
             async guardarCampanaAdmin() {
                 const t = document.getElementById("setup-title").value.trim();
@@ -1025,8 +1023,7 @@ const cleanKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
                     startDate: nuevaCampana.start_date ? new Date(nuevaCampana.start_date).getTime() : null, 
                     endDate: nuevaCampana.end_date ? new Date(nuevaCampana.end_date).getTime() : null, 
                     ownerId: this.state.userId,
-                    status: nuevaCampana.status || 'activa' // <-- AÑADE ESTA LÍNEA EXACTA
-                };
+                    status: nuevaCampana.status || 'activa' 
                 };
 
                 Storage.set("campaña_local_backup", this.state.campañaActivaLocal);
@@ -1077,7 +1074,7 @@ const cleanKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
                 this.cambiarPestana('admin');
             },
 
-                         renderizarPantallasDinamicas() {
+            renderizarPantallasDinamicas() {
                 const camp = this.state.campañaActivaLocal;
                 const cardNoCam = document.getElementById("card-no-campaign");
                 const cardUnlock = document.getElementById("card-viral-unlock");
@@ -1090,7 +1087,6 @@ const cleanKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
                     return;
                 }
 
-                // --- MEJORA: INTERCEPCIÓN DE PAUSA DE ADMINISTRACIÓN ---
                 if (camp.status === 'en_pausa') {
                     if(cardNoCam) cardNoCam.style.display = "none";
                     if(cardUnlock) cardUnlock.style.display = "none";
@@ -1102,18 +1098,15 @@ const cleanKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
                         const msgDesc = document.getElementById("status-msg-desc");
                         
                         if (camp.ownerId === this.state.userId) {
-                            // Escenario A: El usuario es el dueño de la campaña
                             if(msgTitle) msgTitle.textContent = "⏸️ NODE_PENDING_APPROVAL";
                             if(msgDesc) msgDesc.textContent = "Tu nodo de distribución se encuentra temporalmente en pausa y en espera de validación por parte del Super Admin.";
                         } else {
-                            // Escenario B: El usuario es un invitado externo
                             if(msgTitle) msgTitle.textContent = "🔒 LINK_SUSPENDED";
                             if(msgDesc) msgDesc.textContent = "Este enlace de descarga P2P ha sido pausado por la administración. Los protocolos de sincronización y copia de enlace quedan deshabilitados.";
                         }
                     }
                     return;
                 }
-                // --- FIN DE LA MEJORA ---
 
                 const ahora = Date.now();
                 if(camp.startDate && ahora < camp.startDate) {
@@ -1151,8 +1144,8 @@ const cleanKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
                 const btnShare = document.getElementById("btn-share-viral"); if(btnShare) btnShare.style.display = "none";
 
                 if(camp.tipo === "invitation") {
-                    if(stepRef) stepRef.style.display = "block";
-                    if(btnShare) btnShare.style.display = "block";
+                    if(stepRef) { stepRef.style.display = "block"; }
+                    if(btnShare) { btnShare.style.display = "block"; }
                     
                     const porcentaje = Math.min((this.state.referidosLogrados / camp.requeridos) * 100, 100);
                     const pText = document.getElementById("progress-text"); if(pText) pText.textContent = `${this.state.referidosLogrados} / ${camp.requeridos} CLONES`;
@@ -1195,7 +1188,6 @@ const cleanKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
                     }
                 }
             },
-
 
             ejecutarContadorAnuncio(segundos) {
                 if (this.state.adTimerInterval) clearInterval(this.state.adTimerInterval);
@@ -1418,302 +1410,289 @@ const cleanKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
         };
 
         document.addEventListener("DOMContentLoaded", () => {
-    App.init();
-}); // <- Aquí debe cerrar con llave, paréntesis y punto y coma
+            App.init();
+        });
         
         /* ==========================================================
-   NÚCLEO INDEPENDIENTE: CONTROL SUPER-ADMIN DE CAMPAÑAS
-   ========================================================== */
-const AdminState = {
-    campanas: [],
-    seleccionadas: [], 
-    filtros: {
-        buscador: '',
-        orden: 'nuevas',
-        tipo: 'todas',
-        destacadas: 'todas'
-    }
-};
+           NÚCLEO INDEPENDIENTE: CONTROL SUPER-ADMIN DE CAMPAÑAS
+           ========================================================== */
+        const AdminState = {
+            campanas: [],
+            seleccionadas: [], 
+            filtros: {
+                buscador: '',
+                orden: 'nuevas',
+                tipo: 'todas',
+                destacadas: 'todas'
+            }
+        };
 
-function reportarCampana(campanaId, titulo, ownerId) {
-    const miUsuarioTelegram = "Airdayz"; // Modificado con tu @ de Telegram
-    const usuarioReportante = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || "Desconocido";
-    const nombreReportante = window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || "Usuario";
+        function reportarCampana(campanaId, titulo, ownerId) {
+            const miUsuarioTelegram = "Airdayz"; 
+            const usuarioReportante = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || "Desconocido";
+            const nombreReportante = window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || "Usuario";
 
-    const mensaje = `🚨 *REPORTE DE CAMPAÑA*\n\n` +
-                    `• *ID Campaña:* ${campanaId}\n` +
-                    `• *Título:* ${titulo}\n` +
-                    `• *Owner ID:* ${ownerId}\n` +
-                    `• *Reportado por:* ${nombreReportante} (ID: ${usuarioReportante})`;
+            const mensaje = `🚨 *REPORTE DE CAMPAÑA*\n\n` +
+                            `• *ID Campaña:* ${campanaId}\n` +
+                            `• *Título:* ${titulo}\n` +
+                            `• *Owner ID:* ${ownerId}\n` +
+                            `• *Reportado por:* ${nombreReportante} (ID: ${usuarioReportante})`;
 
-    const urlTelegram = `https://t.me/${miUsuarioTelegram}?text=${encodeURIComponent(mensaje)}`;
-    
-    if (window.Telegram?.WebApp) {
-        window.Telegram.WebApp.openTelegramLink(urlTelegram);
-    } else {
-        window.window.open(urlTelegram, '_blank');
-    }
-}
-
-function puedePausarPremium(fechaFinStr) {
-    if (!fechaFinStr) return false;
-    const fechaFin = new Date(fechaFinStr);
-    const ahora = new Date();
-    const diferenciaHoras = (fechaFin - ahora) / (1000 * 60 * 60);
-    return diferenciaHoras >= 72;
-}
-
-function renderAccionesUsuario(campana, esPremium) {
-    if (!esPremium) {
-        return `<span class="badge-disabled">Modo Gratis: Esperando finalización</span>`;
-    }
-
-    let botones = '';
-    if (campana.status === 'activa') {
-        if (puedePausarPremium(campana.fecha_fin)) {
-            botones += `<button onclick="cambiarEstadoCampana('${campana.id}', 'en_pausa')">⏸️ Pausar</button>`;
-        } else {
-            botones += `<span class="text-mini">⏳ Bloqueado (<72h)</span>`;
+            const urlTelegram = `https://t.me/${miUsuarioTelegram}?text=${encodeURIComponent(mensaje)}`;
+            
+            if (window.Telegram?.WebApp) {
+                window.Telegram.WebApp.openTelegramLink(urlTelegram);
+            } else {
+                window.open(urlTelegram, '_blank');
+            }
         }
-    } else if (campana.status === 'en_pausa') {
-        botones += `<button onclick="cambiarEstadoCampana('${campana.id}', 'activa')">▶️ Play</button>`;
-    }
 
-    botones += `<button class="btn-danger" onclick="confirmarEliminarUsuario('${campana.id}')">🗑️ Eliminar</button>`;
-    botones += `<button onclick="abrirEditorCampana('${campana.id}')">✏️ Editar</button>`;
+        function puedePausarPremium(fechaFinStr) {
+            if (!fechaFinStr) return false;
+            const fechaFin = new Date(fechaFinStr);
+            const ahora = new Date();
+            const diferenciaHoras = (fechaFin - ahora) / (1000 * 60 * 60);
+            return diferenciaHoras >= 72;
+        }
 
-    return botones;
-}
+        function renderAccionesUsuario(campana, esPremium) {
+            if (!esPremium) {
+                return `<span class="badge-disabled">Modo Gratis: Esperando finalización</span>`;
+            }
 
-/* ==========================================================
-   PROCESADORES DE CAMBIOS DE ESTADO (SUPER ADMIN)
-   ========================================================== */
+            let botones = '';
+            if (campana.status === 'activa') {
+                if (puedePausarPremium(campana.fecha_fin)) {
+                    botones += `<button onclick="cambiarEstadoCampana('${campana.id}', 'en_pausa')">⏸️ Pausar</button>`;
+                } else {
+                    botones += `<span class="text-mini">⏳ Bloqueado (<72h)</span>`;
+                }
+            } else if (campana.status === 'en_pausa') {
+                botones += `<button onclick="cambiarEstadoCampana('${campana.id}', 'activa')">▶️ Play</button>`;
+            }
 
-// 1. PROCESADOR PARA LAS ACCIONES INDIVIDUALES DEL DESPLEGABLE DE LA TABLA
-async function ejecutarAccionIndividual(campanaId, accion) {
-    const db = App.supabaseClient;
-    if (!db) {
-        alert("La conexión con Supabase no está lista.");
-        return;
-    }
-    if (!accion) return; // Si seleccionan "Acciones...", no hace nada
+            botones += `<button class="btn-danger" onclick="confirmarEliminarUsuario('${campana.id}')">🗑️ Eliminar</button>`;
+            botones += `<button onclick="abrirEditorCampana('${campana.id}')">✏️ Editar</button>`;
 
-    try {
-        if (accion === 'toggle_pausa') {
-            // Buscamos la campaña en nuestro estado local para saber su estado actual
-            const campana = AdminState.campanas.find(c => c.id === campanaId);
-            const nuevoEstado = campana && campana.status === 'activa' ? 'en_pausa' : 'activa';
-            
-            const { error } = await db.from('campaigns').update({ status: nuevoEstado }).eq('id', campanaId);
-            if (error) throw error;
-            alert(`⚙️ Nodo cambiado a: ${nuevoEstado.toUpperCase()}`);
-            
-        } else if (accion === 'toggle_destacar') {
-            const campana = AdminState.campanas.find(c => c.id === campanaId);
-            const nuevoDestacado = campana ? !c.is_sponsored : true;
-            
-            const { error } = await db.from('campaigns').update({ is_sponsored: nuevoDestacado }).eq('id', campanaId);
-            if (error) throw error;
-            alert(nuevoDestacado ? "⭐ Campaña destacada con éxito." : "❌ Destacado removido.");
+            return botones;
+        }
 
-        } else if (accion === 'eliminar') {
-            const confirmar = window.confirm("⚠️ ¿Estás seguro de que deseas eliminar permanentemente esta campaña?");
+        async function ejecutarAccionIndividual(campanaId, accion) {
+            const db = App.supabaseClient;
+            if (!db) {
+                alert("La conexión con Supabase no está lista.");
+                return;
+            }
+            if (!accion) return; 
+
+            try {
+                if (accion === 'toggle_pausa') {
+                    const campana = AdminState.campanas.find(c => c.id === campanaId);
+                    const nuevoEstado = campana && campana.status === 'activa' ? 'en_pausa' : 'activa';
+                    
+                    const { error } = await db.from('campaigns').update({ status: nuevoEstado }).eq('id', campanaId);
+                    if (error) throw error;
+                    alert(`⚙️ Nodo cambiado a: ${nuevoEstado.toUpperCase()}`);
+                    
+                } else if (accion === 'toggle_destacar') {
+                    const campana = AdminState.campanas.find(c => c.id === campanaId);
+                    const nuevoDestacado = campana ? !campana.is_sponsored : true;
+                    
+                    const { error } = await db.from('campaigns').update({ is_sponsored: nuevoDestacado }).eq('id', campanaId);
+                    if (error) throw error;
+                    alert(nuevoDestacado ? "⭐ Campaña destacada con éxito." : "❌ Destacado removido.");
+
+                } else if (accion === 'eliminar') {
+                    const confirmar = window.confirm("⚠️ ¿Estás seguro de que deseas eliminar permanentemente esta campaña?");
+                    if (!confirmar) return;
+                    
+                    const { error } = await db.from('campaigns').delete().eq('id', campanaId);
+                    if (error) throw error;
+                    alert("🗑️ Campaña eliminada de la base de datos.");
+                } else if (accion === 'editar') {
+                    alert("✏️ Función de edición en desarrollo. Usa la consola de creación para sobreescribir.");
+                    return;
+                }
+
+                await cargarCampanasAdminFuerza();
+
+            } catch (err) {
+                console.error("Error en acción individual:", err);
+                alert("Fallo al actualizar el nodo individual: " + err.message);
+            }
+        }
+
+        async function ejecutarAccionMasiva(accion) {
+            const db = App.supabaseClient; 
+            if (!db) {
+                alert("La conexión con Supabase no está lista.");
+                return;
+            }
+            if (AdminState.seleccionadas.length === 0) {
+                alert("Por favor, selecciona al menos una campaña usando los checkboxes.");
+                return;
+            }
+
+            let textoAlerta = '';
+            let objetoActualizacion = {};
+
+            switch(accion) {
+                case 'ELIMINAR':
+                    textoAlerta = `⚠️ PASARÁ ESTO: Se eliminarán permanentemente ${AdminState.seleccionadas.length} campañas de la base de datos.`;
+                    break;
+                case 'PAUSAR':
+                    textoAlerta = `⏸️ PASARÁ ESTO: Se pausarán ${AdminState.seleccionadas.length} campañas de la red.`;
+                    objetoActualizacion = { status: 'en_pausa' };
+                    break;
+                case 'PLAY':
+                    textoAlerta = `▶️ PASARÁ ESTO: Se reactivarán ${AdminState.seleccionadas.length} campañas.`;
+                    objetoActualizacion = { status: 'activa' };
+                    break;
+            }
+
+            const confirmar = window.confirm(`${textoAlerta}\n\n¿Deseas continuar con los cambios masivos?`);
             if (!confirmar) return;
+
+            try {
+                if (accion === 'ELIMINAR') {
+                    const { error } = await db.from('campaigns').delete().in('id', AdminState.seleccionadas);
+                    if (error) throw error;
+                } else {
+                    const { error } = await db.from('campaigns').update(objetoActualizacion).in('id', AdminState.seleccionadas);
+                    if (error) throw error;
+                }
+
+                alert("🚀 Sistema masivo actualizado con éxito.");
+                AdminState.seleccionadas = []; 
+                await cargarCampanasAdminFuerza(); 
+            } catch (err) {
+                console.error("Error en acción masiva:", err);
+                alert("Hubo un error al aplicar los cambios masivos: " + err.message);
+            }
+        }
+
+        async function cargarCampanasAdminFuerza() {
+            if (!App.supabaseClient) return;
+            try {
+                const { data, error } = await App.supabaseClient.from('campaigns').select('*');
+                if (!error && data) {
+                    AdminState.campanas = data.map(c => ({
+                        id: c.id, 
+                        owner_id: c.owner_id,
+                        title: c.title,
+                        description: c.description,
+                        type: c.type,
+                        created_at: c.start_date || new Date().toISOString(),
+                        fecha_fin: c.end_date || new Date().toISOString(),
+                        status: c.status || 'activa',
+                        is_sponsored: c.is_sponsored || false,
+                        owner_name: "Nodo Terminal",
+                        owner_avatar: ""
+                    }));
+                    renderizarTablaAdmin();
+                }
+            } catch(e) {
+                console.error("Error cargando campañas en el Administrador:", e);
+            }
+        }
+
+        function renderizarTablaAdmin() {
+            const contenedor = document.getElementById("super-admin-panel");
+            if (!contenedor) return;
             
-            const { error } = await db.from('campaigns').delete().eq('id', campanaId);
-            if (error) throw error;
-            alert("🗑️ Campaña eliminada de la base de datos.");
-        } else if (accion === 'editar') {
-            alert("✏️ Función de edición en desarrollo. Usa la consola de creación para sobreescribir.");
-            return;
+            let filtradas = AdminState.campanas.filter(c => {
+                const coincideBusqueda = c.id.includes(AdminState.filtros.buscador) || c.owner_id.includes(AdminState.filtros.buscador);
+                const coincideTipo = AdminState.filtros.tipo === 'todas' || c.type === AdminState.filtros.tipo;
+                const coincideDestacada = AdminState.filtros.destacadas === 'todas' || 
+                    (AdminState.filtros.destacadas === 'si' && c.is_sponsored) || 
+                    (AdminState.filtros.destacadas === 'no' && !c.is_sponsored);
+                
+                return coincideBusqueda && coincideTipo && coincideDestacada;
+            });
+
+            if (AdminState.filtros.orden === 'nuevas') {
+                filtradas.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            }
+
+            let html = `
+                <div class="admin-panel-container" style="padding: 20px; background: #0a0b16; color: #fff; font-family: 'Rajdhani', sans-serif; border: 1px solid rgba(0, 243, 255, 0.2); margin-top:20px;">
+                    <h3 style="font-family:'Orbitron', sans-serif; font-size:1.1rem; color:var(--neon-cyan); margin-bottom:15px;">👑 OVERLORD CORE PANEL - CENTRAL DE MONITOREO</h3>
+                    
+                    <div class="admin-tools" style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+                        <input type="text" placeholder="🔍 Buscar ID Nodo..." value="${AdminState.filtros.buscador}" oninput="AdminState.filtros.buscador = this.value; renderizarTablaAdmin();" style="padding: 8px; background: #05060f; color: #fff; border: 1px solid rgba(0,243,255,0.3); width:100%;">
+                    </div>
+
+                    <div class="masive-actions" style="background: #0d0f1d; padding: 10px; margin-bottom: 15px; border: 1px dashed var(--neon-amber); display: flex; gap: 10px; align-items: center; flex-wrap:wrap;">
+                        <span style="font-size:0.8rem; font-weight: bold; color: #94a3b8;">ACCIONES EN BLOQUE:</span>
+                        <button onclick="ejecutarAccionMasiva('PLAY')" style="background: #1b4322; color: #39ff14; padding: 6px 12px; border: 1px solid #39ff14; cursor: pointer; font-family:'Orbitron'; font-size:0.7rem;">▶ PLAY</button>
+                        <button onclick="ejecutarAccionMasiva('PAUSAR')" style="background: #5c4308; color: #ffaa00; padding: 6px 12px; border: 1px solid #ffaa00; cursor: pointer; font-family:'Orbitron'; font-size:0.7rem;">⏸ PAUSA</button>
+                        <button onclick="ejecutarAccionMasiva('ELIMINAR')" style="background: #421212; color: #ff3333; padding: 6px 12px; border: 1px solid #ff3333; cursor: pointer; font-family:'Orbitron'; font-size:0.7rem;">🗑️ WIPE OUT</button>
+                    </div>
+
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size:0.85rem;">
+                            <thead>
+                                <tr style="background: #0d0f1d; border-bottom: 2px solid rgba(0,243,255,0.3);">
+                                    <th style="padding: 10px;"><input type="checkbox" onclick="toggleSeleccionarTodas(this.checked)"></th>
+                                    <th style="padding: 10px;">PROPIETARIO</th>
+                                    <th style="padding: 10px;">CAMPAÑA</th>
+                                    <th style="padding: 10px;">ESTADO</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${filtradas.map(c => `
+                                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); background: ${c.is_sponsored ? 'rgba(255,170,0,0.05)' : 'transparent'}">
+                                        <td style="padding: 10px;">
+                                            <input type="checkbox" ${AdminState.seleccionadas.includes(c.id) ? 'checked' : ''} onclick="toggleSeleccionCampana('${c.id}')">
+                                        </td>
+                                        <td style="padding: 10px;">
+                                            <div style="font-weight: bold;">${c.owner_name}</div>
+                                            <div style="font-size: 10px; color: #636e72;">ID: ${c.owner_id}</div>
+                                        </td>
+                                        <td style="padding: 10px;">
+                                            <div style="font-weight: bold; color: var(--neon-cyan);">${c.title}</div>
+                                            <div style="font-size: 11px; color: #8a2be2;">Tipo: ${c.type} | ID Nodo: ${c.id}</div>
+                                        </td>
+                                        <td style="padding: 10px;">
+                                            <select onchange="ejecutarAccionIndividual('${c.id}', this.value)" style="background: ${c.status === 'activa' ? '#1b4322' : '#5c4308'}; color: #fff; border: 1px solid rgba(255,255,255,0.2); font-family: 'Orbitron'; font-size: 10px; padding: 4px; font-weight: bold; cursor:pointer;">
+                                                <option value="">${c.status.toUpperCase()}</option>
+                                                <option value="toggle_pausa">${c.status === 'activa' ? '⏸️ PAUSAR' : '▶️ ACTIVAR'}</option>
+                                                <option value="toggle_destacar">${c.is_sponsored ? '❌ DES-DESTACAR' : '⭐ DESTACAR'}</option>
+                                                <option value="eliminar">🗑️ ELIMINAR</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            contenedor.innerHTML = html;
         }
 
-        // RECARGA OBLIGATORIA: Volvemos a pedir los datos a Supabase para redibujar la tabla con el nuevo estado
-        await cargarCampanasAdminFuerza();
-
-    } catch (err) {
-        console.error("Error en acción individual:", err);
-        alert("Fallo al actualizar el nodo individual: " + err.message);
-    }
-}
-
-// 2. CORRECCIÓN DE LA FUNCIÓN MASIVA (Asegurando el refresco visual)
-async function ejecutarAccionMasiva(accion) {
-    const db = App.supabaseClient; 
-    if (!db) {
-        alert("La conexión con Supabase no está lista.");
-        return;
-    }
-    if (AdminState.seleccionadas.length === 0) {
-        alert("Por favor, selecciona al menos una campaña usando los checkboxes.");
-        return;
-    }
-
-    let textoAlerta = '';
-    let objetoActualizacion = {};
-
-    switch(accion) {
-        case 'ELIMINAR':
-            textoAlerta = `⚠️ PASARÁ ESTO: Se eliminarán permanentemente ${AdminState.seleccionadas.length} campañas de la base de datos.`;
-            break;
-        case 'PAUSAR':
-            textoAlerta = `⏸️ PASARÁ ESTO: Se pausarán ${AdminState.seleccionadas.length} campañas de la red.`;
-            objetoActualizacion = { status: 'en_pausa' };
-            break;
-        case 'PLAY':
-            textoAlerta = `▶️ PASARÁ ESTO: Se reactivarán ${AdminState.seleccionadas.length} campañas.`;
-            objetoActualizacion = { status: 'activa' };
-            break;
-    }
-
-    const confirmar = window.confirm(`${textoAlerta}\n\n¿Deseas continuar con los cambios masivos?`);
-    if (!confirmar) return;
-
-    try {
-        if (accion === 'ELIMINAR') {
-            const { error } = await db.from('campaigns').delete().in('id', AdminState.seleccionadas);
-            if (error) throw error;
-        } else {
-            const { error } = await db.from('campaigns').update(objetoActualizacion).in('id', AdminState.seleccionadas);
-            if (error) throw error;
-        }
-
-        alert("🚀 Sistema masivo actualizado con éxito.");
-        AdminState.seleccionadas = []; // Limpiamos los checkboxes
-        await cargarCampanasAdminFuerza(); // <-- AQUÍ CORREGIDO: Llama a la función de recarga real
-    } catch (err) {
-        console.error("Error en acción masiva:", err);
-        alert("Hubo un error al aplicar los cambios masivos: " + err.message);
-    }
-}
-
-// Función puente corregida para usar el ID real compuesto de Supabase
-async function cargarCampanasAdminFuerza() {
-    if (!App.supabaseClient) return;
-    try {
-        const { data, error } = await App.supabaseClient.from('campaigns').select('*');
-        if (!error && data) {
-            AdminState.campanas = data.map(c => ({
-                id: c.id, // <-- AQUÍ: Guarda el ID compuesto completo (ej: 1320417199_1782873419294)
-                owner_id: c.owner_id,
-                title: c.title,
-                description: c.description,
-                type: c.type,
-                created_at: c.start_date || new Date().toISOString(),
-                fecha_fin: c.end_date || new Date().toISOString(),
-                status: c.status || 'activa',
-                is_sponsored: c.is_sponsored || false,
-                owner_name: "Nodo Terminal",
-                owner_avatar: ""
-            }));
+        function toggleSeleccionCampana(id) {
+            const index = AdminState.seleccionadas.indexOf(id);
+            if (index > -1) {
+                AdminState.seleccionadas.splice(index, 1);
+            } else {
+                AdminState.seleccionadas.push(id);
+            }
             renderizarTablaAdmin();
         }
-    } catch(e) {
-        console.error("Error cargando campañas en el Administrador:", e);
-    }
-}
 
+        function toggleSeleccionarTodas(checked) {
+            if (checked) {
+                AdminState.seleccionadas = AdminState.campanas.map(c => c.id);
+            } else {
+                AdminState.seleccionadas = [];
+            }
+            renderizarTablaAdmin();
+        }
 
-function renderizarTablaAdmin() {
-    const contenedor = document.getElementById("super-admin-panel");
-    if (!contenedor) return;
-    
-    let filtradas = AdminState.campanas.filter(c => {
-        const coincideBusqueda = c.id.includes(AdminState.filtros.buscador) || c.owner_id.includes(AdminState.filtros.buscador);
-        const coincideTipo = AdminState.filtros.tipo === 'todas' || c.type === AdminState.filtros.tipo;
-        const coincideDestacada = AdminState.filtros.destacadas === 'todas' || 
-            (AdminState.filtros.destacadas === 'si' && c.is_sponsored) || 
-            (AdminState.filtros.destacadas === 'no' && !c.is_sponsored);
-        
-        return coincideBusqueda && coincideTipo && coincideDestacada;
-    });
-
-    if (AdminState.filtros.orden === 'nuevas') {
-        filtradas.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-    }
-
-    let html = `
-        <div class="admin-panel-container" style="padding: 20px; background: #0a0b16; color: #fff; font-family: 'Rajdhani', sans-serif; border: 1px solid rgba(0, 243, 255, 0.2); margin-top:20px;">
-            <h3 style="font-family:'Orbitron', sans-serif; font-size:1.1rem; color:var(--neon-cyan); margin-bottom:15px;">👑 OVERLORD CORE PANEL - CENTRAL DE MONITOREO</h3>
-            
-            <div class="admin-tools" style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-                <input type="text" placeholder="🔍 Buscar ID Nodo..." value="${AdminState.filtros.buscador}" oninput="AdminState.filtros.buscador = this.value; renderizarTablaAdmin();" style="padding: 8px; background: #05060f; color: #fff; border: 1px solid rgba(0,243,255,0.3); width:100%;">
-            </div>
-
-            <div class="masive-actions" style="background: #0d0f1d; padding: 10px; margin-bottom: 15px; border: 1px dashed var(--neon-amber); display: flex; gap: 10px; align-items: center; flex-wrap:wrap;">
-                <span style="font-size:0.8rem; font-weight: bold; color: #94a3b8;">ACCIONES EN BLOQUE:</span>
-                <button onclick="ejecutarAccionMasiva('PLAY')" style="background: #1b4322; color: #39ff14; padding: 6px 12px; border: 1px solid #39ff14; cursor: pointer; font-family:'Orbitron'; font-size:0.7rem;">▶ PLAY</button>
-                <button onclick="ejecutarAccionMasiva('PAUSAR')" style="background: #5c4308; color: #ffaa00; padding: 6px 12px; border: 1px solid #ffaa00; cursor: pointer; font-family:'Orbitron'; font-size:0.7rem;">⏸ PAUSA</button>
-                <button onclick="ejecutarAccionMasiva('ELIMINAR')" style="background: #421212; color: #ff3333; padding: 6px 12px; border: 1px solid #ff3333; cursor: pointer; font-family:'Orbitron'; font-size:0.7rem;">🗑️ WIPE OUT</button>
-            </div>
-
-            <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size:0.85rem;">
-                    <thead>
-                        <tr style="background: #0d0f1d; border-bottom: 2px solid rgba(0,243,255,0.3);">
-                            <th style="padding: 10px;"><input type="checkbox" onclick="toggleSeleccionarTodas(this.checked)"></th>
-                            <th style="padding: 10px;">PROPIETARIO</th>
-                            <th style="padding: 10px;">CAMPAÑA</th>
-                            <th style="padding: 10px;">ESTADO</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${filtradas.map(c => `
-                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); background: ${c.is_sponsored ? 'rgba(255,170,0,0.05)' : 'transparent'}">
-                                <td style="padding: 10px;">
-                                    <input type="checkbox" ${AdminState.seleccionadas.includes(c.id) ? 'checked' : ''} onclick="toggleSeleccionCampana('${c.id}')">
-                                </td>
-                                <td style="padding: 10px;">
-                                    <div style="font-weight: bold;">${c.owner_name}</div>
-                                    <div style="font-size: 10px; color: #636e72;">ID: ${c.owner_id}</div>
-                                </td>
-                                <td style="padding: 10px;">
-                                    <div style="font-weight: bold; color: var(--neon-cyan);">${c.title}</div>
-                                    <div style="font-size: 11px; color: #8a2be2;">Tipo: ${c.type} | ID Nodo: ${c.id}</div>
-</td>
-                                                                <td style="padding: 10px;">
-                                    <select onchange="ejecutarAccionIndividual('${c.id}', this.value)" style="background: ${c.status === 'activa' ? '#1b4322' : '#5c4308'}; color: #fff; border: 1px solid rgba(255,255,255,0.2); font-family: 'Orbitron'; font-size: 10px; padding: 4px; font-weight: bold; cursor:pointer;">
-                                        <option value="">${c.status.toUpperCase()}</option>
-                                        <option value="toggle_pausa">${c.status === 'activa' ? '⏸️ PAUSAR' : '▶️ ACTIVAR'}</option>
-                                        <option value="toggle_destacar">${c.is_sponsored ? '❌ DES-DESTACAR' : '⭐ DESTACAR'}</option>
-                                        <option value="eliminar">🗑️ ELIMINAR</option>
-                                    </select>
-                                </td>
-
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    `;
-    contenedor.innerHTML = html;
-}
-
-function toggleSeleccionCampana(id) {
-    const index = AdminState.seleccionadas.indexOf(id);
-    if (index > -1) {
-        AdminState.seleccionadas.splice(index, 1);
-    } else {
-        AdminState.seleccionadas.push(id);
-    }
-    renderizarTablaAdmin();
-}
-
-function toggleSeleccionarTodas(checked) {
-    if (checked) {
-        AdminState.seleccionadas = AdminState.campanas.map(c => c.id);
-    } else {
-        AdminState.seleccionadas = [];
-    }
-    renderizarTablaAdmin();
-}
-
-// Disparador de enganche: acopla la carga cuando cambias a la pestaña de administración
-document.getElementById("nav-admin")?.addEventListener("click", () => {
-    setTimeout(() => { cargarCampanasAdminFuerza(); }, 200);
-});
-
+        document.getElementById("nav-admin")?.addEventListener("click", () => {
+            setTimeout(() => { cargarCampanasAdminFuerza(); }, 200);
+        });
     </script>
 </body>
 </html>
