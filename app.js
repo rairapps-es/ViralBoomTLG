@@ -204,12 +204,11 @@
             }
         },
 
-                // PÉGALO AQUÍ, DENTRO DEL OBJETO APP:
         async dispararAlertaSegura(accion, mensaje) {
             if (!this.supabaseClient) return;
 
             try {
-                // Llama de forma remota a la función SQL segura que creamos en el panel
+                // Ejecución remota del RPC asíncrono
                 const { data, error } = await this.supabaseClient.rpc('disparar_alerta_bot', {
                     user_id: this.state.userId,
                     username: this.state.username,
@@ -218,9 +217,11 @@
                 });
 
                 if (error) throw error;
-                console.log("🛰️ ALERT_ENGINE: Notificación despachada con éxito.");
+                console.log("🛰️ ALERT_ENGINE: Canales de red procesados correctamente.", data);
+                return data;
             } catch (err) {
                 console.error("🚨 ALERT_ERROR:", err);
+                throw err;
             }
         },
 
@@ -433,7 +434,7 @@
                     .eq('owner_id', this.state.userId);
 
                 if (existentes && existentes.length >= 1) {
-                    if(this.tg) this.tg.showAlert("🔒 LÍMITE ALCANZADO: Los usuarios gratuitos solo pueden publicar 1 campaña al mismo timepo en la red. Consigue una Licencia Premium.");
+                    if(this.tg) this.tg.showAlert("🔒 LÍMITE ALCANZADO: Los usuarios gratuitos solo pueden publicar 1 campaña al mismo tiempo en la red. Consigue una Licencia Premium.");
                     return;
                 }
             }
@@ -500,9 +501,17 @@
                 status: nuevaCampana.status
             };
 
-                        Storage.set("campaña_local_backup", this.state.campañaActivaLocal);
+            Storage.set("campaña_local_backup", this.state.campañaActivaLocal);
             
-            if(this.tg) this.tg.showAlert("🚀 CAMPAÑA PUBLICADA: ¡Configuración inyectada con éxito!");
+            // =========================================================
+            // 🔥 CONTROL DE FLUJO ASÍNCRONO SEGURO CON LA BASE DE DATOS
+            // =========================================================
+            try {
+                if(this.tg) this.tg.showAlert("🚀 PROCESANDO TRANSMISIÓN: Subiendo metadatos...");
+                await this.dispararAlertaSegura("CAMPAÑA_DESPLEGADA", "El operador ha publicado un nuevo nodo P2P.");
+            } catch(alertErr) {
+                if(this.tg) this.tg.showAlert("⚠️ Alerta enviada con advertencia de red: " + alertErr.message);
+            }
             
             this.state.referidosLogrados = 0;
             this.state.adCompleted = false;
@@ -510,11 +519,6 @@
             this.state.verificationInProgress = false;
             if(this.state.adTimerInterval) { clearInterval(this.state.adTimerInterval); this.state.adTimerInterval = null; }
             
-            // ==========================================
-            // 🔥 INYECTAR DISPARADOR DE ALERTA AQUÍ:
-            // ==========================================
-            this.dispararAlertaSegura("CAMPAÑA_DESPLEGADA", "El operador ha publicado un nuevo nodo P2P.");
-
             this.renderizarPantallasDinamicas();
             this.actualizarContadorHeader();
             this.cambiarPestana('client');
