@@ -663,7 +663,7 @@
             <div id="super-admin-panel" style="margin-top: 20px;"></div>
         </div>
 
-        <div id="view-billing" class="view-section">
+                <div id="view-billing" class="view-section">
             <div class="card premium">
                 <h2>👑 ULTRA_VIP_PASS</h2>
                 <p>Anula los sistemas restrictivos del cortafuegos base y activa la inyección de flujos comerciales y conversión modular avanzada.</p>
@@ -675,15 +675,29 @@
                     <li style="margin-bottom: 8px; display:flex; align-items:center; gap:6px;">⚡ <span style="color:#fff">Cronograma temporal automatizado ilimitado.</span></li>
                 </ul>
 
+                <div class="billing-card" style="padding:15px; background:rgba(10,11,22,0.8); border:1px solid var(--neon-amber); box-shadow: var(--glow-amber); margin-bottom: 20px;">
+                    <label style="color:var(--neon-amber); font-family:'Orbitron'; font-size:0.75rem; letter-spacing: 1px; font-weight: bold; display: block; margin-bottom: 8px;">SELECCIONAR PROTOCOLO PREMIUM (STARS):</label>
+                    <select id="billing-plan-select" style="width:100%; padding:12px; background:var(--surface); color:#fff; border:1px solid rgba(255,170,0,0.3); margin-bottom:15px; font-family:'Rajdhani'; font-size: 0.9rem; outline: none;">
+                        <option value="30_days" data-stars="150">Pase de Red: 30 Días (150 ⭐)</option>
+                        <option value="90_days" data-stars="400">Pase de Red: 90 Días (400 ⭐)</option>
+                        <option value="perpetual" data-stars="1200">Acceso Perpetuo: Vitalicio (1200 ⭐)</option>
+                    </select>
+                    
+                    <button id="btn-request-premium-stars" class="btn btn-gold" style="width:100%;">
+                        ⚡ SOLICITAR FACTURA DE ESTRELLAS
+                    </button>
+                </div>
+
+                <div style="text-align: center; font-size: 0.75rem; color: var(--text-dark); margin: 15px 0; font-family: 'Orbitron';">-- O PAGAR CON CRYPTO --</div>
+
                 <div class="input-group">
-                    <label class="input-label" for="billing-method">SELECCIONA MÉTODO DE FE PAGO</label>
+                    <label class="input-label" for="billing-method">MÉTODO CRYPTO CORPORATIVO</label>
                     <select id="billing-method" class="input-field" style="background: var(--surface);">
                         <option value="Binance Pay (USDT)">Binance Corporate Pay (USDT TRC20)</option>
-                        <option value="Telegram Stars (Estrellas)">Telegram Matrix Stars (Estrellas)</option>
                     </select>
                 </div>
 
-                <button id="btn-request-premium" class="btn btn-gold">💳 REQUEST_UPLINK_ACCESS</button>
+                <button id="btn-request-premium" class="btn">💳 REQUEST_UPLINK_CRYPTO</button>
             </div>
 
             <div class="card" id="premium-activation-key-card" style="border-color: var(--neon-amber);">
