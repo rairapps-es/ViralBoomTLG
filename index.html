@@ -349,6 +349,31 @@
 
         .dynamic-ad-container { background: rgba(255,170,0,0.03); border: 1px dashed var(--neon-amber); padding: 14px; margin-bottom: 14px; text-align: center; }
         .countdown-timer { font-family: 'Orbitron', sans-serif; font-size: 1.3rem; font-weight: bold; color: var(--neon-amber); margin-top: 6px; letter-spacing: 2px; text-shadow: var(--glow-amber); }
+        
+        /* Contenedor de Fechas en NET_NODES */
+        .campaign-timestamps {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            background: rgba(5, 6, 15, 0.6);
+            border: 1px solid rgba(0, 243, 255, 0.1);
+            padding: 10px;
+            margin-bottom: 15px;
+            font-size: 0.8rem;
+        }
+        .timestamp-box span {
+            display: block;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.65rem;
+            color: var(--text-dark);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .timestamp-box var {
+            font-style: normal;
+            color: var(--text-cyber);
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -411,6 +436,18 @@
                 </div>
                 <p id="viral-desc">Completa los protocolos requeridos por la estación emisora para descifrar el destino final.</p>
                 
+                <!-- Cronograma de Fechas Añadido -->
+                <div class="campaign-timestamps">
+                    <div class="timestamp-box">
+                        <span>🛰️ Start_Time</span>
+                        <var id="client-start-date">-</var>
+                    </div>
+                    <div class="timestamp-box">
+                        <span>🚨 Expiration_Time</span>
+                        <var id="client-end-date">-</var>
+                    </div>
+                </div>
+
                 <div id="step-dynamic-ad" class="dynamic-ad-container" style="display: none;">
                     <span class="input-label" style="color: var(--neon-amber);">SPONSORED_STREAM_REQ</span>
                     <div id="ad-content-render" style="margin: 10px 0; font-size: 0.9rem;">Sincronizando flujo de datos...</div>
@@ -1002,7 +1039,8 @@
                     ad_value: document.getElementById("setup-ad-value").value.trim(),
                     ad_duration: adDur, 
                     start_date: startDateISO, 
-                    end_date: endDateISO
+                    end_date: endDateISO,
+                    status: 'activa'
                 };
 
                 try {
@@ -1023,7 +1061,7 @@
                     startDate: nuevaCampana.start_date ? new Date(nuevaCampana.start_date).getTime() : null, 
                     endDate: nuevaCampana.end_date ? new Date(nuevaCampana.end_date).getTime() : null, 
                     ownerId: this.state.userId,
-                    status: nuevaCampana.status || 'activa' 
+                    status: nuevaCampana.status
                 };
 
                 Storage.set("campaña_local_backup", this.state.campañaActivaLocal);
@@ -1138,6 +1176,12 @@
                 const vDesc = document.getElementById("viral-desc"); if(vDesc) vDesc.textContent = camp.desc;
                 const vBadge = document.getElementById("viral-type-badge"); if(vBadge) vBadge.textContent = camp.tipo.toUpperCase();
 
+                // Render de Fechas en NET_NODES
+                const clientStartVar = document.getElementById("client-start-date");
+                const clientEndVar = document.getElementById("client-end-date");
+                if (clientStartVar) clientStartVar.textContent = camp.startDate ? new Date(camp.startDate).toLocaleDateString() : 'IMMEDIATE';
+                if (clientEndVar) clientEndVar.textContent = camp.endDate ? new Date(camp.endDate).toLocaleDateString() : 'PERPETUAL';
+
                 const stepRef = document.getElementById("step-referrals"); if(stepRef) stepRef.style.display = "none";
                 const stepCh = document.getElementById("step-channel"); if(stepCh) stepCh.style.display = "none";
                 const stepAd = document.getElementById("step-dynamic-ad"); if(stepAd) stepAd.style.display = "none";
@@ -1237,7 +1281,8 @@
                 const payload = {
                     title: camp.titulo, description: camp.desc, secret_url: camp.secreto,
                     type: camp.tipo, req_slots: camp.requeridos, owner: camp.ownerId,
-                    referrer: this.state.userId, origin_chat: this.state.chatInstance
+                    referrer: this.state.userId, origin_chat: this.state.chatInstance,
+                    s_date: camp.startDate, e_date: camp.endDate, status: camp.status
                 };
 
                 const jsonStr = JSON.stringify(payload);
@@ -1492,6 +1537,13 @@
                     
                     const { error } = await db.from('campaigns').update({ status: nuevoEstado }).eq('id', campanaId);
                     if (error) throw error;
+                    
+                    // Sincronizar el cliente inmediatamente en caso de que sea la campaña cargada por el usuario
+                    if (App.state.campañaActivaLocal && App.state.campañaActivaLocal.ownerId === campanaId.split('_')[0]) {
+                        App.state.campañaActivaLocal.status = nuevoEstado;
+                        Storage.set("campaña_local_backup", App.state.campañaActivaLocal);
+                    }
+                    
                     alert(`⚙️ Nodo cambiado a: ${nuevoEstado.toUpperCase()}`);
                     
                 } else if (accion === 'toggle_destacar') {
@@ -1508,6 +1560,12 @@
                     
                     const { error } = await db.from('campaigns').delete().eq('id', campanaId);
                     if (error) throw error;
+                    
+                    if (App.state.campañaActivaLocal && App.state.campañaActivaLocal.ownerId === campanaId.split('_')[0]) {
+                        App.state.campañaActivaLocal = null;
+                        Storage.remove("campaña_local_backup");
+                    }
+                    
                     alert("🗑️ Campaña eliminada de la base de datos.");
                 } else if (accion === 'editar') {
                     alert("✏️ Función de edición en desarrollo. Usa la consola de creación para sobreescribir.");
@@ -1515,6 +1573,8 @@
                 }
 
                 await cargarCampanasAdminFuerza();
+                App.renderizarPantallasDinamicas();
+                App.actualizarContadorHeader();
 
             } catch (err) {
                 console.error("Error en acción individual:", err);
@@ -1557,14 +1617,28 @@
                 if (accion === 'ELIMINAR') {
                     const { error } = await db.from('campaigns').delete().in('id', AdminState.seleccionadas);
                     if (error) throw error;
+                    
+                    // Limpieza local preventiva
+                    if (App.state.campañaActivaLocal && AdminState.seleccionadas.some(id => id.startsWith(App.state.userId))) {
+                        App.state.campañaActivaLocal = null;
+                        Storage.remove("campaña_local_backup");
+                    }
                 } else {
                     const { error } = await db.from('campaigns').update(objetoActualizacion).in('id', AdminState.seleccionadas);
                     if (error) throw error;
+                    
+                    // Sincronización local masiva
+                    if (App.state.campañaActivaLocal && AdminState.seleccionadas.some(id => id.startsWith(App.state.userId))) {
+                        App.state.campañaActivaLocal.status = objetoActualizacion.status;
+                        Storage.set("campaña_local_backup", App.state.campañaActivaLocal);
+                    }
                 }
 
                 alert("🚀 Sistema masivo actualizado con éxito.");
                 AdminState.seleccionadas = []; 
                 await cargarCampanasAdminFuerza(); 
+                App.renderizarPantallasDinamicas();
+                App.actualizarContadorHeader();
             } catch (err) {
                 console.error("Error en acción masiva:", err);
                 alert("Hubo un error al aplicar los cambios masivos: " + err.message);
@@ -1655,7 +1729,7 @@
                                         </td>
                                         <td style="padding: 10px;">
                                             <select onchange="ejecutarAccionIndividual('${c.id}', this.value)" style="background: ${c.status === 'activa' ? '#1b4322' : '#5c4308'}; color: #fff; border: 1px solid rgba(255,255,255,0.2); font-family: 'Orbitron'; font-size: 10px; padding: 4px; font-weight: bold; cursor:pointer;">
-                                                <option value="">${c.status.toUpperCase()}</option>
+                                                <option value="" disabled selected>${c.status.toUpperCase()}</option>
                                                 <option value="toggle_pausa">${c.status === 'activa' ? '⏸️ PAUSAR' : '▶️ ACTIVAR'}</option>
                                                 <option value="toggle_destacar">${c.is_sponsored ? '❌ DES-DESTACAR' : '⭐ DESTACAR'}</option>
                                                 <option value="eliminar">🗑️ ELIMINAR</option>
