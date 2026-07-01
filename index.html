@@ -810,34 +810,46 @@
                 this.state.campañaActivaLocal = Storage.get("campaña_local_backup", null);
             },
 
-            bindEvents() {
+                        bindEvents() {
                 const safeAddEvent = (id, type, callback) => {
                     const el = document.getElementById(id);
                     if (el) el.addEventListener(type, callback);
                 };
 
-                // =========================================================
-            // AQUÍ COLOCAS EL NUEVO BLOQUE (REEMPLAZANDO AL ANTERIOR):
-            // =========================================================
-            async inicializarFlujoAplicacion() {
-                try {
-                    this.inicializarDatosUsuarioTelegram();
-                    await this.ejecutarVerificacionLicenciaBase();
-                    await this.recuperarEstadisticasBD();
-                    await this.evaluarFlujoDeepLinkingDeEntrada();
-                    this.renderizarPantallasDinamicas();
-                    this.actualizarContadorHeader();
-                    this.actualizarFormularioPorTipoCam();
-                } catch (error) {
-                    console.error("Error en la inicialización del ecosistema:", error);
-                } finally {
-                    const splash = document.getElementById("cyber-splash-loader");
-                    if (splash) {
-                        splash.style.opacity = "0";
-                        setTimeout(() => {
-                            splash.style.visibility = "hidden";
-                        }, 400);
+                safeAddEvent("btn-header-profile", "click", () => this.abrirModalPerfil());
+                safeAddEvent("btn-close-profile-modal", "click", (e) => this.cerrarModalPerfil(e));
+                safeAddEvent("btn-join-channel", "click", () => this.abrirSpaceRequisito());
+                safeAddEvent("btn-share-viral", "click", () => this.compartirEnlaceReferido());
+                safeAddEvent("btn-claim-reward", "click", () => this.reclamarRecompensaFinal());
+                safeAddEvent("btn-deploy-campaign", "click", () => this.guardarCampanaAdmin());
+                safeAddEvent("btn-validate-license", "click", () => this.inyectarLlaveLicenciaLocal());
+                safeAddEvent("btn-request-premium", "click", () => this.solicitarPremiumAirdayz());
+                safeAddEvent("btn-watermark-link", "click", () => this.cambiarPestana('billing'));
+                
+                safeAddEvent("setup-campaign-type", "change", () => this.actualizarFormularioPorTipoCam());
+
+                safeAddEvent("nav-client", "click", () => this.cambiarPestana('client'));
+                safeAddEvent("nav-admin", "click", () => this.cambiarPestana('admin'));
+                safeAddEvent("nav-billing", "click", () => this.cambiarPestana('billing'));
+
+                safeAddEvent("btn-close-editor-modal", "click", () => cerrarModalEditorAdmin());
+                safeAddEvent("btn-save-edit-admin", "click", () => guardarCambiosEditorAdmin());
+
+                document.addEventListener("visibilitychange", () => {
+                    if (document.hidden) {
+                        this.pauseCarousel();
+                    } else {
+                        this.resumeCarousel();
+                        this.procesarRetornoUsuario();
                     }
+                });
+
+                const carouselWrapper = document.getElementById("premium-carousel-wrapper");
+                if(carouselWrapper) {
+                    carouselWrapper.addEventListener("touchstart", () => this.pauseCarousel(), { passive: true });
+                    carouselWrapper.addEventListener("touchend", () => {
+                        setTimeout(() => this.resumeCarousel(), 5000);
+                    }, { passive: true });
                 }
             },
 
@@ -881,26 +893,7 @@
                     }, { passive: true });
                 }
             },
-
-            async inicializarFlujoAplicacion() {
-                this.inicializarDatosUsuarioTelegram();
-                await this.ejecutarVerificacionLicenciaBase();
-                await this.recuperarEstadisticasBD();
-                await this.evaluarFlujoDeepLinkingDeEntrada();
-                this.renderizarPantallasDinamicas();
-                this.actualizarContadorHeader();
-                this.actualizarFormularioPorTipoCam();
-
-                // 🌟 REMOCIÓN DE LA PANTALLA DE CARGA INICIAL
-                const splash = document.getElementById("cyber-splash-loader");
-                if (splash) {
-                    splash.style.opacity = "0";
-                    setTimeout(() => {
-                        splash.style.visibility = "hidden";
-                    }, 400);
-                }
-            },
-
+            
             inicializarDatosUsuarioTelegram() {
                 if(!this.tg) return;
                 const u = this.tg.initDataUnsafe?.user;
