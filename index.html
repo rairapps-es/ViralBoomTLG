@@ -816,6 +816,34 @@
                     if (el) el.addEventListener(type, callback);
                 };
 
+                // =========================================================
+            // AQUÍ COLOCAS EL NUEVO BLOQUE (REEMPLAZANDO AL ANTERIOR):
+            // =========================================================
+            async inicializarFlujoAplicacion() {
+                try {
+                    this.inicializarDatosUsuarioTelegram();
+                    await this.ejecutarVerificacionLicenciaBase();
+                    await this.recuperarEstadisticasBD();
+                    await this.evaluarFlujoDeepLinkingDeEntrada();
+                    this.renderizarPantallasDinamicas();
+                    this.actualizarContadorHeader();
+                    this.actualizarFormularioPorTipoCam();
+                } catch (error) {
+                    console.error("Error en la inicialización del ecosistema:", error);
+                } finally {
+                    const splash = document.getElementById("cyber-splash-loader");
+                    if (splash) {
+                        splash.style.opacity = "0";
+                        setTimeout(() => {
+                            splash.style.visibility = "hidden";
+                        }, 400);
+                    }
+                }
+            },
+
+            inicializarDatosUsuarioTelegram() { // Empieza el siguiente método...
+                if(!this.tg) return;
+                
                 safeAddEvent("btn-header-profile", "click", () => this.abrirModalPerfil());
                 safeAddEvent("btn-close-profile-modal", "click", (e) => this.cerrarModalPerfil(e));
                 safeAddEvent("btn-join-channel", "click", () => this.abrirSpaceRequisito());
@@ -945,7 +973,7 @@
                     if (!error && data && data.length > 0) {
                         const licenciaActiva = data[0];
                         const fechaActivacion = new Date(licenciaActiva.activated_at).getTime();
-                        const dias EnMilisegundos = licenciaActiva.duration_days * 24 * 60 * 60 * 1000;
+                        const diasEnMilisegundos = licenciaActiva.duration_days * 24 * 60 * 60 * 1000;
                         const fechaExpiracion = fechaActivacion + diasEnMilisegundos;
 
                         if (ahora < fechaExpiracion) {
