@@ -1064,36 +1064,51 @@
                     }
                 }
                 
-                let r = parseInt(document.getElementById("setup-req-count").value) || 3;
-                const adDur = parseInt(document.getElementById("setup-ad-duration").value) || 30;
+                // ... dentro de guardarCampanaAdmin() ...
 
-                let startDateISO = null;
-                let endDateISO = null;
+const type = document.getElementById("setup-campaign-type").value;
+let r = parseInt(document.getElementById("setup-req-count").value) || 3;
+const adDur = parseInt(document.getElementById("setup-ad-duration").value) || 30;
 
-                if (sDate !== "") {
-                    const parsedStart = new Date(sDate);
-                    if (!isNaN(parsedStart.getTime())) startDateISO = parsedStart.toISOString();
-                }
-                if (eDate !== "") {
-                    const parsedEnd = new Date(eDate);
-                    if (!isNaN(parsedEnd.getTime())) endDateISO = parsedEnd.toISOString();
-                }
+// Filtrado estricto antes de empaquetar para la base de datos
+let tgTargetFinal = "";
+let adValueFinal = "";
+let reqSlotsFinal = 0;
+let adDurationFinal = 0;
 
-                const nuevaCampana = {
-                    id: this.state.userId + "_" + Date.now(), 
-                    owner_id: this.state.userId, 
-                    title: t, 
-                    description: d, 
-                    secret_url: s, 
-                    type: type, 
-                    req_slots: r,
-                    tg_target: document.getElementById("setup-tg-target").value.trim(), 
-                    ad_value: document.getElementById("setup-ad-value").value.trim(),
-                    ad_duration: adDur, 
-                    start_date: startDateISO, 
-                    end_date: endDateISO,
-                    status: 'activa'
-                };
+if (type === "invitation") {
+    reqSlotsFinal = r;
+} else if (type === "sub_channel" || type === "join_group") {
+    tgTargetFinal = document.getElementById("setup-tg-target").value.trim();
+    if (!tgTargetFinal) {
+        if(this.tg) this.tg.showAlert("❌ TARGET_ALIAS es obligatorio para este protocolo.");
+        return;
+    }
+} else if (type.startsWith("ad_")) {
+    adValueFinal = document.getElementById("setup-ad-value").value.trim();
+    adDurationFinal = adDur;
+    if (!adValueFinal) {
+        if(this.tg) this.tg.showAlert("❌ STREAM_VALUE_DATA_SOURCE no puede estar vacío.");
+        return;
+    }
+}
+
+const nuevaCampana = {
+    id: this.state.userId + "_" + Date.now(), 
+    owner_id: this.state.userId, 
+    title: t, 
+    description: d, 
+    secret_url: s, 
+    type: type, 
+    req_slots: reqSlotsFinal,
+    tg_target: tgTargetFinal, 
+    ad_value: adValueFinal,
+    ad_duration: adDurationFinal, 
+    start_date: startDateISO, 
+    end_date: endDateISO,
+    status: 'activa'
+};
+// ... prosigue con el await this.supabaseClient.from('campaigns').upsert([nuevaCampana]) ...
 
                 try {
                     const { error } = await this.supabaseClient.from('campaigns').upsert([nuevaCampana]);
@@ -1443,13 +1458,13 @@
             },
 
             actualizarFormularioPorTipoCam() {
-                const stc = document.getElementById("setup-campaign-type"); if(!stc) return;
-                const type = stc.value;
-                
-                const gInv = document.getElementById("group-opt-invitation"); if(gInv) gInv.style.display = type === "invitation" ? "block" : "none";
-                const gTg = document.getElementById("group-opt-telegram"); if(gTg) gTg.style.display = (type === "sub_channel" || type === "join_group") ? "block" : "none";
-                const gAd = document.getElementById("group-opt-ad"); if(gAd) gAd.style.display = type.startsWith("ad_") ? "block" : "none";
-            },
+    const stc = document.getElementById("setup-campaign-type"); if(!stc) return;
+    const type = stc.value;
+    
+    const gInv = document.getElementById("group-opt-invitation"); if(gInv) gInv.style.display = type === "invitation" ? "block" : "none";
+    const gTg = document.getElementById("group-opt-telegram"); if(gTg) gTg.style.display = (type === "sub_channel" || type === "join_group") ? "block" : "none";
+    const gAd = document.getElementById("group-opt-ad"); if(gAd) gAd.style.display = type.startsWith("ad_") ? "block" : "none";
+},
 
             cambiarPestana(target) {
                 const vistas = document.querySelectorAll('.view-section');
