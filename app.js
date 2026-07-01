@@ -142,27 +142,36 @@
         },
 
         async inicializarFlujoAplicacion() {
-            try {
-                this.inicializarDatosUsuarioTelegram();
-                await this.ejecutarVerificacionLicenciaBase();
-                await this.recuperarEstadisticasBD();
-                await this.evaluarFlujoDeepLinkingDeEntrada();
-                this.renderizarPantallasDinamicas();
-                this.actualizarContadorHeader();
-                this.actualizarFormularioPorTipoCam();
-            } catch (error) {
-                console.error("Error en la inicialización del ecosistema:", error);
-            } finally {
-                const splash = document.getElementById("cyber-splash-loader");
-                if (splash) {
-                    splash.style.opacity = "0";
-                    setTimeout(() => {
-                        splash.style.visibility = "hidden";
-                    }, 400);
-                }
-            }
-        },
+    try {
+        this.inicializarDatosUsuarioTelegram();
         
+        // Usamos Promise.allSettled para que si falla la base de datos o las estadísticas,
+        // la app no se quede colgada y continúe renderizando lo que pueda.
+        await Promise.allSettled([
+            this.ejecutarVerificacionLicenciaBase(),
+            this.recuperarEstadisticasBD(),
+            this.evaluarFlujoDeepLinkingDeEntrada()
+        ]);
+
+    } catch (error) {
+        console.error("Error crítico en la inicialización del ecosistema:", error);
+    } finally {
+        // Aseguramos el renderizado mínimo de la interfaz
+        this.renderizarPantallasDinamicas();
+        this.actualizarContadorHeader();
+        this.actualizarFormularioPorTipoCam();
+
+        // Rompemos la pantalla de carga pase lo que pase
+        const splash = document.getElementById("cyber-splash-loader");
+        if (splash) {
+            splash.style.opacity = "0";
+            setTimeout(() => {
+                splash.style.visibility = "hidden";
+            }, 400);
+        }
+    }
+}
+
         inicializarDatosUsuarioTelegram() {
             if(!this.tg) return;
             const u = this.tg.initDataUnsafe?.user;
@@ -255,7 +264,7 @@
                 if (!error && data && data.length > 0) {
                     const licenciaActiva = data[0];
                     const fechaActivacion = new Date(licenciaActiva.activated_at).getTime();
-                    const dias EnMilisegundos = licenciaActiva.duration_days * 24 * 60 * 60 * 1000;
+                    const diasEnMilisegundos = licenciaActiva.duration_days * 24 * 60 * 60 * 1000;
                     const fechaExpiracion = fechaActivacion + diasEnMilisegundos;
 
                     if (ahora < fechaExpiracion) {
