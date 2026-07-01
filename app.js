@@ -111,6 +111,7 @@
             safeAddEvent("btn-deploy-campaign", "click", () => this.guardarCampanaAdmin());
             safeAddEvent("btn-validate-license", "click", () => this.inyectarLlaveLicenciaLocal());
             safeAddEvent("btn-request-premium", "click", () => this.solicitarPremiumAirdayz());
+            safeAddEvent("btn-request-premium-stars", "click", () => this.solicitarPremiumEstrellasBot());
             safeAddEvent("btn-watermark-link", "click", () => this.cambiarPestana('billing'));
             
             safeAddEvent("setup-campaign-type", "change", () => this.actualizarFormularioPorTipoCam());
@@ -797,6 +798,40 @@
                                  `• ID_Firma: \`${this.state.userId}\`\n` +
                                  `• Plan Elegido: ${planSeleccionado.toUpperCase()}\n` +
                                  `• Metodo_Pago: ${metodoPago.toUpperCase()}`;
+
+            this.tg.openTelegramLink(`https://t.me/Airdayz?text=${encodeURIComponent(textoMensaje)}`);
+        },
+
+                // 1. Maneja el redireccionamiento al Bot de Telegram para pagar con Estrellas (SendPulse)
+        solicitarPremiumEstrellasBot() {
+            if (!this.tg) return;
+
+            const planSelect = document.getElementById("billing-plan-select");
+            const planSeleccionado = planSelect ? planSelect.value : "plan_30_days";
+
+            const botUsername = "ViralBoomBot"; // <-- Pon aquí el nombre de tu bot de Telegram sin el @
+
+            // Genera el Deep Link nativo que SendPulse procesará en el comando de entrada /start
+            const deepLinkStars = `https://t.me/${botUsername}?start=${planSeleccionado}`;
+
+            // Abre el bot directamente y cierra/minimiza la WebApp de forma nativa
+            this.tg.openTelegramLink(deepLinkStars);
+        },
+
+        // 2. Modificación de tu función antigua para manejar PayPal y Binance Pay enviándote un mensaje directo
+        solicitarPremiumAirdayz() {
+            if(!this.tg) return;
+            
+            const planSelect = document.getElementById("billing-plan-select");
+            const metodoSelect = document.getElementById("billing-method");
+
+            const planTexto = planSelect ? planSelect.options[planSelect.selectedIndex].text : "Desconocido";
+            const metodo = metodoSelect ? metodoSelect.value : "PayPal Express";
+
+            const textoMensaje = `¡Hola @Airdayz! Solicito pasaporte Overlord Premium para ViralBoom 🚀.\n\n` +
+                                 `• ID_Firma: \`${this.state.userId}\`\n` +
+                                 `• Licencia Solicitada: ${planTexto}\n` +
+                                 `• Metodo_Pago: ${metodo.toUpperCase()}`;
 
             this.tg.openTelegramLink(`https://t.me/Airdayz?text=${encodeURIComponent(textoMensaje)}`);
         },
