@@ -527,17 +527,6 @@
                     <span class="badge" id="viral-type-badge">SECURE</span>
                 </div>
                 <p id="viral-desc">Completa los protocolos requeridos por la estación emisora para descifrar el destino final.</p>
-                
-                <div class="campaign-timestamps">
-                    <div class="timestamp-box">
-                        <span>🛰️ Start_Time</span>
-                        <var id="client-start-date">-</var>
-                    </div>
-                    <div class="timestamp-box">
-                        <span>🚨 Expiration_Time</span>
-                        <var id="client-end-date">-</var>
-                    </div>
-                </div>
 
                 <div id="step-dynamic-ad" class="dynamic-ad-container" style="display: none;">
                     <span class="input-label" style="color: var(--neon-amber);">SPONSORED_STREAM_REQ</span>
@@ -555,17 +544,27 @@
                 </div>
 
                 <div id="step-referrals" class="input-group" style="background: rgba(5,6,15,0.5); padding: 14px; border-left: 2px solid var(--neon-lime); display: none;">
-                    <span class="input-label" style="color: var(--neon-lime);">VIRAL_PROPAGATION_P2P</span>
+                    <span class="input-label" style="color: var(--neon-lime);">PROPAGATION_P2P</span>
                     <p style="font-size: 0.8rem; margin-bottom: 6px;">Propaga este enlace. Los terminales destino deben abrir la interfaz.</p>
                     <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-top: 12px; font-weight: bold; font-family:'Orbitron',sans-serif;">
-                        <span>NODES_CONNECTED:</span>
-                        <span id="progress-text">0 / 3 CLONES</span>
+                        <span>NODOS_CONECTADOS:</span>
+                        <span id="progress-text">0 / 3 </span> INVITADOS
                     </div>
                     <div class="progress-container">
                         <div id="progress-bar-fill" class="progress-bar"></div>
                     </div>
                 </div>
 
+                <div class="campaign-timestamps">
+                    <div class="timestamp-box">
+                        <span>🛰️ Start_Time</span>
+                        <var id="client-start-date">-</var>
+                    </div>
+                    <div class="timestamp-box">
+                        <span>🚨 Expiration_Time</span>
+                        <var id="client-end-date">-</var>
+                    </div>
+                </div>
                 <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 12px;">
                     <button id="btn-share-viral" class="btn">🔗 BROADCAST_LINK</button>
                     <button id="btn-claim-reward" class="btn btn-gold btn-disabled">⌛ RUNNING_VALIDATION...</button>
@@ -641,7 +640,7 @@
             </div>
 
             <div class="card" id="analytics-box">
-                <h2>📊 NETWORK_PROPAGATION_METRICS</h2>
+                <h2>📊 PROPAGATION_METRICS</h2>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
                     <div style="background: var(--surface); padding: 12px; border: 1px solid rgba(0,243,255,0.1); text-align: center;">
                         <div style="font-size: 0.7rem; color: var(--text-dark); font-family:'Orbitron',sans-serif;">TOTAL_PING_CLICKS</div>
@@ -666,7 +665,7 @@
 
         <div id="view-billing" class="view-section">
             <div class="card premium">
-                <h2>👑 OVERLORD_ULTRA_VIP_PASS</h2>
+                <h2>👑 ULTRA_VIP_PASS</h2>
                 <p>Anula los sistemas restrictivos del cortafuegos base y activa la inyección de flujos comerciales y conversión modular avanzada.</p>
                 
                 <ul style="font-size: 0.85rem; color: var(--text-secondary); list-style: none; margin-bottom: 20px;">
