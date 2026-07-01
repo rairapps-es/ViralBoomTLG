@@ -444,10 +444,10 @@
                 </div>
                 <div>
                     <div id="user-display-name" style="font-family:'Orbitron', sans-serif; font-weight: bold; font-size: 0.95rem; letter-spacing: 0.5px;">SYSTEM_USER</div>
-                    <div id="header-campaign-counter" style="font-size: 0.75rem; color: var(--text-dark); margin-top: 2px;">CORE_UNITS: 0</div>
+                    <div id="header-campaign-counter" style="font-size: 0.75rem; color: var(--text-dark); margin-top: 2px;">CAMPAÑAS: 0</div>
                 </div>
             </div>
-            <span id="status-badge" class="badge">PROT_GUEST</span>
+            <span id="status-badge" class="badge">PLAN GRATIS</span>
         </div>
     </div>
 
@@ -458,12 +458,12 @@
                 <span id="modal-avatar-fallback">U</span>
             </div>
             <h3 id="modal-user-title" style="font-family:'Orbitron', sans-serif; font-size: 1.3rem; font-weight: bold; margin-bottom: 6px;">UNKNOWN_ID</h3>
-            <p id="modal-user-id" style="font-size: 0.8rem; color: var(--text-dark); margin-bottom: 20px;">NET_ADDR: -</p>
+            <p id="modal-user-id" style="font-size: 0.8rem; color: var(--text-dark); margin-bottom: 20px;">addr: -</p>
             
             <div style="background: rgba(5,6,15,0.9); border: 1px solid rgba(255,170,0,0.3); padding: 16px; text-align: left; font-size: 0.85rem;">
                 <div style="margin-bottom: 10px;">
-                    <span style="color: var(--neon-cyan); font-family:'Orbitron', sans-serif; display: block; font-size: 0.65rem; letter-spacing: 1px;">SOCIETY_RANK:</span>
-                    <span id="profile-plan-status" style="font-weight: bold;">FREE_TIER</span>
+                    <span style="color: var(--neon-cyan); font-family:'Orbitron', sans-serif; display: block; font-size: 0.65rem; letter-spacing: 1px;">RANK:</span>
+                    <span id="profile-plan-status" style="font-weight: bold;">PLAN GRATIS</span>
                 </div>
                 <div>
                     <span style="color: var(--text-dark); font-family:'Orbitron', sans-serif; display: block; font-size: 0.65rem; letter-spacing: 1px;">NET_ENTRY_TIMESTAMP:</span>
@@ -476,24 +476,24 @@
     <div id="modal-editor-admin" class="profile-modal">
         <div class="profile-card" style="max-width: 420px; text-align: left; border-color: var(--neon-cyan); box-shadow: var(--glow-cyan); clip-path: none;">
             <button class="close-modal" id="btn-close-editor-modal" style="color: var(--neon-cyan); text-shadow: var(--glow-cyan);">&times;</button>
-            <h3 style="font-family:'Orbitron', sans-serif; font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; color: var(--neon-cyan); text-transform: uppercase;">✏️ OVERLORD_EDITOR_NODE</h3>
+            <h3 style="font-family:'Orbitron', sans-serif; font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; color: var(--neon-cyan); text-transform: uppercase;">✏️ EDITOR_NODO</h3>
             
             <input type="hidden" id="edit-campaign-id">
             
             <div class="input-group">
-                <label class="input-label">RESOURCE_IDENTIFIER</label>
+                <label class="input-label">IDENTIFIER</label>
                 <input type="text" id="edit-title" class="input-field">
             </div>
             <div class="input-group">
-                <label class="input-label">PROMPT_INSTRUCTIONS</label>
+                <label class="input-label">INSTRUCCIONES</label>
                 <input type="text" id="edit-desc" class="input-field">
             </div>
             <div class="input-group">
-                <label class="input-label">DESTINATION_CIPHER_URL</label>
+                <label class="input-label">URL_DESTINO</label>
                 <input type="text" id="edit-secret" class="input-field">
             </div>
             <div class="input-group">
-                <label class="input-label">CONVERSION_GATE_TYPE</label>
+                <label class="input-label">TIPO DE CAMPAÑA</label>
                 <select id="edit-campaign-type" class="input-field" style="background:#05060f;">
                     <option value="invitation">P2P Clones Propagation (Unlimited/Free)</option>
                     <option value="ad_text">👑 Stream Gate: Dynamic Text + Link</option>
