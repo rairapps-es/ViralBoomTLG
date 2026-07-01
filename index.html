@@ -578,15 +578,15 @@
                 <p>Configura compuertas lógicas avanzadas en la red para el filtrado y viralización automatizada de archivos.</p>
                 
                 <div class="input-group">
-                    <label class="input-label" for="setup-title">RESOURCE_IDENTIFIER</label>
+                    <label class="input-label" for="setup-title">NOMBRE DE LA CAMPAÑA</label>
                     <input type="text" id="setup-title" class="input-field" placeholder="Ej: CYBER_DOCS_2026">
                 </div>
                 <div class="input-group">
-                    <label class="input-label" for="setup-desc">PROMPT_INSTRUCTIONS</label>
+                    <label class="input-label" for="setup-desc">INSTRUCCIONES</label>
                     <input type="text" id="setup-desc" class="input-field" placeholder="Ej: Realiza los desvíos obligatorios de red para desbloquear.">
                 </div>
                 <div class="input-group">
-                    <label class="input-label" for="setup-secret">DESTINATION_CIPHER_URL (DATA_TARGET)</label>
+                    <label class="input-label" for="setup-secret">URL DE DESTINO</label>
                     <input type="text" id="setup-secret" class="input-field" placeholder="Ej: https://mega.nz/file/quantum...">
                 </div>
 
@@ -602,7 +602,7 @@
                 </div>
 
                 <div class="input-group">
-                    <label class="input-label" for="setup-campaign-type">CONVERSION_GATE_TYPE</label>
+                    <label class="input-label" for="setup-campaign-type">TIPO DE CAMPAÑA</label>
                     <select id="setup-campaign-type" class="input-field" style="background:#05060f;">
                         <option value="invitation">P2P Clones Propagation (Unlimited/Free)</option>
                         <option value="ad_text" id="opt-ad_text">👑 Stream Gate: Dynamic Text + Link</option>
@@ -616,13 +616,13 @@
                 <div id="group-opt-invitation" class="input-group">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <label class="input-label" for="setup-req-count">REQUIRED_NODES</label>
-                        <span id="req-limit-hint" style="font-size: 0.7rem; color: var(--neon-amber); font-weight: bold; font-family:'Orbitron',sans-serif;">MAX 3 (GUEST)</span>
+                        <span id="req-limit-hint" style="font-size: 0.7rem; color: var(--neon-amber); font-weight: bold; font-family:'Orbitron',sans-serif;">MAX 3 (INVITADOS)</span>
                     </div>
                     <input type="number" id="setup-req-count" class="input-field" value="3" min="1" max="10">
                 </div>
 
                 <div id="group-opt-telegram" class="input-group" style="display:none;">
-                    <label class="input-label" for="setup-tg-target">TARGET_ALIAS (WITHOUT @ OR DIRECT LINK)</label>
+                    <label class="input-label" for="setup-tg-target">TARGET_ALIAS (SIN @ O LINK DIRECTO)</label>
                     <input type="text" id="setup-tg-target" class="input-field" placeholder="Ej: CyberNetworkNet">
                 </div>
 
@@ -631,7 +631,7 @@
                     <input type="text" id="setup-ad-value" class="input-field" placeholder="Texto, link de imagen o URL de vídeo raw...">
                     
                     <div style="margin-top:12px;">
-                        <label class="input-label" for="setup-ad-duration">LOCK_DURATION_TIME (SECONDS)</label>
+                        <label class="input-label" for="setup-ad-duration">DURACIÓN DEL BLOQUEO (SECONDS)</label>
                         <input type="number" id="setup-ad-duration" class="input-field" value="30" min="5">
                     </div>
                 </div>
@@ -643,7 +643,7 @@
                 <h2>📊 PROPAGATION_METRICS</h2>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
                     <div style="background: var(--surface); padding: 12px; border: 1px solid rgba(0,243,255,0.1); text-align: center;">
-                        <div style="font-size: 0.7rem; color: var(--text-dark); font-family:'Orbitron',sans-serif;">TOTAL_PING_CLICKS</div>
+                        <div style="font-size: 0.7rem; color: var(--text-dark); font-family:'Orbitron',sans-serif;">TOTAL_CLICKS</div>
                         <div style="font-size: 1.4rem; font-weight: bold; color: var(--neon-cyan); font-family:'Orbitron',sans-serif;" id="meta-clicks">0</div>
                     </div>
                     <div style="background: var(--surface); padding: 12px; border: 1px solid rgba(255,170,0,0.1); text-align: center;">
@@ -653,7 +653,7 @@
                 </div>
                 
                 <div class="input-label" style="margin-top: 18px; margin-bottom: 6px; display: flex; justify-content: space-between;">
-                    <span>📍 CONVERSION_STREAM_NODES:</span>
+                    <span>📍 CONVERSION_NODES:</span>
                     <span id="geo-premium-badge" style="font-size:0.65rem; color:var(--neon-amber); display:none; font-family:'Orbitron',sans-serif;">👑 LIVE_FEED</span>
                 </div>
                 <div id="admin-group-stats" style="background: var(--surface); padding: 12px; font-size: 0.8rem; color: var(--text-dark); border: 1px solid rgba(255,255,255,0.03); min-height: 40px;">
@@ -687,7 +687,7 @@
             </div>
 
             <div class="card" id="premium-activation-key-card" style="border-color: var(--neon-amber);">
-                <div class="input-label" style="color: var(--neon-amber);">🔑 INJECT_LICENSE_KEYPACK</div>
+                <div class="input-label" style="color: var(--neon-amber);">🔑 INJECTAR_LICENCIA_KEY</div>
                 <input type="text" id="licence-key-input" class="input-field" placeholder="Firma SHA256 / Llave criptográfica...">
                 <button id="btn-validate-license" class="btn btn-purple" style="margin-top: 12px;">VALIDATE_SIGNATURE</button>
             </div>
@@ -709,13 +709,13 @@
 
     <nav class="nav-bar">
         <button id="nav-client" class="nav-item active">
-            <span>🎯</span>NET_NODES
+            <span>🎯</span>CAMPAÑA
         </button>
         <button id="nav-admin" class="nav-item">
-            <span>⚡</span>CORE_CONSOLE
+            <span>⚡</span>CONSOLA
         </button>
         <button id="nav-billing" class="nav-item">
-            <span>👑</span>LICENSE_UP
+            <span>👑</span>LICENCIA
         </button>
     </nav>
 
