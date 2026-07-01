@@ -500,7 +500,7 @@
                 status: nuevaCampana.status
             };
 
-            Storage.set("campaña_local_backup", this.state.campañaActivaLocal);
+                        Storage.set("campaña_local_backup", this.state.campañaActivaLocal);
             
             if(this.tg) this.tg.showAlert("🚀 CAMPAÑA PUBLICADA: ¡Configuración inyectada con éxito!");
             
@@ -510,6 +510,11 @@
             this.state.verificationInProgress = false;
             if(this.state.adTimerInterval) { clearInterval(this.state.adTimerInterval); this.state.adTimerInterval = null; }
             
+            // ==========================================
+            // 🔥 INYECTAR DISPARADOR DE ALERTA AQUÍ:
+            // ==========================================
+            this.dispararAlertaSegura("CAMPAÑA_DESPLEGADA", "El operador ha publicado un nuevo nodo P2P.");
+
             this.renderizarPantallasDinamicas();
             this.actualizarContadorHeader();
             this.cambiarPestana('client');
