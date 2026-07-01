@@ -274,10 +274,10 @@
         desactivarInterfazPremiumVisual() {
             this.state.isPremium = false;
             const statusBadge = document.getElementById("status-badge");
-            if(statusBadge) { statusBadge.textContent = "PROT_GUEST"; statusBadge.className = "badge"; }
+            if(statusBadge) { statusBadge.textContent = "PLAN GRATIS"; statusBadge.className = "badge"; }
             
             const planStatus = document.getElementById("profile-plan-status");
-            if(planStatus) { planStatus.textContent = "FREE_TIER_NODE"; planStatus.style.color = "var(--text-cyber)"; }
+            if(planStatus) { planStatus.textContent = "PLAN GRATIS ACTIVADO"; planStatus.style.color = "var(--text-cyber)"; }
             
             const avatarGlow = document.getElementById("user-avatar-glow");
             if(avatarGlow) { avatarGlow.style.backgroundColor = "var(--neon-lime)"; avatarGlow.style.boxShadow = "0 0 6px var(--neon-lime)"; }
@@ -413,7 +413,7 @@
                     .eq('owner_id', this.state.userId);
 
                 if (existentes && existentes.length >= 1) {
-                    if(this.tg) this.tg.showAlert("🔒 LÍMITE ALCANZADO: Los usuarios gratuitos solo pueden desplegar 1 nodo en la red. Consigue una Licencia Premium.");
+                    if(this.tg) this.tg.showAlert("🔒 LÍMITE ALCANZADO: Los usuarios gratuitos solo pueden publicar 1 campaña al mismo timepo en la red. Consigue una Licencia Premium.");
                     return;
                 }
             }
@@ -482,7 +482,7 @@
 
             Storage.set("campaña_local_backup", this.state.campañaActivaLocal);
             
-            if(this.tg) this.tg.showAlert("🚀 NODE_COMPILED: ¡Configuración inyectada con éxito!");
+            if(this.tg) this.tg.showAlert("🚀 CAMPAÑA PUBLICADA: ¡Configuración inyectada con éxito!");
             
             this.state.referidosLogrados = 0;
             this.state.adCompleted = false;
@@ -519,10 +519,10 @@
                     const msgDesc = document.getElementById("status-msg-desc");
                     
                     if (camp.ownerId === this.state.userId) {
-                        if(msgTitle) msgTitle.textContent = "⏸️ NODE_PENDING_APPROVAL";
+                        if(msgTitle) msgTitle.textContent = "⏸️ PENDIENTE DE APROBACIÓN";
                         if(msgDesc) msgDesc.textContent = "Tu nodo de distribución se encuentra temporalmente en pausa y en espera de validación por parte del Super Admin.";
                     } else {
-                        if(msgTitle) msgTitle.textContent = "🔒 LINK_SUSPENDED";
+                        if(msgTitle) msgTitle.textContent = "🔒 CAMPAÑA SUSPENDIDA";
                         if(msgDesc) msgDesc.textContent = "Este enlace de descarga P2P ha sido pausado por la administración. Los protocolos de sincronización y copia de enlace quedan deshabilitados.";
                     }
                 }
@@ -535,7 +535,7 @@
                 if(cardUnlock) cardUnlock.style.display = "none";
                 if(cardStatusMsg) {
                     cardStatusMsg.style.display = "block";
-                    document.getElementById("status-msg-title").textContent = "⏳ TIME_LOCK_ACTIVE";
+                    document.getElementById("status-msg-title").textContent = "⏳ TIEMPO_DEL_BLOQUEO";
                     document.getElementById("status-msg-desc").textContent = `Uplink sincronizado para abrirse el: ${new Date(camp.startDate).toLocaleString()}`;
                 }
                 return;
@@ -545,7 +545,7 @@
                 if(cardUnlock) cardUnlock.style.display = "none";
                 if(cardStatusMsg) {
                     cardStatusMsg.style.display = "block";
-                    document.getElementById("status-msg-title").textContent = "⌛ NODE_EXPIRED";
+                    document.getElementById("status-msg-title").textContent = "⌛ LA CAMPAÑA EXPIRÓ";
                     document.getElementById("status-msg-desc").textContent = "El ciclo de vida útil asignado a esta firma digital ha finalizado.";
                 }
                 return;
@@ -648,10 +648,10 @@
             if(condicion) {
                 btnClaim.classList.remove("btn-disabled");
                 btnClaim.className = "btn btn-gold";
-                btnClaim.textContent = "🔓 ACCESS_GRANTED: OPEN_TARGET";
+                btnClaim.textContent = "🔓 ACCESSO_DESBLOQUEADO: ABIERTO";
             } else {
                 btnClaim.classList.add("btn-disabled");
-                btnClaim.textContent = "🔒 SYSTEM_LOCKED: REQS_PENDING";
+                btnClaim.textContent = "🔒 SISTEMA BLOQUEADO: PENDIENTE";
             }
         },
 
@@ -677,7 +677,7 @@
             const b64 = btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
                 
             const deepLinkFinal = `https://t.me/${botUsername}/app?startapp=${b64}`;
-            let mensajeCompartir = `🔥 *⚡ DATALOCK DETECTED ⚡* 🔥\n\nDistribuyendo acceso para: *${camp.titulo}*.\n📥 Sincroniza tu ID de red aquí para reclamar la copia segura:`;
+            let mensajeCompartir = `🔥 *⚡ CONTENIDO BLOQUEADO DETECTADO ⚡* 🔥\n\nDistribuyendo acceso para: *${camp.titulo}*.\n📥 Sincroniza tu ID de red para reclamar acceso gratis:`;
             this.tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(deepLinkFinal)}&text=${encodeURIComponent(mensajeCompartir)}`);
         },
 
@@ -685,9 +685,9 @@
             const btnClaim = document.getElementById("btn-claim-reward");
             if (!this.tg || (btnClaim && btnClaim.classList.contains("btn-disabled"))) return;
             this.tg.showPopup({
-                title: "🔓 LINK_UNLOCKED",
+                title: "🔓 LINK_DESBLOQUEADO",
                 message: "Protocolo de desencriptación exitoso. Abre el túnel seguro hacia el destino de los datos.",
-                buttons: [{type: "default", text: "REDIRECT_STATION"}]
+                buttons: [{type: "default", text: "REDIRECCIÓN CANAL"}]
             }, () => {
                 this.tg.openLink(this.state.campañaActivaLocal.secreto);
             });
@@ -703,7 +703,7 @@
             
             const btnJoin = document.getElementById("btn-join-channel");
             if(btnJoin) {
-                btnJoin.textContent = "⏳ VERIFYING_EXTERNAL_NODE...";
+                btnJoin.textContent = "⏳ VERIFICANDO_SUSCRIPCIÓN...";
                 btnJoin.classList.add("btn-disabled");
             }
             this.tg.openTelegramLink(targetUrl);
@@ -720,20 +720,20 @@
                 this.state.verificationInProgress = false;
                 
                 if(btnJoin) {
-                    btnJoin.textContent = "✅ STATION_CONNECTED";
+                    btnJoin.textContent = "✅ CANAL CONECTADO";
                     btnJoin.className = "btn btn-purple btn-disabled";
                 }
-                if(this.tg) this.tg.showAlert("⚡ NODE_VERIFIED: Sincronización exitosa con la estación externa.");
+                if(this.tg) this.tg.showAlert("⚡ VERIFICADO: Sincronización exitosa con el canal.");
                 this.renderizarPantallasDinamicas();
             } else {
                 this.state.verificationInProgress = false;
                 if(btnJoin) {
-                    btnJoin.textContent = "JOIN_STATION";
+                    btnJoin.textContent = "UNIRME AL CANAL";
                     btnJoin.classList.remove("btn-disabled");
                 }
                 if(this.tg) {
                     this.tg.showPopup({
-                        title: "❌ VERIFICATION_FAILED",
+                        title: "❌ VERIFICACIÓN_FALLIDA",
                         message: "El tiempo de vinculación fue demasiado bajo. Asegúrate de unirte al canal antes de regresar.",
                         buttons: [{type: "close"}]
                     });
@@ -744,14 +744,14 @@
         solicitarPremiumAirdayz() {
             if(!this.tg) return;
             const metodo = document.getElementById("billing-method").value;
-            const textoMensaje = `¡Hola @Airdayz! Solicito pasaporte Overlord Premium para Bomba Viral 🚀.\n\n` +
-                                 `• ID_Firma: \`${this.state.userId}\`\n• Gateway_Metodo: ${metodo}`;
+            const textoMensaje = `¡Hola @Airdayz! Solicito pasaporte Overlord Premium para ViralBoom 🚀.\n\n` +
+                                 `• ID_Firma: \`${this.state.userId}\`\n• Metodo_Pago: ${metodo}`;
             this.tg.openTelegramLink(`https://t.me/Airdayz?text=${encodeURIComponent(textoMensaje)}`);
         },
 
         abrirModalPerfil() {
             const modalTitle = document.getElementById("modal-user-title"); if(modalTitle) modalTitle.textContent = this.state.firstName.toUpperCase();
-            const modalId = document.getElementById("modal-user-id"); if(modalId) modalId.textContent = `NET_ADDR: ${this.state.userId}`;
+            const modalId = document.getElementById("modal-user-id"); if(modalId) modalId.textContent = `ID: ${this.state.userId}`;
             const modal = document.getElementById("modal-perfil-usuario");
             if(modal) {
                 modal.style.display = "flex"; 
@@ -776,7 +776,7 @@
         inyectarLlaveLicenciaLocal() {
             const input = document.getElementById("licence-key-input");
             if(!input || !input.value.trim()) return;
-            if(this.tg) this.tg.showAlert("🔍 Validando firma criptográfica...");
+            if(this.tg) this.tg.showAlert("🔍 Validando firma...");
             setTimeout(() => {
                 this.activarInterfazPremiumVisual();
                 if(this.tg) this.tg.showAlert("✅ LICENCIA EXPANDIDA: Acceso completo garantizado.");
@@ -833,7 +833,7 @@
 
         actualizarContadorHeader() {
             const hcc = document.getElementById("header-campaign-counter");
-            if(hcc) hcc.textContent = this.state.campañaActivaLocal ? "CORE_UNITS: 1" : "CORE_UNITS: 0";
+            if(hcc) hcc.textContent = this.state.campañaActivaLocal ? "CAMPAÑAS: 1" : "CAMPAÑAS: 0";
         },
 
         startCarouselEngine() {
@@ -931,7 +931,7 @@
                 Storage.set("campaña_local_backup", App.state.campañaActivaLocal);
             }
 
-            alert("🚀 NODE_OVERWRITTEN: Nodo actualizado en la base de datos central.");
+            alert("🚀 EDITADO CON EXITO: Campaña actualizada en la base de datos.");
             cerrarModalEditorAdmin();
             cargarCampanasAdminFuerza().then(() => {
                 App.renderizarPantallasDinamicas();
@@ -962,7 +962,7 @@
                     App.state.campañaActivaLocal.status = nuevoEstado;
                     Storage.set("campaña_local_backup", App.state.campañaActivaLocal);
                 }
-                alert(`⚙️ Nodo cambiado a: ${nuevoEstado.toUpperCase()}`);
+                alert(`⚙️ Estado de Campaña cambiado a: ${nuevoEstado.toUpperCase()}`);
             });
             
         } else if (accion === 'toggle_destacar') {
@@ -996,7 +996,7 @@
                 App.actualizarContadorHeader();
             }).catch(err => {
                 console.error("Error en acción individual:", err);
-                alert("Fallo al actualizar el nodo individual: " + err.message);
+                alert("Fallo al actualizar la Campaña individual: " + err.message);
             });
         }
     };
@@ -1110,10 +1110,10 @@
 
         let html = `
             <div class="admin-panel-container" style="padding: 20px; background: #0a0b16; color: #fff; font-family: 'Rajdhani', sans-serif; border: 1px solid rgba(0, 243, 255, 0.2); margin-top:20px;">
-                <h3 style="font-family:'Orbitron', sans-serif; font-size:1.1rem; color:var(--neon-cyan); margin-bottom:15px;">👑 CORE PANEL - MONITOREO</h3>
+                <h3 style="font-family:'Orbitron', sans-serif; font-size:1.1rem; color:var(--neon-cyan); margin-bottom:15px;">👑 PANEL - MONITOREO</h3>
                 
                 <div class="admin-tools" style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-                    <input type="text" placeholder="🔍 Buscar ID Nodo..." id="admin-search-input" style="padding: 8px; background: #05060f; color: #fff; border: 1px solid rgba(0,243,255,0.3); width:100%;">
+                    <input type="text" placeholder="🔍 Buscar ID Campaña..." id="admin-search-input" style="padding: 8px; background: #05060f; color: #fff; border: 1px solid rgba(0,243,255,0.3); width:100%;">
                 </div>
 
                 <div class="masive-actions" style="background: #0d0f1d; padding: 10px; margin-bottom: 15px; border: 1px dashed var(--neon-amber); display: flex; gap: 10px; align-items: center; flex-wrap:wrap;">
@@ -1145,7 +1145,7 @@
                                     </td>
                                     <td style="padding: 10px;">
                                         <div class="btn-edit-trigger" data-id="${c.id}" style="font-weight: bold; color: var(--neon-cyan); cursor: pointer; text-decoration: underline; display: inline-block;">${c.title}</div>
-                                        <div style="font-size: 11px; color: #8a2be2;">Tipo: ${c.type} | ID Nodo: ${c.id}</div>
+                                        <div style="font-size: 11px; color: #8a2be2;">Tipo: ${c.type} | ID Campaña: ${c.id}</div>
                                     </td>
                                     <td style="padding: 10px;">
                                         <select class="admin-action-select" data-id="${c.id}" style="background: ${c.status === 'activa' ? '#1b4322' : '#5c4308'}; color: #fff; border: 1px solid rgba(255,255,255,0.2); font-family: 'Orbitron'; font-size: 10px; padding: 4px; font-weight: bold; cursor:pointer;">
