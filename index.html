@@ -938,7 +938,9 @@ const cleanKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
                             adDuration: parseInt(payload.ad_dur) || 30,
                             startDate: payload.s_date ? parseInt(payload.s_date) : null, 
                             endDate: payload.e_date ? parseInt(payload.e_date) : null,
-                            ownerId: payload.owner
+                            ownerId: payload.owner,
+                            status: payload.status || 'activa' // <-- AÑADE ESTA LÍNEA EXACTA
+                        };
                         };
                         
                         Storage.set("campaña_local_backup", this.state.campañaActivaLocal);
@@ -1021,7 +1023,9 @@ const cleanKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
                     tgTarget: nuevaCampana.tg_target, adValue: nuevaCampana.ad_value, adDuration: adDur,
                     startDate: nuevaCampana.start_date ? new Date(nuevaCampana.start_date).getTime() : null, 
                     endDate: nuevaCampana.end_date ? new Date(nuevaCampana.end_date).getTime() : null, 
-                    ownerId: this.state.userId
+                    ownerId: this.state.userId,
+                    status: nuevaCampana.status || 'activa' // <-- AÑADE ESTA LÍNEA EXACTA
+                };
                 };
 
                 Storage.set("campaña_local_backup", this.state.campañaActivaLocal);
@@ -1072,7 +1076,7 @@ const cleanKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
                 this.cambiarPestana('admin');
             },
 
-            renderizarPantallasDinamicas() {
+                         renderizarPantallasDinamicas() {
                 const camp = this.state.campañaActivaLocal;
                 const cardNoCam = document.getElementById("card-no-campaign");
                 const cardUnlock = document.getElementById("card-viral-unlock");
@@ -1084,6 +1088,31 @@ const cleanKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
                     if(cardStatusMsg) cardStatusMsg.style.display = "none";
                     return;
                 }
+
+                // --- MEJORA: INTERCEPCIÓN DE PAUSA DE ADMINISTRACIÓN ---
+                if (camp.status === 'en_pausa') {
+                    if(cardNoCam) cardNoCam.style.display = "none";
+                    if(cardUnlock) cardUnlock.style.display = "none";
+                    if(cardStatusMsg) {
+                        cardStatusMsg.style.display = "block";
+                        cardStatusMsg.style.borderColor = "var(--neon-amber)";
+                        
+                        const msgTitle = document.getElementById("status-msg-title");
+                        const msgDesc = document.getElementById("status-msg-desc");
+                        
+                        if (camp.ownerId === this.state.userId) {
+                            // Escenario A: El usuario es el dueño de la campaña
+                            if(msgTitle) msgTitle.textContent = "⏸️ NODE_PENDING_APPROVAL";
+                            if(msgDesc) msgDesc.textContent = "Tu nodo de distribución se encuentra temporalmente en pausa y en espera de validación por parte del Super Admin.";
+                        } else {
+                            // Escenario B: El usuario es un invitado externo
+                            if(msgTitle) msgTitle.textContent = "🔒 LINK_SUSPENDED";
+                            if(msgDesc) msgDesc.textContent = "Este enlace de descarga P2P ha sido pausado por la administración. Los protocolos de sincronización y copia de enlace quedan deshabilitados.";
+                        }
+                    }
+                    return;
+                }
+                // --- FIN DE LA MEJORA ---
 
                 const ahora = Date.now();
                 if(camp.startDate && ahora < camp.startDate) {
@@ -1165,6 +1194,7 @@ const cleanKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
                     }
                 }
             },
+
 
             ejecutarContadorAnuncio(segundos) {
                 if (this.state.adTimerInterval) clearInterval(this.state.adTimerInterval);
@@ -1640,11 +1670,15 @@ function renderizarTablaAdmin() {
                                     <div style="font-weight: bold; color: var(--neon-cyan);">${c.title}</div>
                                     <div style="font-size: 11px; color: #8a2be2;">Tipo: ${c.type} | ID Nodo: ${c.id}</div>
 </td>
-                                <td style="padding: 10px;">
-                                    <span style="padding: 2px 6px; font-size: 10px; font-weight: bold; background: ${c.status === 'activa' ? '#1b4322' : '#5c4308'}">
-                                        ${c.status.toUpperCase()}
-                                    </span>
+                                                                <td style="padding: 10px;">
+                                    <select onchange="ejecutarAccionIndividual('${c.id}', this.value)" style="background: ${c.status === 'activa' ? '#1b4322' : '#5c4308'}; color: #fff; border: 1px solid rgba(255,255,255,0.2); font-family: 'Orbitron'; font-size: 10px; padding: 4px; font-weight: bold; cursor:pointer;">
+                                        <option value="">${c.status.toUpperCase()}</option>
+                                        <option value="toggle_pausa">${c.status === 'activa' ? '⏸️ PAUSAR' : '▶️ ACTIVAR'}</option>
+                                        <option value="toggle_destacar">${c.is_sponsored ? '❌ DES-DESTACAR' : '⭐ DESTACAR'}</option>
+                                        <option value="eliminar">🗑️ ELIMINAR</option>
+                                    </select>
                                 </td>
+
                             </tr>
                         `).join('')}
                     </tbody>
