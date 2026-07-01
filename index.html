@@ -1509,15 +1509,14 @@ async function ejecutarAccionMasiva(accion) {
     }
 }
 
-// Función puente para descargar las campañas reales de tu Supabase
+// Función puente corregida para usar el ID real compuesto de Supabase
 async function cargarCampanasAdminFuerza() {
     if (!App.supabaseClient) return;
     try {
         const { data, error } = await App.supabaseClient.from('campaigns').select('*');
         if (!error && data) {
-            // Mapeamos los nombres de columnas de tu BD a la estructura que espera la tabla
             AdminState.campanas = data.map(c => ({
-                id: c.id,
+                id: c.id, // <-- AQUÍ: Guarda el ID compuesto completo (ej: 1320417199_1782873419294)
                 owner_id: c.owner_id,
                 title: c.title,
                 description: c.description,
@@ -1535,6 +1534,7 @@ async function cargarCampanasAdminFuerza() {
         console.error("Error cargando campañas en el Administrador:", e);
     }
 }
+
 
 function renderizarTablaAdmin() {
     const contenedor = document.getElementById("super-admin-panel");
