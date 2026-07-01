@@ -394,6 +394,7 @@
         </div>
     </div>
 
+    <!-- Modal Perfil de Usuario -->
     <div id="modal-perfil-usuario" class="profile-modal">
         <div class="profile-card">
             <button class="close-modal" id="btn-close-profile-modal" aria-label="Cerrar modal de perfil">&times;</button>
@@ -413,6 +414,42 @@
                     <span id="profile-plan-start" style="color: #b2bec3;">-</span>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE EDICIÓN DEL SUPER ADMIN -->
+    <div id="modal-editor-admin" class="profile-modal">
+        <div class="profile-card" style="max-width: 420px; text-align: left; border-color: var(--neon-cyan); box-shadow: var(--glow-cyan); clip-path: none;">
+            <button class="close-modal" id="btn-close-editor-modal" style="color: var(--neon-cyan); text-shadow: var(--glow-cyan);">&times;</button>
+            <h3 style="font-family:'Orbitron', sans-serif; font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; color: var(--neon-cyan); text-transform: uppercase;">✏️ OVERLORD_EDITOR_NODE</h3>
+            
+            <input type="hidden" id="edit-campaign-id">
+            
+            <div class="input-group">
+                <label class="input-label">RESOURCE_IDENTIFIER</label>
+                <input type="text" id="edit-title" class="input-field">
+            </div>
+            <div class="input-group">
+                <label class="input-label">PROMPT_INSTRUCTIONS</label>
+                <input type="text" id="edit-desc" class="input-field">
+            </div>
+            <div class="input-group">
+                <label class="input-label">DESTINATION_CIPHER_URL</label>
+                <input type="text" id="edit-secret" class="input-field">
+            </div>
+            <div class="input-group">
+                <label class="input-label">CONVERSION_GATE_TYPE</label>
+                <select id="edit-campaign-type" class="input-field" style="background:#05060f;">
+                    <option value="invitation">P2P Clones Propagation (Unlimited/Free)</option>
+                    <option value="ad_text">👑 Stream Gate: Dynamic Text + Link</option>
+                    <option value="ad_image">👑 Stream Gate: Img + Hologram Banner</option>
+                    <option value="ad_video">👑 Stream Gate: Video Cyber Feed</option>
+                    <option value="sub_channel">👑 Telegram API: Channel Join</option>
+                    <option value="join_group">👑 Telegram API: Group Injection</option>
+                </select>
+            </div>
+            
+            <button id="btn-save-edit-admin" class="btn" style="margin-top: 10px;">💾 OVERWRITE_DESTRUCTIVE</button>
         </div>
     </div>
 
@@ -436,7 +473,6 @@
                 </div>
                 <p id="viral-desc">Completa los protocolos requeridos por la estación emisora para descifrar el destino final.</p>
                 
-                <!-- Cronograma de Fechas Añadido -->
                 <div class="campaign-timestamps">
                     <div class="timestamp-box">
                         <span>🛰️ Start_Time</span>
@@ -741,6 +777,10 @@
                 safeAddEvent("nav-admin", "click", () => this.cambiarPestana('admin'));
                 safeAddEvent("nav-billing", "click", () => this.cambiarPestana('billing'));
 
+                // Nuevos listeners para el Modal de Edición del Super Admin
+                safeAddEvent("btn-close-editor-modal", "click", () => cerrarModalEditorAdmin());
+                safeAddEvent("btn-save-edit-admin", "click", () => guardarCambiosEditorAdmin());
+
                 document.addEventListener("visibilitychange", () => {
                     if (document.hidden) {
                         this.pauseCarousel();
@@ -1012,19 +1052,17 @@
                     return;
                 }
 
-// --- Inserta esto al inicio de guardarCampanaAdmin() ---
-if (!this.state.isPremium) {
-    // Verificar en Supabase cuántas campañas tiene ya este owner_id
-    const { data: existentes } = await this.supabaseClient
-        .from('campaigns')
-        .select('id')
-        .eq('owner_id', this.state.userId);
+                if (!this.state.isPremium) {
+                    const { data: existentes } = await this.supabaseClient
+                        .from('campaigns')
+                        .select('id')
+                        .eq('owner_id', this.state.userId);
 
-    if (existentes && existentes.length >= 1) {
-        if(this.tg) this.tg.showAlert("🔒 LÍMITE ALCANZADO: Los usuarios gratuitos solo pueden desplegar 1 nodo en la red. Consigue una Licencia Premium.");
-        return; // Detiene la creación
-    }
-}
+                    if (existentes && existentes.length >= 1) {
+                        if(this.tg) this.tg.showAlert("🔒 LÍMITE ALCANZADO: Los usuarios gratuitos solo pueden desplegar 1 nodo en la red. Consigue una Licencia Premium.");
+                        return;
+                    }
+                }
                 
                 let r = parseInt(document.getElementById("setup-req-count").value) || 3;
                 const adDur = parseInt(document.getElementById("setup-ad-duration").value) || 30;
@@ -1190,7 +1228,6 @@ if (!this.state.isPremium) {
                 const vDesc = document.getElementById("viral-desc"); if(vDesc) vDesc.textContent = camp.desc;
                 const vBadge = document.getElementById("viral-type-badge"); if(vBadge) vBadge.textContent = camp.tipo.toUpperCase();
 
-                // Render de Fechas en NET_NODES
                 const clientStartVar = document.getElementById("client-start-date");
                 const clientEndVar = document.getElementById("client-end-date");
                 if (clientStartVar) clientStartVar.textContent = camp.startDate ? new Date(camp.startDate).toLocaleDateString() : 'IMMEDIATE';
@@ -1486,6 +1523,74 @@ if (!this.state.isPremium) {
             }
         };
 
+        /* FUNCIONES NUEVAS DEL EDITOR SUPER ADMIN */
+        function abrirEditorCampana(campanaId) {
+            const campana = AdminState.campanas.find(c => c.id === campanaId);
+            if (!campana) return;
+
+            document.getElementById("edit-campaign-id").value = campana.id;
+            document.getElementById("edit-title").value = campana.title;
+            document.getElementById("edit-desc").value = campana.description || "";
+            document.getElementById("edit-secret").value = campana.secret_url || "";
+            document.getElementById("edit-campaign-type").value = campana.type;
+
+            const modal = document.getElementById("modal-editor-admin");
+            if(modal) {
+                modal.style.display = "flex"; 
+                modal.offsetHeight;
+                modal.classList.add("active");
+            }
+        }
+
+        function cerrarModalEditorAdmin() {
+            const modal = document.getElementById("modal-editor-admin");
+            if(modal) {
+                modal.classList.remove("active");
+                setTimeout(() => { if (!modal.classList.contains('active')) modal.style.display = 'none'; }, 250); 
+            }
+        }
+
+        async function guardarCambiosEditorAdmin() {
+            const db = App.supabaseClient;
+            if (!db) return;
+
+            const id = document.getElementById("edit-campaign-id").value;
+            const title = document.getElementById("edit-title").value.trim();
+            const description = document.getElementById("edit-desc").value.trim();
+            const secret_url = document.getElementById("edit-secret").value.trim();
+            const type = document.getElementById("edit-campaign-type").value;
+
+            if (!title || !secret_url) {
+                alert("Identificador y URL destino son obligatorios.");
+                return;
+            }
+
+            try {
+                const { error } = await db.from('campaigns').update({
+                    title, description, secret_url, type
+                }).eq('id', id);
+
+                if (error) throw error;
+
+                // Sincronizar localmente si es la campaña activa actual en el entorno local
+                if (App.state.campañaActivaLocal && App.state.campañaActivaLocal.ownerId === id.split('_')[0]) {
+                    App.state.campañaActivaLocal.titulo = title;
+                    App.state.campañaActivaLocal.desc = description;
+                    App.state.campañaActivaLocal.secreto = secret_url;
+                    App.state.campañaActivaLocal.tipo = type;
+                    Storage.set("campaña_local_backup", App.state.campañaActivaLocal);
+                }
+
+                alert("🚀 NODE_OVERWRITTEN: Nodo actualizado en la base de datos central.");
+                cerrarModalEditorAdmin();
+                await cargarCampanasAdminFuerza();
+                App.renderizarPantallasDinamicas();
+            } catch (err) {
+                console.error(err);
+                alert("Error guardando los cambios de red: " + err.message);
+            }
+        }
+
         function reportarCampana(campanaId, titulo, ownerId) {
             const miUsuarioTelegram = "Airdayz"; 
             const usuarioReportante = window.Telegram?.WebApp?.initDataUnsafe?.user?.id || "Desconocido";
@@ -1514,28 +1619,6 @@ if (!this.state.isPremium) {
             return diferenciaHoras >= 72;
         }
 
-        function renderAccionesUsuario(campana, esPremium) {
-            if (!esPremium) {
-                return `<span class="badge-disabled">Modo Gratis: Esperando finalización</span>`;
-            }
-
-            let botones = '';
-            if (campana.status === 'activa') {
-                if (puedePausarPremium(campana.fecha_fin)) {
-                    botones += `<button onclick="cambiarEstadoCampana('${campana.id}', 'en_pausa')">⏸️ Pausar</button>`;
-                } else {
-                    botones += `<span class="text-mini">⏳ Bloqueado (<72h)</span>`;
-                }
-            } else if (campana.status === 'en_pausa') {
-                botones += `<button onclick="cambiarEstadoCampana('${campana.id}', 'activa')">▶️ Play</button>`;
-            }
-
-            botones += `<button class="btn-danger" onclick="confirmarEliminarUsuario('${campana.id}')">🗑️ Eliminar</button>`;
-            botones += `<button onclick="abrirEditorCampana('${campana.id}')">✏️ Editar</button>`;
-
-            return botones;
-        }
-
         async function ejecutarAccionIndividual(campanaId, accion) {
             const db = App.supabaseClient;
             if (!db) {
@@ -1552,7 +1635,6 @@ if (!this.state.isPremium) {
                     const { error } = await db.from('campaigns').update({ status: nuevoEstado }).eq('id', campanaId);
                     if (error) throw error;
                     
-                    // Sincronizar el cliente inmediatamente en caso de que sea la campaña cargada por el usuario
                     if (App.state.campañaActivaLocal && App.state.campañaActivaLocal.ownerId === campanaId.split('_')[0]) {
                         App.state.campañaActivaLocal.status = nuevoEstado;
                         Storage.set("campaña_local_backup", App.state.campañaActivaLocal);
@@ -1581,9 +1663,6 @@ if (!this.state.isPremium) {
                     }
                     
                     alert("🗑️ Campaña eliminada de la base de datos.");
-                } else if (accion === 'editar') {
-                    alert("✏️ Función de edición en desarrollo. Usa la consola de creación para sobreescribir.");
-                    return;
                 }
 
                 await cargarCampanasAdminFuerza();
@@ -1632,7 +1711,6 @@ if (!this.state.isPremium) {
                     const { error } = await db.from('campaigns').delete().in('id', AdminState.seleccionadas);
                     if (error) throw error;
                     
-                    // Limpieza local preventiva
                     if (App.state.campañaActivaLocal && AdminState.seleccionadas.some(id => id.startsWith(App.state.userId))) {
                         App.state.campañaActivaLocal = null;
                         Storage.remove("campaña_local_backup");
@@ -1641,7 +1719,6 @@ if (!this.state.isPremium) {
                     const { error } = await db.from('campaigns').update(objetoActualizacion).in('id', AdminState.seleccionadas);
                     if (error) throw error;
                     
-                    // Sincronización local masiva
                     if (App.state.campañaActivaLocal && AdminState.seleccionadas.some(id => id.startsWith(App.state.userId))) {
                         App.state.campañaActivaLocal.status = objetoActualizacion.status;
                         Storage.set("campaña_local_backup", App.state.campañaActivaLocal);
@@ -1670,6 +1747,7 @@ if (!this.state.isPremium) {
                         title: c.title,
                         description: c.description,
                         type: c.type,
+                        secret_url: c.secret_url,
                         created_at: c.start_date || new Date().toISOString(),
                         fecha_fin: c.end_date || new Date().toISOString(),
                         status: c.status || 'activa',
@@ -1723,7 +1801,7 @@ if (!this.state.isPremium) {
                                 <tr style="background: #0d0f1d; border-bottom: 2px solid rgba(0,243,255,0.3);">
                                     <th style="padding: 10px;"><input type="checkbox" onclick="toggleSeleccionarTodas(this.checked)"></th>
                                     <th style="padding: 10px;">PROPIETARIO</th>
-                                    <th style="padding: 10px;">CAMPAÑA</th>
+                                    <th style="padding: 10px;">CAMPAÑA (CLICK PARA EDITAR)</th>
                                     <th style="padding: 10px;">ESTADO</th>
                                 </tr>
                             </thead>
@@ -1738,7 +1816,8 @@ if (!this.state.isPremium) {
                                             <div style="font-size: 10px; color: #636e72;">ID: ${c.owner_id}</div>
                                         </td>
                                         <td style="padding: 10px;">
-                                            <div style="font-weight: bold; color: var(--neon-cyan);">${c.title}</div>
+                                            <!-- Se añade evento interactivo al título para abrir el panel de edición directa -->
+                                            <div onclick="abrirEditorCampana('${c.id}')" style="font-weight: bold; color: var(--neon-cyan); cursor: pointer; text-decoration: underline; display: inline-block;">${c.title}</div>
                                             <div style="font-size: 11px; color: #8a2be2;">Tipo: ${c.type} | ID Nodo: ${c.id}</div>
                                         </td>
                                         <td style="padding: 10px;">
