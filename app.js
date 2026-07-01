@@ -252,10 +252,10 @@
         activarInterfazPremiumVisual() {
             this.state.isPremium = true;
             const statusBadge = document.getElementById("status-badge");
-            if(statusBadge) { statusBadge.textContent = "OVERLORD_VIP"; statusBadge.className = "badge badge-premium"; }
+            if(statusBadge) { statusBadge.textContent = "PLAN_PRO"; statusBadge.className = "badge badge-premium"; }
             
             const planStatus = document.getElementById("profile-plan-status");
-            if(planStatus) { planStatus.textContent = "OVERLORD_VIP_RANK"; planStatus.style.color = "var(--neon-amber)"; }
+            if(planStatus) { planStatus.textContent = "PRO_RANK"; planStatus.style.color = "var(--neon-amber)"; }
             
             const avatarGlow = document.getElementById("user-avatar-glow");
             if(avatarGlow) { avatarGlow.style.backgroundColor = "var(--neon-amber)"; avatarGlow.style.boxShadow = "var(--glow-amber)"; }
@@ -274,10 +274,10 @@
         desactivarInterfazPremiumVisual() {
             this.state.isPremium = false;
             const statusBadge = document.getElementById("status-badge");
-            if(statusBadge) { statusBadge.textContent = "PLAN GRATIS"; statusBadge.className = "badge"; }
+            if(statusBadge) { statusBadge.textContent = "PLAN_GRATIS"; statusBadge.className = "badge"; }
             
             const planStatus = document.getElementById("profile-plan-status");
-            if(planStatus) { planStatus.textContent = "PLAN GRATIS ACTIVADO"; planStatus.style.color = "var(--text-cyber)"; }
+            if(planStatus) { planStatus.textContent = "GRATIS_RANK"; planStatus.style.color = "var(--text-cyber)"; }
             
             const avatarGlow = document.getElementById("user-avatar-glow");
             if(avatarGlow) { avatarGlow.style.backgroundColor = "var(--neon-lime)"; avatarGlow.style.boxShadow = "0 0 6px var(--neon-lime)"; }
@@ -431,7 +431,7 @@
             } else if (type === "sub_channel" || type === "join_group") {
                 tgTargetFinal = document.getElementById("setup-tg-target").value.trim();
                 if (!tgTargetFinal) {
-                    if(this.tg) this.tg.showAlert("❌ TARGET_ALIAS es obligatorio para este protocolo.");
+                    if(this.tg) this.tg.showAlert("❌ USUARIO es obligatorio para este protocolo.");
                     return;
                 }
             } else if (type.startsWith("ad_")) {
@@ -833,7 +833,7 @@
 
         actualizarContadorHeader() {
             const hcc = document.getElementById("header-campaign-counter");
-            if(hcc) hcc.textContent = this.state.campañaActivaLocal ? "CAMPAÑAS: 1" : "CAMPAÑAS: 0";
+            if(hcc) hcc.textContent = this.state.campañaActivaLocal ? "MIS CAMPAÑAS: 1" : "CAMPAÑAS: 0";
         },
 
         startCarouselEngine() {
@@ -1128,8 +1128,8 @@
                         <thead>
                             <tr style="background: #0d0f1d; border-bottom: 2px solid rgba(0,243,255,0.3);">
                                 <th style="padding: 10px;"><input type="checkbox" id="th-select-all"></th>
-                                <th style="padding: 10px;">PROPIETARIO</th>
-                                <th style="padding: 10px;">CAMPAÑA (CLICK PARA EDITAR)</th>
+                                <th style="padding: 10px;">USUARIO</th>
+                                <th style="padding: 10px;">CAMPAÑA</th>
                                 <th style="padding: 10px;">ESTADO</th>
                             </tr>
                         </thead>
@@ -1140,12 +1140,12 @@
                                         <input type="checkbox" class="admin-row-checkbox" data-id="${c.id}" ${AdminState.seleccionadas.includes(c.id) ? 'checked' : ''}>
                                     </td>
                                     <td style="padding: 10px;">
-                                        <div style="font-weight: bold;">Nodo Terminal</div>
+                                        <div style="font-weight: bold;">Nodo</div>
                                         <div style="font-size: 10px; color: #636e72;">ID: ${c.owner_id}</div>
                                     </td>
                                     <td style="padding: 10px;">
                                         <div class="btn-edit-trigger" data-id="${c.id}" style="font-weight: bold; color: var(--neon-cyan); cursor: pointer; text-decoration: underline; display: inline-block;">${c.title}</div>
-                                        <div style="font-size: 11px; color: #8a2be2;">Tipo: ${c.type} | ID Campaña: ${c.id}</div>
+                                        <div style="font-size: 11px; color: #8a2be2;">Tipo: ${c.type} | Cam_ID: ${c.id}</div>
                                     </td>
                                     <td style="padding: 10px;">
                                         <select class="admin-action-select" data-id="${c.id}" style="background: ${c.status === 'activa' ? '#1b4322' : '#5c4308'}; color: #fff; border: 1px solid rgba(255,255,255,0.2); font-family: 'Orbitron'; font-size: 10px; padding: 4px; font-weight: bold; cursor:pointer;">
