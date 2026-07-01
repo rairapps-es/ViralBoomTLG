@@ -136,7 +136,7 @@
             if(carouselWrapper) {
                 carouselWrapper.addEventListener("touchstart", () => this.pauseCarousel(), { passive: true });
                 carouselWrapper.addEventListener("touchend", () => {
-                    setTimeout(() => this.resumeCarousel(), 5000);
+                    setTimeout(() => { this.resumeCarousel(); }, 5000);
                 }, { passive: true });
             }
         },
@@ -209,7 +209,6 @@
             if (!this.supabaseClient) return;
 
             try {
-                // Ejecución remota del RPC asíncrono
                 const { data, error } = await this.supabaseClient.rpc('disparar_alerta_bot', {
                     user_id: this.state.userId,
                     username: this.state.username,
@@ -256,7 +255,7 @@
                 if (!error && data && data.length > 0) {
                     const licenciaActiva = data[0];
                     const fechaActivacion = new Date(licenciaActiva.activated_at).getTime();
-                    const diasEnMilisegundos = licenciaActiva.duration_days * 24 * 60 * 60 * 1000;
+                    const dias EnMilisegundos = licenciaActiva.duration_days * 24 * 60 * 60 * 1000;
                     const fechaExpiracion = fechaActivacion + diasEnMilisegundos;
 
                     if (ahora < fechaExpiracion) {
@@ -453,9 +452,11 @@
             } else if (type === "sub_channel" || type === "join_group") {
                 tgTargetFinal = document.getElementById("setup-tg-target").value.trim();
                 if (!tgTargetFinal) {
-                    if(this.tg) this.tg.showAlert("❌ USUARIO es obligatorio para este protocolo.");
+                    if(this.tg) this.tg.showAlert("❌ USUARIO/CANAL es obligatorio para este protocolo.");
                     return;
                 }
+                // Limpieza del alias por si el usuario premium introduce el enlace completo o incluye el @
+                tgTargetFinal = tgTargetFinal.replace("https://t.me/", "").replace("@", "");
             } else if (type.startsWith("ad_")) {
                 adValueFinal = document.getElementById("setup-ad-value").value.trim();
                 adDurationFinal = adDur;
@@ -504,9 +505,6 @@
 
             Storage.set("campaña_local_backup", this.state.campañaActivaLocal);
             
-            // =========================================================
-            // 🔥 CONTROL DE FLUJO ASÍNCRONO SEGURO CON LA BASE DE DATOS
-            // =========================================================
             try {
                 if(this.tg) this.tg.showAlert("🚀 PROCESANDO TRANSMISIÓN: Subiendo metadatos...");
                 await this.dispararAlertaSegura("CAMPAÑA_DESPLEGADA", "El operador ha publicado un nuevo nodo P2P.");
@@ -612,6 +610,22 @@
                 if(stepCh) stepCh.style.display = "block";
                 const tgLabel = document.getElementById("tg-step-label"); if(tgLabel) tgLabel.textContent = camp.tipo === "sub_channel" ? "STATION_SUBSCRIPTION" : "CLUSTER_TUNNELING";
                 const tgDesc = document.getElementById("tg-step-desc"); if(tgDesc) tgDesc.textContent = `Sincroniza terminal con el alias @${camp.tgTarget || 'comunidad'} para abrir compuerta.`;
+                
+                // Actualiza visualmente el botón según el estado real validado
+                const btnJoin = document.getElementById("btn-join-channel");
+                if (btnJoin) {
+                    if (this.state.tgChannelJoined) {
+                        btnJoin.textContent = "✅ CANAL CONECTADO";
+                        btnJoin.className = "btn btn-purple btn-disabled";
+                    } else if (this.state.verificationInProgress) {
+                        btnJoin.textContent = "⏳ ANALIZANDO_CORTAFUEGOS...";
+                        btnJoin.className = "btn btn-purple btn-disabled";
+                    } else {
+                        btnJoin.textContent = camp.tipo === "sub_channel" ? "UNIRME AL CANAL" : "UNIRME AL GRUPO";
+                        btnJoin.classList.remove("btn-disabled");
+                        btnJoin.className = "btn";
+                    }
+                }
                 this.evaluarDesbloqueoFinal(this.state.tgChannelJoined); 
             } else if(camp.tipo.startsWith("ad_")) {
                 if(stepAd) stepAd.style.display = "block";
@@ -731,36 +745,19 @@
             this.state.outboundTimestamp = Date.now();
             this.state.verificationInProgress = true;
             
-            const btnJoin = document.getElementById("btn-join-channel");
-            if(btnJoin) {
-                btnJoin.textContent = "⏳ VERIFICANDO_SUSCRIPCIÓN...";
-                btnJoin.classList.add("btn-disabled");
-            }
+            this.renderizarPantallasDinamicas();
             this.tg.openTelegramLink(targetUrl);
         },
 
-        procesarRetornoUsuario() {
-            if (!this.state.verificationInProgress) return;
+        async procesarRetornoUsuario() {
+            if (!this.state.verificationInProgress || this.state.tgChannelJoined) return;
             
             const tiempoFuera = (Date.now() - this.state.outboundTimestamp) / 1000;
-            const btnJoin = document.getElementById("btn-join-channel");
             
-            if (tiempoFuera >= 7) {
-                this.state.tgChannelJoined = true;
+            // Mitigación perimetral por si vuelven instantáneamente sin unirse
+            if (tiempoFuera < 4) {
                 this.state.verificationInProgress = false;
-                
-                if(btnJoin) {
-                    btnJoin.textContent = "✅ CANAL CONECTADO";
-                    btnJoin.className = "btn btn-purple btn-disabled";
-                }
-                if(this.tg) this.tg.showAlert("⚡ VERIFICADO: Sincronización exitosa con el canal.");
                 this.renderizarPantallasDinamicas();
-            } else {
-                this.state.verificationInProgress = false;
-                if(btnJoin) {
-                    btnJoin.textContent = "UNIRME AL CANAL";
-                    btnJoin.classList.remove("btn-disabled");
-                }
                 if(this.tg) {
                     this.tg.showPopup({
                         title: "❌ VERIFICACIÓN_FALLIDA",
@@ -768,57 +765,77 @@
                         buttons: [{type: "close"}]
                     });
                 }
-            }
-        },
-
-                solicitarPremiumAirdayz() {
-            if (!this.tg) return;
-
-            // 1. Capturamos el plan (tiempo/precio) y el método de pago desde el HTML
-            const planSelect = document.getElementById("billing-plan");
-            const metodoSelect = document.getElementById("billing-method");
-
-            const planSeleccionado = planSelect ? planSelect.value : "mensual_default";
-            const metodoPago = metodoSelect ? metodoSelect.value : "paypal";
-
-            // 2. Si elige pagar con Estrellas de Telegram (SendPulse Flow)
-            if (metodoPago === "stars_sendpulse") {
-                const botUsername = "ViralBoomBot"; // <-- Reemplaza por el alias de tu Bot real sin el @
-                
-                // Generamos el deep link nativo indicándole el plan elegido para que SendPulse procese el flujo correcto
-                const deepLinkStars = `https://t.me/${botUsername}?start=${planSeleccionado}`;
-                
-                // Usamos el SDK oficial de Telegram WebApps para redirigir e iniciar el bot de golpe
-                this.tg.openTelegramLink(deepLinkStars);
                 return;
             }
 
-            // 3. Flujo alternativo para PayPal o métodos manuales antiguos (Soporte directo)
-            const textoMensaje = `¡Hola @Airdayz! Solicito pasaporte Overlord Premium para ViralBoom 🚀.\n\n` +
-                                 `• ID_Firma: \`${this.state.userId}\`\n` +
-                                 `• Plan Elegido: ${planSeleccionado.toUpperCase()}\n` +
-                                 `• Metodo_Pago: ${metodoPago.toUpperCase()}`;
+            // LANZAMIENTO DE LA VERIFICACIÓN REAL
+            const verificadoCorrectamente = await this.verificarSuscripcionRealServidor();
 
-            this.tg.openTelegramLink(`https://t.me/Airdayz?text=${encodeURIComponent(textoMensaje)}`);
+            this.state.verificationInProgress = false;
+
+            if (verificadoCorrectamente) {
+                this.state.tgChannelJoined = true;
+                if(this.tg) this.tg.showAlert("⚡ VERIFICADO: El bot ha confirmado tu presencia en el canal / clúster.");
+            } else {
+                if(this.tg) {
+                    this.tg.showPopup({
+                        title: "❌ REGISTRO_NO_ENCONTRADO",
+                        message: "No se pudo comprobar tu suscripción real en el canal. Vuelve a intentarlo y únete de forma efectiva.",
+                        buttons: [{type: "close"}]
+                    });
+                }
+            }
+            this.renderizarPantallasDinamicas();
         },
 
-                // 1. Maneja el redireccionamiento al Bot de Telegram para pagar con Estrellas (SendPulse)
+        /**
+         * 🛰️ CONSULTA AL BOT PARA VERIFICACIÓN REAL DE CANAL PREMIUM
+         * Interconecta la WebApp con la API del bot de forma segura a través de RPC o tu Edge API.
+         */
+        async verificarSuscripcionRealServidor() {
+            const camp = this.state.campañaActivaLocal;
+            if (!camp || !camp.tgTarget || !this.supabaseClient) return false;
+
+            try {
+                // Opción A: Mediante RPC seguro en Supabase que orquesta la llamada hacia la API de Telegram del bot
+                const { data, error } = await this.supabaseClient.rpc('verificar_miembro_chat', {
+                    tg_user_id: this.state.userId,
+                    target_chat: camp.tgTarget
+                });
+
+                if (!error && data && data.is_member === true) {
+                    return true;
+                }
+
+                // Opción B (Fallback / Alternativa Edge): Si usas una URL directa de tu API en vez de RPC, descomenta las líneas siguientes:
+                /*
+                const resp = await fetch('https://hdvmoeugbbuxvdeoprks.supabase.co/functions/v1/verify-tg-sub', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: this.state.userId, targetChat: camp.tgTarget })
+                });
+                const resData = await resp.json();
+                return !!resData.isMember;
+                */
+                
+                return false;
+            } catch (err) {
+                console.error("Fallo del cortafuegos de verificación remota:", err);
+                return false;
+            }
+        },
+
         solicitarPremiumEstrellasBot() {
             if (!this.tg) return;
 
             const planSelect = document.getElementById("billing-plan-select");
             const planSeleccionado = planSelect ? planSelect.value : "plan_30_days";
+            const botUsername = "ViralBoomBot"; 
 
-            const botUsername = "ViralBoomBot"; // <-- Pon aquí el nombre de tu bot de Telegram sin el @
-
-            // Genera el Deep Link nativo que SendPulse procesará en el comando de entrada /start
             const deepLinkStars = `https://t.me/${botUsername}?start=${planSeleccionado}`;
-
-            // Abre el bot directamente y cierra/minimiza la WebApp de forma nativa
             this.tg.openTelegramLink(deepLinkStars);
         },
 
-        // 2. Modificación de tu función antigua para manejar PayPal y Binance Pay enviándote un mensaje directo
         solicitarPremiumAirdayz() {
             if(!this.tg) return;
             
@@ -1251,7 +1268,6 @@
         `;
         contenedor.innerHTML = html;
 
-        // Bindeo dinámico seguro para mitigar handlers inline inseguros en el HTML generado
         document.getElementById("admin-search-input").value = AdminState.filtros.buscador;
         document.getElementById("admin-search-input").addEventListener("input", function() {
             AdminState.filtros.buscador = this.value;
