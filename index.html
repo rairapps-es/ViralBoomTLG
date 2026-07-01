@@ -910,51 +910,52 @@ const cleanKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
             },
 
             async evaluarFlujoDeepLinkingDeEntrada() {
-                if(!this.tg) return;
-                const startParam = this.tg.initDataUnsafe?.start_param;
-                if(!startParam) return;
+    if (!this.tg) return;
+    const startParam = this.tg.initDataUnsafe?.start_param;
+    if (!startParam) return;
 
-                try {
-                    let base64Clean = startParam.replace(/-/g, '+').replace(/_/g, '/');
-                    while (base64Clean.length % 4) { base64Clean += '='; }
-                    
-                    const binaryString = atob(base64Clean);
-                    const bytes = new Uint8Array(binaryString.length);
-                    for (let i = 0; i < binaryString.length; i++) {
-                        bytes[i] = binaryString.charCodeAt(i);
-                    }
-                    const decodedText = new TextDecoder('utf-8').decode(bytes);
-                    const payload = JSON.parse(decodedText);
+    try {
+        let base64Clean = startParam.replace(/-/g, '+').replace(/_/g, '/');
+        while (base64Clean.length % 4) { 
+            base64Clean += '='; 
+        }
+        
+        const binaryString = atob(base64Clean);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        const decodedText = new TextDecoder('utf-8').decode(bytes);
+        const payload = JSON.parse(decodedText);
 
-                    if(payload && payload.secret_url) {
-                        this.state.campañaActivaLocal = {
-                            titulo: payload.title, 
-                            desc: payload.description, 
-                            secreto: payload.secret_url,
-                            tipo: payload.type || "invitation", 
-                            requeridos: parseInt(payload.req_slots) || 3,
-                            tgTarget: payload.tg_target || "", 
-                            adValue: payload.ad_val || "", 
-                            adDuration: parseInt(payload.ad_dur) || 30,
-                            startDate: payload.s_date ? parseInt(payload.s_date) : null, 
-                            endDate: payload.e_date ? parseInt(payload.e_date) : null,
-                            ownerId: payload.owner,
-                            status: payload.status || 'activa' // <-- AÑADE ESTA LÍNEA EXACTA
-                        };
-                        };
-                        
-                        Storage.set("campaña_local_backup", this.state.campañaActivaLocal);
+        if (payload && payload.secret_url) {
+            this.state.campañaActivaLocal = {
+                titulo: payload.title, 
+                desc: payload.description, 
+                secreto: payload.secret_url,
+                tipo: payload.type || "invitation", 
+                requeridos: parseInt(payload.req_slots) || 3,
+                tgTarget: payload.tg_target || "", 
+                adValue: payload.ad_val || "", 
+                adDuration: parseInt(payload.ad_dur) || 30,
+                startDate: payload.s_date ? parseInt(payload.s_date) : null, 
+                endDate: payload.e_date ? parseInt(payload.e_date) : null,
+                ownerId: payload.owner,
+                status: payload.status || 'activa'
+            };
+            
+            Storage.set("campaña_local_backup", this.state.campañaActivaLocal);
 
-                        if(payload.owner && payload.owner !== this.state.userId && this.supabaseClient) {
-                            await this.supabaseClient.from('referrals').insert([
-                                { campaign_owner_id: payload.owner, referred_user_id: this.state.userId }
-                            ]);
-                        }
-                    }
-                } catch (e) {
-                    console.error("Error decodificando nodo cuántico:", e);
-                }
-            },
+            if (payload.owner && payload.owner !== this.state.userId && this.supabaseClient) {
+                await this.supabaseClient.from('referrals').insert([
+                    { campaign_owner_id: payload.owner, referred_user_id: this.state.userId }
+                ]);
+            }
+        }
+    } catch (e) {
+        console.error("Error decodificando nodo cuántico:", e);
+    }
+},
 
             async guardarCampanaAdmin() {
                 const t = document.getElementById("setup-title").value.trim();
