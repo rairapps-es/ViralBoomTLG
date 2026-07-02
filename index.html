@@ -822,8 +822,9 @@ function procesarPagoPremium(e) {
 
     // === ENLACE A TELEGRAM STARS ===
     if (metodoId === "stars") {
-        const deepLinkStars = `https://t.me/${botUsername}?start=plan_${planId}_stars`;
-        console.log("Intentando abrir enlace al bot:", deepLinkStars);
+        // En lugar del formato viejo, usa el formato directo de la WebApp de Telegram:
+    const deepLinkStars = `https://t.me/ViralBoomBot/app?startapp=plan_${planId}_stars`;
+  console.log("Intentando abrir enlace al bot:", deepLinkStars);
         
         // Intento 1: API Nativa de Telegram
         if (tg && typeof tg.openTelegramLink === 'function') {
