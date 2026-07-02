@@ -803,27 +803,6 @@
             planSelect.innerHTML = opcionesHTML;
         }
 
-        /// Función unificada que ejecuta la acción al presionar "MEJORAR CON PREMIUM"
-function procesarPagoPremium() {
-    const tg = window.Telegram ? window.Telegram.WebApp : null;
-    if (!tg) {
-        alert("Error: Interfaz de Telegram no detectada.");
-        return;
-    }
-
-    const planSelect = document.getElementById("billing-plan-select");
-    const metodoSelect = document.getElementById("billing-method");
-
-    const planId = planSelect ? planSelect.value : "1_mes"; 
-    const metodoId = metodoSelect ? metodoSelect.value : "paypal"; 
-
-    const botUsername = "ViralBoomBot";
-    const keywordStart = `plan_${planId}_${metodoId}`;
-    const deepLinkBot = `https://t.me/${botUsername}?start=${keywordStart}`;
-    const urlPasarelaExterna = URL_GATEWAYS[metodoId][planId];
-
-    console.log(`Uplink activado para pasarela: ${urlPasarelaExterna}`);
-
 /// Función unificada que ejecuta la acción al presionar "MEJORAR CON PREMIUM"
 function procesarPagoPremium() {
     const tg = window.Telegram ? window.Telegram.WebApp : null;
