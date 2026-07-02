@@ -692,7 +692,7 @@
                 </select>
         </div>
 
-        <button id="btn-request-premium-unified" class="btn btn-gold" style="width:100%; font-family: 'Orbitron'; letter-spacing: 1px; font-weight: bold; padding: 15px;" onclick="procesarPagoPremium()">
+        <button id="btn-request-premium-unified" class="btn btn-gold" style="width:100%; font-family: 'Orbitron'; letter-spacing: 1px; font-weight: bold; padding: 15px;" onclick="procesarPagoPremium(event)">
             🚀 MEJORAR CON PREMIUM
         </button>
     </div>
@@ -804,17 +804,14 @@
         }
 
 /// Función unificada que ejecuta la acción al presionar "MEJORAR CON PREMIUM"
-function procesarPagoPremium() {
-    // 1. Forzar la captura del objeto Telegram
-    const tg = window.Telegram ? window.Telegram.WebApp : null;
-    
-    if (!tg) {
-        alert("Por favor, abre esta aplicación desde el bot oficial de Telegram.");
-        return;
-    }
+function procesarPagoPremium(e) {
+    // Si pasas el evento del click, evitamos que la Mini App procese otra acción
+    if (e && e.preventDefault) e.preventDefault();
 
-    // 2. Asegurar que la WebApp está lista para interactuar
-    tg.ready();
+    const tg = window.Telegram ? window.Telegram.WebApp : null;
+    if (tg) {
+        tg.ready();
+    }
 
     const planSelect = document.getElementById("billing-plan-select");
     const metodoSelect = document.getElementById("billing-method");
@@ -823,31 +820,34 @@ function procesarPagoPremium() {
     const metodoId = metodoSelect ? metodoSelect.value : "paypal"; 
     const botUsername = "ViralBoomBot";
 
-    // === CASO 1: TELEGRAM STARS (Enlace Interno) ===
+    // === ENLACE A TELEGRAM STARS ===
     if (metodoId === "stars") {
         const deepLinkStars = `https://t.me/${botUsername}?start=plan_${planId}_stars`;
-        console.log("Abriendo enlace de Stars:", deepLinkStars);
+        console.log("Intentando abrir enlace al bot:", deepLinkStars);
         
-        try {
-            // Método oficial para links nativos de Telegram
+        // Intento 1: API Nativa de Telegram
+        if (tg && typeof tg.openTelegramLink === 'function') {
             tg.openTelegramLink(deepLinkStars);
-        } catch (e) {
-            console.error("Falló openTelegramLink, intentando alternativa web:", e);
-            window.location.href = deepLinkStars; // Forzar redirección si falla la API
         }
+        
+        // Intento 2 (Respaldo inmediato): Romper el iframe de la WebApp
+        // Esto obliga a la aplicación entera de Telegram a redirigirse al bot
+        setTimeout(() => {
+            try {
+                window.top.location.href = deepLinkStars;
+            } catch(err) {
+                window.location.href = deepLinkStars;
+            }
+        }, 100);
     } 
-    // === CASO 2: PAYPAL / USDT (Enlaces Externos) ===
+    // === ENLACE EXTERNO (PAYPAL / USDT) ===
     else {
         const urlPasarelaExterna = URL_GATEWAYS[metodoId] ? URL_GATEWAYS[metodoId][planId] : null;
-        console.log("Abriendo pasarela externa:", urlPasarelaExterna);
-
         if (urlPasarelaExterna) {
-            try {
-                // Método oficial para links fuera de Telegram
+            if (tg && typeof tg.openLink === 'function') {
                 tg.openLink(urlPasarelaExterna);
-            } catch (e) {
-                console.error("Falló openLink, intentando apertura nativa de navegador:", e);
-                window.open(urlPasarelaExterna, '_blank'); // Redirección clásica de navegador
+            } else {
+                window.open(urlPasarelaExterna, '_blank');
             }
         } else {
             alert("Error: Configuración de pago no encontrada.");
