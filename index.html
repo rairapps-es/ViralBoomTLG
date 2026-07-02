@@ -803,28 +803,40 @@
             planSelect.innerHTML = opcionesHTML;
         }
 
-        // Función unificada que ejecuta la acción al presionar "MEJORAR CON PREMIUM"
-        function procesarPagoPremium() {
-            const tg = window.Telegram ? window.Telegram.WebApp : null;
-            if (!tg) {
-                alert("Error: Interfaz de Telegram no detectada.");
-                return;
-            }
+        /// Función unificada que ejecuta la acción al presionar "MEJORAR CON PREMIUM"
+function procesarPagoPremium() {
+    const tg = window.Telegram ? window.Telegram.WebApp : null;
+    if (!tg) {
+        alert("Error: Interfaz de Telegram no detectada.");
+        return;
+    }
 
-            const planSelect = document.getElementById("billing-plan-select");
-            const metodoSelect = document.getElementById("billing-method");
+    const planSelect = document.getElementById("billing-plan-select");
+    const metodoSelect = document.getElementById("billing-method");
 
-            const planId = planSelect ? planSelect.value : "1_mes"; 
-            const metodoId = metodoSelect ? metodoSelect.value : "paypal"; 
+    const planId = planSelect ? planSelect.value : "1_mes"; 
+    const metodoId = metodoSelect ? metodoSelect.value : "paypal"; 
 
-            const botUsername = "ViralBoomBot";
-            const keywordStart = `plan_${planId}_${metodoId}`;
-            const deepLinkBot = `https://t.me/${botUsername}?start=${keywordStart}`;
-            const urlPasarelaExterna = URL_GATEWAYS[metodoId][planId];
+    const botUsername = "ViralBoomBot";
+    const keywordStart = `plan_${planId}_${metodoId}`;
+    const deepLinkBot = `https://t.me/${botUsername}?start=${keywordStart}`;
+    const urlPasarelaExterna = URL_GATEWAYS[metodoId][planId];
 
-            console.log(`Uplink activado para pasarela: ${urlPasarelaExterna}`);
-            tg.openTelegramLink(deepLinkBot);
+    console.log(`Uplink activado para pasarela: ${urlPasarelaExterna}`);
+
+    // === CONTROL DE ENRUTAMIENTO SEGÚN EL MÉTODO ===
+    if (metodoId === "stars") {
+        // Al ser Estrellas, lo manejamos internamente con el Bot de Telegram
+        tg.openTelegramLink(deepLinkBot);
+    } else {
+        // Al ser PayPal o USDT, abrimos la URL externa en el navegador del usuario
+        if (urlPasarelaExterna) {
+            tg.openLink(urlPasarelaExterna);
+        } else {
+            alert("Error: No se encontró una URL válida para esta pasarela.");
         }
+    }
+}
 
         // Vinculamos las funciones globales al objeto window para los gestores onclick del HTML inline
         window.actualizarPreciosPlanes = actualizarPreciosPlanes;
