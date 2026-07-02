@@ -822,26 +822,25 @@ function procesarPagoPremium(e) {
 
     // === ENLACE A TELEGRAM STARS (Cierre y redirección forzada) ===
 if (metodoId === "stars") {
-    // 1. Usamos el formato clásico 't.me/bot?start=' que apunta al CHAT, no a la app
-    const deepLinkStars = `https://t.me/${botUsername}?start=plan_${planId}_stars`;
+    // Usamos el protocolo nativo 'tg://resolve' para asegurar que arrastre el parámetro 'start'
+    const deepLinkStars = `tg://resolve?domain=${botUsername}&start=plan_${planId}_stars`;
     
-    console.log("Forzando salida al chat del bot:", deepLinkStars);
+    console.log("Forzando salida al chat con parámetros:", deepLinkStars);
     
-    // 2. Intentamos abrir el enlace en el chat nativo
     if (tg && typeof tg.openTelegramLink === 'function') {
         tg.openTelegramLink(deepLinkStars);
     } else {
         window.parent.location.href = deepLinkStars;
     }
 
-    // 3. ¡EL TRUCO MAESTRO!: Forzar el cierre inmediato de la Mini App.
-    // Esto obliga a Telegram a destruir la ventana actual y revelar el chat que quedó abierto abajo.
+    // El cierre inmediato para limpiar la pantalla
     if (tg && typeof tg.close === 'function') {
         setTimeout(() => {
             tg.close();
-        }, 200); // Pequeño delay para que procese el link antes de cerrar
+        }, 200);
     }
 }
+
 }
         // Vinculamos las funciones globales al objeto window para los gestores onclick del HTML inline
         window.actualizarPreciosPlanes = actualizarPreciosPlanes;
