@@ -826,14 +826,15 @@ function procesarPagoPremium() {
 
     // === CONTROL DE ENRUTAMIENTO SEGÚN EL MÉTODO ===
     if (metodoId === "stars") {
-        // Al ser Estrellas, lo manejamos internamente con el Bot de Telegram
-        tg.openTelegramLink(deepLinkBot);
-    } else {
-        // Al ser PayPal o USDT, abrimos la URL externa en el navegador del usuario
-        if (urlPasarelaExterna) {
-            tg.openLink(urlPasarelaExterna);
-        } else {
-            alert("Error: No se encontró una URL válida para esta pasarela.");
+        // Alternativa ultra-compatible para abrir el bot con el parámetro start
+        const urlAlternativa = `https://t.me/${botUsername}?start=${keywordStart}`;
+        
+        // Intentamos primero el método nativo de links de Telegram
+        try {
+            tg.openTelegramLink(urlAlternativa);
+        } catch (e) {
+            // Si falla por el entorno, usamos openLink normal que Telegram suele capturar internamente
+            tg.openLink(urlAlternativa);
         }
     }
 }
