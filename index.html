@@ -727,14 +727,108 @@
     </nav>
 
     <script>
-    /**
-     * CYBER_SECURITY ENGINE P2P - CORREGIDO
+            /**
+     * CYBER_SECURITY ENGINE P2P - CORREGIDO TOTALMENTE
      * Encapsulado bajo un entorno léxico cerrado (IIFE) para evitar la manipulación de estados desde la consola global.
      */
     (function () {
         'use strict';
 
         let abrirEditorCampana, cerrarModalEditorAdmin, guardarCambiosEditorAdmin, ejecutarAccionIndividual, ejecutarAccionMasiva, cargarCampanasAdminFuerza, renderizarTablaAdmin, toggleSeleccionCampana, toggleSeleccionarTodas;
+
+        // Base de datos de URLs externas asociadas a cada combinación de pago
+        const URL_GATEWAYS = {
+            paypal: {
+                "1_mes": "https://www.paypal.com/checkout/ejemplo_plan_1mes_paypal",
+                "3_meses": "https://www.paypal.com/checkout/ejemplo_plan_3meses_paypal",
+                "6_meses": "https://www.paypal.com/checkout/ejemplo_plan_6meses_paypal",
+                "12_meses": "https://www.paypal.com/checkout/ejemplo_plan_1ano_paypal"
+            },
+            stars: {
+                "1_mes": "https://t.me/ViralBoomBot?start=factura_1_mes_stars",
+                "3_meses": "https://t.me/ViralBoomBot?start=factura_3_meses_stars",
+                "6_meses": "https://t.me/ViralBoomBot?start=factura_6_meses_stars",
+                "12_meses": "https://t.me/ViralBoomBot?start=factura_1ano_stars"
+            },
+            usdt: {
+                "1_mes": "https://nowpayments.io/payment/ejemplo_wallet_1mes_usdt",
+                "3_meses": "https://nowpayments.io/payment/ejemplo_wallet_3meses_usdt",
+                "6_meses": "https://nowpayments.io/payment/ejemplo_wallet_6meses_usdt",
+                "12_meses": "https://nowpayments.io/payment/ejemplo_wallet_1ano_usdt"
+            }
+        };
+
+        // Función principal para renderizar los precios según la divisa
+        function actualizarPreciosPlanes() {
+            const metodoSelect = document.getElementById("billing-method");
+            const planSelect = document.getElementById("billing-plan-select");
+            if (!metodoSelect || !planSelect) return;
+
+            const divisa = metodoSelect.value;
+            
+            // Precios Base calculados en Euros
+            const preciosEUR = {
+                "1_mes": 3.75,
+                "3_meses": 10.66,
+                "6_meses": 20.14,
+                "12_meses": 37.92
+            };
+
+            let opcionesHTML = "";
+
+            if (divisa === "stars") {
+                const euroAStars = (eur) => Math.round(eur / 0.0229);
+                opcionesHTML = `
+                    <option value="1_mes">Protocolo 01: 1 Mes por ${euroAStars(preciosEUR["1_mes"])} ⭐ [¡Dcto. 5% inc! - Ahorro Criptográfico]</option>
+                    <option value="3_meses">Protocolo 03: 3 Meses por ${euroAStars(preciosEUR["3_meses"])} ⭐ [¡Dcto. 10% inc! - Recomendado]</option>
+                    <option value="6_meses">Protocolo 06: 6 Meses por ${euroAStars(preciosEUR["6_meses"])} ⭐ [¡Dcto. 15% inc! - Acceso Extendido]</option>
+                    <option value="12_meses">Protocolo 12: 12 Meses por ${euroAStars(preciosEUR["12_meses"])} ⭐ [¡Dcto. 20% inc! - Máxima Eficiencia]</option>
+                `;
+            } else if (divisa === "usdt") {
+                opcionesHTML = `
+                    <option value="1_mes">Protocolo 01: 1 Mes por ${preciosEUR["1_mes"].toFixed(2)} USDT [¡Dcto. 5% inc!]</option>
+                    <option value="3_meses">Protocolo 03: 3 Meses por ${preciosEUR["3_meses"].toFixed(2)} USDT [¡Dcto. 10% inc!]</option>
+                    <option value="6_meses">Protocolo 06: 6 Meses por ${preciosEUR["6_meses"].toFixed(2)} USDT [¡Dcto. 15% inc!]</option>
+                    <option value="12_meses">Protocolo 12: 12 Meses por ${preciosEUR["12_meses"].toFixed(2)} USDT [¡Dcto. 20% inc!]</option>
+                `;
+            } else { // PayPal / EUR
+                opcionesHTML = `
+                    <option value="1_mes">Protocolo 01: 1 Mes por ${preciosEUR["1_mes"].toFixed(2)}€ [¡Dcto. 5% inc!]</option>
+                    <option value="3_meses">Protocolo 03: 3 Meses por ${preciosEUR["3_meses"].toFixed(2)}€ [¡Dcto. 10% inc!]</option>
+                    <option value="6_meses">Protocolo 06: 6 Meses por ${preciosEUR["6_meses"].toFixed(2)}€ [¡Dcto. 15% inc!]</option>
+                    <option value="12_meses">Protocolo 12: 12 Meses por ${preciosEUR["12_meses"].toFixed(2)}€ [¡Dcto. 20% inc!]</option>
+                `;
+            }
+
+            planSelect.innerHTML = opcionesHTML;
+        }
+
+        // Función unificada que ejecuta la acción al presionar "MEJORAR CON PREMIUM"
+        function procesarPagoPremium() {
+            const tg = window.Telegram ? window.Telegram.WebApp : null;
+            if (!tg) {
+                alert("Error: Interfaz de Telegram no detectada.");
+                return;
+            }
+
+            const planSelect = document.getElementById("billing-plan-select");
+            const metodoSelect = document.getElementById("billing-method");
+
+            const planId = planSelect ? planSelect.value : "1_mes"; 
+            const metodoId = metodoSelect ? metodoSelect.value : "paypal"; 
+
+            const botUsername = "ViralBoomBot";
+            const keywordStart = `plan_${planId}_${metodoId}`;
+            const deepLinkBot = `https://t.me/${botUsername}?start=${keywordStart}`;
+            const urlPasarelaExterna = URL_GATEWAYS[metodoId][planId];
+
+            console.log(`Uplink activado para pasarela: ${urlPasarelaExterna}`);
+            tg.openTelegramLink(deepLinkBot);
+        }
+
+        // Vinculamos las funciones globales al objeto window para los gestores onclick del HTML inline
+        window.actualizarPreciosPlanes = actualizarPreciosPlanes;
+        window.procesarPagoPremium = procesarPagoPremium;
 
         const Storage = {
             get(key, defaultValue) {
@@ -808,6 +902,7 @@
                 this.bindEvents();
                 this.inicializarFlujoAplicacion();
                 this.startCarouselEngine();
+                actualizarPreciosPlanes(); // Inicialización de los precios del plan al iniciar
             },
 
             setupDates() {
@@ -1328,7 +1423,6 @@
                 const stepAd = document.getElementById("step-dynamic-ad"); if(stepAd) stepAd.style.display = "none";
                 const btnShare = document.getElementById("btn-share-viral"); if(btnShare) btnShare.style.display = "none";
 
-                // 🛡️ CORRECCIÓN DE SEGURIDAD: Control de nulidad en camp.tipo para evitar congelamiento de la UI
                 const currentType = camp.tipo || '';
 
                 if(currentType === "invitation") {
@@ -1540,111 +1634,6 @@
                     return false;
                 }
             },
-
-            // Base de datos de URLs externas asociadas a cada combinación de pago (Como solicitaste en el listado)
-const URL_GATEWAYS = {
-    paypal: {
-        "1_mes": "https://www.paypal.com/checkout/ejemplo_plan_1mes_paypal",
-        "3_meses": "https://www.paypal.com/checkout/ejemplo_plan_3meses_paypal",
-        "6_meses": "https://www.paypal.com/checkout/ejemplo_plan_6meses_paypal",
-        "12_meses": "https://www.paypal.com/checkout/ejemplo_plan_1ano_paypal"
-    },
-    stars: {
-        "1_mes": "https://t.me/ViralBoomBot?start=factura_1_mes_stars",
-        "3_meses": "https://t.me/ViralBoomBot?start=factura_3_meses_stars",
-        "6_meses": "https://t.me/ViralBoomBot?start=factura_6_meses_stars",
-        "12_meses": "https://t.me/ViralBoomBot?start=factura_1ano_stars"
-    },
-    usdt: {
-        "1_mes": "https://nowpayments.io/payment/ejemplo_wallet_1mes_usdt",
-        "3_meses": "https://nowpayments.io/payment/ejemplo_wallet_3meses_usdt",
-        "6_meses": "https://nowpayments.io/payment/ejemplo_wallet_6meses_usdt",
-        "12_meses": "https://nowpayments.io/payment/ejemplo_wallet_1ano_usdt"
-    }
-};
-
-// Función principal para renderizar los precios según la divisa
-function actualizarPreciosPlanes() {
-    const metodoSelect = document.getElementById("billing-method");
-    const planSelect = document.getElementById("billing-plan-select");
-    if (!metodoSelect || !planSelect) return;
-
-    const divisa = metodoSelect.value;
-    
-    // Precios Base calculados en Euros
-    const preciosEUR = {
-        "1_mes": 3.75,
-        "3_meses": 10.66,
-        "6_meses": 20.14,
-        "12_meses": 37.92
-    };
-
-    let opcionesHTML = "";
-
-    // Renderizado aplicando conversiones perfectas
-    if (divisa === "stars") {
-        const euroAStars = (eur) => Math.round(eur / 0.0229);
-        opcionesHTML = `
-            <option value="1_mes">Protocolo 01: 1 Mes por ${euroAStars(preciosEUR["1_mes"])} ⭐ [¡Dcto. 5% inc! - Ahorro Criptográfico]</option>
-            <option value="3_meses">Protocolo 03: 3 Meses por ${euroAStars(preciosEUR["3_meses"])} ⭐ [¡Dcto. 10% inc! - Recomendado]</option>
-            <option value="6_meses">Protocolo 06: 6 Meses por ${euroAStars(preciosEUR["6_meses"])} ⭐ [¡Dcto. 15% inc! - Acceso Extendido]</option>
-            <option value="12_meses">Protocolo 12: 12 Meses por ${euroAStars(preciosEUR["12_meses"])} ⭐ [¡Dcto. 20% inc! - Máxima Eficiencia]</option>
-        `;
-    } else if (divisa === "usdt") {
-        opcionesHTML = `
-            <option value="1_mes">Protocolo 01: 1 Mes por ${preciosEUR["1_mes"].toFixed(2)} USDT [¡Dcto. 5% inc!]</option>
-            <option value="3_meses">Protocolo 03: 3 Meses por ${preciosEUR["3_meses"].toFixed(2)} USDT [¡Dcto. 10% inc!]</option>
-            <option value="6_meses">Protocolo 06: 6 Meses por ${preciosEUR["6_meses"].toFixed(2)} USDT [¡Dcto. 15% inc!]</option>
-            <option value="12_meses">Protocolo 12: 12 Meses por ${preciosEUR["12_meses"].toFixed(2)} USDT [¡Dcto. 20% inc!]</option>
-        `;
-    } else { // PayPal / EUR
-        opcionesHTML = `
-            <option value="1_mes">Protocolo 01: 1 Mes por ${preciosEUR["1_mes"].toFixed(2)}€ [¡Dcto. 5% inc!]</option>
-            <option value="3_meses">Protocolo 03: 3 Meses por ${preciosEUR["3_meses"].toFixed(2)}€ [¡Dcto. 10% inc!]</option>
-            <option value="6_meses">Protocolo 06: 6 Meses por ${preciosEUR["6_meses"].toFixed(2)}€ [¡Dcto. 15% inc!]</option>
-            <option value="12_meses">Protocolo 12: 12 Meses por ${preciosEUR["12_meses"].toFixed(2)}€ [¡Dcto. 20% inc!]</option>
-        `;
-    }
-
-    planSelect.innerHTML = opcionesHTML;
-}
-
-// Función unificada que ejecuta la acción al presionar "MEJORAR CON PREMIUM"
-function procesarPagoPremium() {
-    // Verificación de la API de Telegram WebApp
-    const tg = window.Telegram ? window.Telegram.WebApp : null;
-    if (!tg) {
-        alert("Error: Interfaz de Telegram no detectada.");
-        return;
-    }
-
-    const planSelect = document.getElementById("billing-plan-select");
-    const metodoSelect = document.getElementById("billing-method");
-
-    const planId = planSelect ? planSelect.value : "1_mes"; // plan_1_mes, plan_3_meses...
-    const metodoId = metodoSelect ? metodoSelect.value : "paypal"; // paypal, stars, usdt
-
-    const botUsername = "ViralBoomBot";
-    
-    // 1. Crear el deepLink dinámico para pasar parámetros por el bot con el start exacto
-    // Formato generado: plan_1_mes_stars, plan_3_meses_paypal, etc.
-    const keywordStart = `plan_${planId}_${metodoId}`;
-    const deepLinkBot = `https://t.me/${botUsername}?start=${keywordStart}`;
-
-    // 2. Extraer la URL de pasarela preparada de nuestra lista de mapeo
-    const urlPasarelaExterna = URL_GATEWAYS[metodoId][planId];
-
-    // Mostrar consola o alerta informativa del uplink para depuración limpia
-    console.log(`Uplink activado para pasarela: ${urlPasarelaExterna}`);
-
-    // Accionar: Abre directamente el bot pasándole el payload para procesar la factura
-    tg.openTelegramLink(deepLinkBot);
-}
-
-// Inicializar los precios de forma automatizada al cargar el documento
-document.addEventListener("DOMContentLoaded", () => {
-    actualizarPreciosPlanes();
-});
 
             abrirModalPerfil() {
                 const modalTitle = document.getElementById("modal-user-title"); if(modalTitle) modalTitle.textContent = this.state.firstName.toUpperCase();
@@ -1992,7 +1981,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!contenedor) return;
             
             let filtradas = AdminState.campanas.filter(c => {
-                // 🛡️ CORRECCIÓN DE SEGURIDAD: Convertimos c.id y c.owner_id a cadenas (String) antes de ejecutar el filtro para evitar errores fatales si son enteros de Telegram o UUIDs.
                 const idString = String(c.id || '');
                 const ownerString = String(c.owner_id || '');
                 const buscadorMinusculas = AdminState.filtros.buscador.toLowerCase();
@@ -2042,10 +2030,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 `;
 
                 const searchInput = document.getElementById("admin-search-input");
-                searchInput.addEventListener("input", function() {
-                    AdminState.filtros.buscador = this.value;
-                    renderizarTablaAdmin(); 
-                });
+                if (searchInput) {
+                    searchInput.addEventListener("input", function() {
+                        AdminState.filtros.buscador = this.value;
+                        renderizarTablaAdmin(); 
+                    });
+                }
 
                 document.getElementById("th-select-all").addEventListener("click", function() {
                     toggleSeleccionarTodas(this.checked);
@@ -2126,6 +2116,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
     })();
+
     </script>
 </body>
 </html>
