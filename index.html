@@ -1077,7 +1077,7 @@
                         const mc = document.getElementById("meta-clicks"); if(mc) mc.textContent = Math.floor(this.state.referidosLogrados * 1.4);
                     }
                 } catch(e) {
-                    console.error("Error recuperando estadísticas:", e);
+                    console.error("Error retrieving metrics:", e);
                 }
 
                 const container = document.getElementById("admin-group-stats");
@@ -1134,7 +1134,7 @@
                         }
                     }
                 } catch (e) {
-                    console.error("Error decodificando nodo cuántico:", e);
+                    console.error("Error decoding link nodes:", e);
                 }
             },
 
@@ -1540,7 +1540,7 @@
                     }
                     return false;
                 } catch (err) {
-                    console.error("Fallo del cortafuegos de verificación remota:", err);
+                    console.error("Verification engine failed:", err);
                     return false;
                 }
             },
@@ -1908,7 +1908,7 @@
                     renderizarTablaAdmin();
                 }
             } catch(e) {
-                console.error("Error cargando campañas en el Administrador:", e);
+                console.error("Error loading campaigns into administrator:", e);
             }
         };
 
