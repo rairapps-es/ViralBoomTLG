@@ -820,42 +820,29 @@ function procesarPagoPremium(e) {
     const metodoId = metodoSelect ? metodoSelect.value : "paypal"; 
     const botUsername = "ViralBoomBot";
 
-    // === ENLACE A TELEGRAM STARS ===
-    if (metodoId === "stars") {
-        // En lugar del formato viejo, usa el formato directo de la WebApp de Telegram:
-    const deepLinkStars = `https://t.me/ViralBoomBot/app?startapp=plan_${planId}_stars`;
-  console.log("Intentando abrir enlace al bot:", deepLinkStars);
-        
-        // Intento 1: API Nativa de Telegram
-        if (tg && typeof tg.openTelegramLink === 'function') {
-            tg.openTelegramLink(deepLinkStars);
-        }
-        
-        // Intento 2 (Respaldo inmediato): Romper el iframe de la WebApp
-        // Esto obliga a la aplicación entera de Telegram a redirigirse al bot
+    // === ENLACE A TELEGRAM STARS (Cierre y redirección forzada) ===
+if (metodoId === "stars") {
+    // 1. Usamos el formato clásico 't.me/bot?start=' que apunta al CHAT, no a la app
+    const deepLinkStars = `https://t.me/${botUsername}?start=plan_${planId}_stars`;
+    
+    console.log("Forzando salida al chat del bot:", deepLinkStars);
+    
+    // 2. Intentamos abrir el enlace en el chat nativo
+    if (tg && typeof tg.openTelegramLink === 'function') {
+        tg.openTelegramLink(deepLinkStars);
+    } else {
+        window.parent.location.href = deepLinkStars;
+    }
+
+    // 3. ¡EL TRUCO MAESTRO!: Forzar el cierre inmediato de la Mini App.
+    // Esto obliga a Telegram a destruir la ventana actual y revelar el chat que quedó abierto abajo.
+    if (tg && typeof tg.close === 'function') {
         setTimeout(() => {
-            try {
-                window.top.location.href = deepLinkStars;
-            } catch(err) {
-                window.location.href = deepLinkStars;
-            }
-        }, 100);
-    } 
-    // === ENLACE EXTERNO (PAYPAL / USDT) ===
-    else {
-        const urlPasarelaExterna = URL_GATEWAYS[metodoId] ? URL_GATEWAYS[metodoId][planId] : null;
-        if (urlPasarelaExterna) {
-            if (tg && typeof tg.openLink === 'function') {
-                tg.openLink(urlPasarelaExterna);
-            } else {
-                window.open(urlPasarelaExterna, '_blank');
-            }
-        } else {
-            alert("Error: Configuración de pago no encontrada.");
-        }
+            tg.close();
+        }, 200); // Pequeño delay para que procese el link antes de cerrar
     }
 }
-
+}
         // Vinculamos las funciones globales al objeto window para los gestores onclick del HTML inline
         window.actualizarPreciosPlanes = actualizarPreciosPlanes;
         window.procesarPagoPremium = procesarPagoPremium;
