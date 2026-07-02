@@ -805,41 +805,52 @@
 
 /// Función unificada que ejecuta la acción al presionar "MEJORAR CON PREMIUM"
 function procesarPagoPremium() {
+    // 1. Forzar la captura del objeto Telegram
     const tg = window.Telegram ? window.Telegram.WebApp : null;
+    
     if (!tg) {
-        alert("Error: Interfaz de Telegram no detectada.");
+        alert("Por favor, abre esta aplicación desde el bot oficial de Telegram.");
         return;
     }
+
+    // 2. Asegurar que la WebApp está lista para interactuar
+    tg.ready();
 
     const planSelect = document.getElementById("billing-plan-select");
     const metodoSelect = document.getElementById("billing-method");
 
     const planId = planSelect ? planSelect.value : "1_mes"; 
     const metodoId = metodoSelect ? metodoSelect.value : "paypal"; 
-
     const botUsername = "ViralBoomBot";
-    
-    // === CONTROL DE ENRUTAMIENTO DIRECTO ===
+
+    // === CASO 1: TELEGRAM STARS (Enlace Interno) ===
     if (metodoId === "stars") {
-        // Generamos el deep link limpio directamente aquí
         const deepLinkStars = `https://t.me/${botUsername}?start=plan_${planId}_stars`;
-        console.log(`Uplink Estrellas activado: ${deepLinkStars}`);
+        console.log("Abriendo enlace de Stars:", deepLinkStars);
         
         try {
+            // Método oficial para links nativos de Telegram
             tg.openTelegramLink(deepLinkStars);
         } catch (e) {
-            // Salvaguarda por si se ejecuta en navegadores normales o entornos de pruebas
-            window.open(deepLinkStars, '_blank');
+            console.error("Falló openTelegramLink, intentando alternativa web:", e);
+            window.location.href = deepLinkStars; // Forzar redirección si falla la API
         }
-    } else {
-        // Enrutamiento normal para PayPal y USDT (Pasarelas externas)
-        const urlPasarelaExterna = URL_GATEWAYS[metodoId][planId];
-        console.log(`Uplink activado para pasarela externa: ${urlPasarelaExterna}`);
+    } 
+    // === CASO 2: PAYPAL / USDT (Enlaces Externos) ===
+    else {
+        const urlPasarelaExterna = URL_GATEWAYS[metodoId] ? URL_GATEWAYS[metodoId][planId] : null;
+        console.log("Abriendo pasarela externa:", urlPasarelaExterna);
 
         if (urlPasarelaExterna) {
-            tg.openLink(urlPasarelaExterna);
+            try {
+                // Método oficial para links fuera de Telegram
+                tg.openLink(urlPasarelaExterna);
+            } catch (e) {
+                console.error("Falló openLink, intentando apertura nativa de navegador:", e);
+                window.open(urlPasarelaExterna, '_blank'); // Redirección clásica de navegador
+            }
         } else {
-            alert("Error: No se encontró una URL válida para esta pasarela.");
+            alert("Error: Configuración de pago no encontrada.");
         }
     }
 }
