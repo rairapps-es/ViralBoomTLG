@@ -805,7 +805,6 @@
 
 /// Función unificada que ejecuta la acción al presionar "MEJORAR CON PREMIUM"
 function procesarPagoPremium(e) {
-    // Si pasas el evento del click, evitamos que la Mini App procese otra acción
     if (e && e.preventDefault) e.preventDefault();
 
     const tg = window.Telegram ? window.Telegram.WebApp : null;
@@ -816,32 +815,62 @@ function procesarPagoPremium(e) {
     const planSelect = document.getElementById("billing-plan-select");
     const metodoSelect = document.getElementById("billing-method");
 
-    const planId = planSelect ? planSelect.value : "1_mes"; 
+    // Aseguramos valores por defecto limpios
+    const planId = planSelect ? planSelect.value : "1mes"; 
     const metodoId = metodoSelect ? metodoSelect.value : "paypal"; 
     const botUsername = "ViralBoomBot";
 
-    // === ENLACE A TELEGRAM STARS (Cierre y redirección forzada) ===
-if (metodoId === "stars") {
-    // Usamos el protocolo nativo 'tg://resolve' para asegurar que arrastre el parámetro 'start'
-    const deepLinkStars = `tg://resolve?domain=${botUsername}&start=plan_${planId}_stars`;
-    
-    console.log("Forzando salida al chat con parámetros:", deepLinkStars);
-    
-    if (tg && typeof tg.openTelegramLink === 'function') {
-        tg.openTelegramLink(deepLinkStars);
+    if (metodoId === "stars") {
+        // 1. Forzamos un parámetro en minúsculas y totalmente alfanumérico básico
+        // Nota: Asegúrate de que tu bot en el backend busque exactamente este formato.
+        const parametroClean = `plan_${planId}_stars`.replace(/[^a-zA-Z0-9]/g, "").toLowerCase(); 
+        const deepLinkStars = `https://t.me/${botUsername}?start=${parametroClean}`;
+        
+        console.log("Enviando enlace definitivo:", deepLinkStars);
+        
+        // 2. Ejecución de apertura con comprobación estricta
+        let linkAbierto = false;
+        
+        if (tg && typeof tg.openTelegramLink === 'function') {
+            try {
+                tg.openTelegramLink(deepLinkStars);
+                linkAbierto = true;
+            } catch (err) {
+                console.error("Error en openTelegramLink:", err);
+            }
+        }
+        
+        // Si el método nativo falló o no existe, usamos el fallback de navegación
+        if (!linkAbierto) {
+            try {
+                window.top.location.href = deepLinkStars;
+            } catch (err) {
+                window.location.href = deepLinkStars;
+            }
+        }
+
+        // 3. SOLO cerramos la app si estamos seguros de que estamos en Telegram móvil
+        // Le damos 800ms para asegurar que el sistema operativo procese la apertura del chat
+        if (tg && typeof tg.close === 'function') {
+            setTimeout(() => {
+                tg.close();
+            }, 800); 
+        }
     } else {
-        window.parent.location.href = deepLinkStars;
-    }
-
-    // El cierre inmediato para limpiar la pantalla
-    if (tg && typeof tg.close === 'function') {
-        setTimeout(() => {
-            tg.close();
-        }, 200);
+        // === ENLACE EXTERNO (PAYPAL / USDT) ===
+        const urlPasarelaExterna = URL_GATEWAYS[metodoId] ? URL_GATEWAYS[metodoId][planId] : null;
+        if (urlPasarelaExterna) {
+            if (tg && typeof tg.openLink === 'function') {
+                tg.openLink(urlPasarelaExterna);
+            } else {
+                window.open(urlPasarelaExterna, '_blank');
+            }
+        } else {
+            alert("Error: Configuración de pago no encontrada.");
+        }
     }
 }
 
-}
         // Vinculamos las funciones globales al objeto window para los gestores onclick del HTML inline
         window.actualizarPreciosPlanes = actualizarPreciosPlanes;
         window.procesarPagoPremium = procesarPagoPremium;
