@@ -73,7 +73,7 @@
         }
 
         /* ==========================================
-           PANTALLAS DE CARGA (NUEVO)
+           PANTALLAS DE CARGA
            ========================================== */
         .cyber-loader-screen {
             position: fixed;
@@ -660,51 +660,53 @@
                     <span id="group-stats-placeholder">Awaiting datastream package requests...</span>
                 </div>
             </div>
-                    <div id="super-admin-panel" style="margin-top: 20px;"></div>
-        </div> <div id="view-billing" class="view-section">
+            <div id="super-admin-panel" style="margin-top: 20px;"></div>
+        </div> 
+        
+        <div id="view-billing" class="view-section">
             <div class="card premium">
                 <h2>👑 ULTRA_VIP_PASS</h2>
                 <p>Anula los sistemas restrictivos del cortafuegos base y activa la inyección de flujos comerciales y conversión modular avanzada.</p>
 
-        <ul style="font-size: 0.85rem; color: var(--text-secondary); list-style: none; margin-bottom: 20px;">
-            <li style="margin-bottom: 8px; display:flex; align-items:center; gap:6px;">⚡ <span style="color:#fff">Desbloqueo total de compuertas lógicas (Anuncios y API Telegram).</span></li>
-            <li style="margin-bottom: 8px; display:flex; align-items:center; gap:6px;">⚡ <span style="color:#fff">Configuración manual de temporizadores de desencriptación.</span></li>
-            <li style="margin-bottom: 8px; display:flex; align-items:center; gap:6px;">⚡ <span style="color:#fff">Eliminación absoluta del carrusel de balizaje publicitario.</span></li>
-            <li style="margin-bottom: 8px; display:flex; align-items:center; gap:6px;">⚡ <span style="color:#fff">Cronograma temporal automatizado ilimitado.</span></li>
-        </ul>
+                <ul style="font-size: 0.85rem; color: var(--text-secondary); list-style: none; margin-bottom: 20px;">
+                    <li style="margin-bottom: 8px; display:flex; align-items:center; gap:6px;">⚡ <span style="color:#fff">Desbloqueo total de compuertas lógicas (Anuncios y API Telegram).</span></li>
+                    <li style="margin-bottom: 8px; display:flex; align-items:center; gap:6px;">⚡ <span style="color:#fff">Configuración manual de temporizadores de desencriptación.</span></li>
+                    <li style="margin-bottom: 8px; display:flex; align-items:center; gap:6px;">⚡ <span style="color:#fff">Eliminación absoluta del carrusel de balizaje publicitario.</span></li>
+                    <li style="margin-bottom: 8px; display:flex; align-items:center; gap:6px;">⚡ <span style="color:#fff">Cronograma temporal automatizado ilimitado.</span></li>
+                </ul>
 
-        <div class="billing-card" style="padding:15px; background:rgba(10,11,22,0.8); border:1px solid var(--neon-amber); box-shadow: var(--glow-amber); margin-bottom: 20px;">
-            <label style="color:var(--neon-amber); font-family:'Orbitron'; font-size:0.75rem; letter-spacing: 1px; font-weight: bold; display: block; margin-bottom: 8px;">SELECCIONAR PROTOCOLO PREMIUM (STARS):</label>
-            <select id="billing-plan-select" style="width:100%; padding:12px; background:var(--surface); color:#fff; border:1px solid rgba(255,170,0,0.3); margin-bottom:15px; font-family:'Rajdhani'; font-size: 0.9rem; outline: none;">
-                <option value="plan_30_days">Pase de Red: 30 Días (150 ⭐)</option>
-                <option value="plan_90_days">Pase de Red: 90 Días (400 ⭐)</option>
-                <option value="plan_perpetual">Acceso Perpetuo: Vitalicio (1200 ⭐)</option>
-            </select>
-            
-            <button id="btn-request-premium-stars" class="btn btn-gold" style="width:100%;">
-                ⚡ SOLICITAR FACTURA DE ESTRELLAS
-            </button>
+                <div class="billing-card" style="padding:15px; background:rgba(10,11,22,0.8); border:1px solid var(--neon-amber); box-shadow: var(--glow-amber); margin-bottom: 20px;">
+                    <label style="color:var(--neon-amber); font-family:'Orbitron'; font-size:0.75rem; letter-spacing: 1px; font-weight: bold; display: block; margin-bottom: 8px;">SELECCIONAR PROTOCOLO PREMIUM (STARS):</label>
+                    <select id="billing-plan-select" style="width:100%; padding:12px; background:var(--surface); color:#fff; border:1px solid rgba(255,170,0,0.3); margin-bottom:15px; font-family:'Rajdhani'; font-size: 0.9rem; outline: none;">
+                        <option value="plan_30_days">Pase de Red: 30 Días (150 ⭐)</option>
+                        <option value="plan_90_days">Pase de Red: 90 Días (400 ⭐)</option>
+                        <option value="plan_perpetual">Acceso Perpetuo: Vitalicio (1200 ⭐)</option>
+                    </select>
+                    
+                    <button id="btn-request-premium-stars" class="btn btn-gold" style="width:100%;">
+                        ⚡ SOLICITAR FACTURA DE ESTRELLAS
+                    </button>
+                </div>
+
+                <div style="text-align: center; font-size: 0.75rem; color: var(--text-dark); margin: 15px 0; font-family: 'Orbitron';">-- O SELECCIONAR PASARELA FIAT / CRYPTO --</div>
+
+                <div class="input-group">
+                    <label class="input-label" for="billing-method">MÉTODO DE TRANSFERENCIA EXTERNA</label>
+                    <select id="billing-method" class="input-field" style="background: var(--surface);">
+                        <option value="PayPal Express">PayPal Express Checkout</option>
+                        <option value="Binance Pay (USDT)">Binance Corporate Pay (USDT TRC20)</option>
+                    </select>
+                </div>
+
+                <button id="btn-request-premium" class="btn">💳 REQUEST_UPLINK_PAYMENT</button>
+            </div>
+
+            <div class="card" id="premium-activation-key-card" style="border-color: var(--neon-amber);">
+                <div class="input-label" style="color: var(--neon-amber);">🔑 INJECTAR_LICENCIA_KEY</div>
+                <input type="text" id="licence-key-input" class="input-field" placeholder="Firma SHA256 / Llave criptográfica...">
+                <button id="btn-validate-license" class="btn btn-purple" style="margin-top: 12px;">VALIDAR_FIRMA</button>
+            </div>
         </div>
-
-        <div style="text-align: center; font-size: 0.75rem; color: var(--text-dark); margin: 15px 0; font-family: 'Orbitron';">-- O SELECCIONAR PASARELA FIAT / CRYPTO --</div>
-
-        <div class="input-group">
-            <label class="input-label" for="billing-method">MÉTODO DE TRANSFERENCIA EXTERNA</label>
-            <select id="billing-method" class="input-field" style="background: var(--surface);">
-                <option value="PayPal Express">PayPal Express Checkout</option>
-                <option value="Binance Pay (USDT)">Binance Corporate Pay (USDT TRC20)</option>
-            </select>
-        </div>
-
-        <button id="btn-request-premium" class="btn">💳 REQUEST_UPLINK_PAYMENT</button>
-    </div>
-
-    <div class="card" id="premium-activation-key-card" style="border-color: var(--neon-amber);">
-        <div class="input-label" style="color: var(--neon-amber);">🔑 INJECTAR_LICENCIA_KEY</div>
-        <input type="text" id="licence-key-input" class="input-field" placeholder="Firma SHA256 / Llave criptográfica...">
-        <button id="btn-validate-license" class="btn btn-purple" style="margin-top: 12px;">VALIDAR_FIRMA</button>
-    </div>
-</div>
 
     </main> 
     
@@ -728,6 +730,6 @@
         </button>
     </nav>
 
-    <script src="app.js" defer></script>
+    <script src="app.js"></script>
 </body>
 </html>
