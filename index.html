@@ -779,24 +779,24 @@
             if (divisa === "stars") {
                 const euroAStars = (eur) => Math.round(eur / 0.0229);
                 opcionesHTML = `
-                    <option value="1_mes">Protocolo 01: 1 Mes por ${euroAStars(preciosEUR["1_mes"])} ⭐ [¡Dcto. 5% inc! - Ahorro Criptográfico]</option>
-                    <option value="3_meses">Protocolo 03: 3 Meses por ${euroAStars(preciosEUR["3_meses"])} ⭐ [¡Dcto. 10% inc! - Recomendado]</option>
-                    <option value="6_meses">Protocolo 06: 6 Meses por ${euroAStars(preciosEUR["6_meses"])} ⭐ [¡Dcto. 15% inc! - Acceso Extendido]</option>
-                    <option value="12_meses">Protocolo 12: 12 Meses por ${euroAStars(preciosEUR["12_meses"])} ⭐ [¡Dcto. 20% inc! - Máxima Eficiencia]</option>
+                    <option value="1_mes">1 Mes por ${euroAStars(preciosEUR["1_mes"])} ⭐ [¡Dcto. 5% inc! - Ahorro Criptográfico]</option>
+                    <option value="3_meses">3 Meses por ${euroAStars(preciosEUR["3_meses"])} ⭐ [¡Dcto. 10% inc! - Recomendado]</option>
+                    <option value="6_meses">6 Meses por ${euroAStars(preciosEUR["6_meses"])} ⭐ [¡Dcto. 15% inc! - Acceso Extendido]</option>
+                    <option value="12_meses">12 Meses por ${euroAStars(preciosEUR["12_meses"])} ⭐ [¡Dcto. 20% inc! - Máxima Eficiencia]</option>
                 `;
             } else if (divisa === "usdt") {
                 opcionesHTML = `
-                    <option value="1_mes">Protocolo 01: 1 Mes por ${preciosEUR["1_mes"].toFixed(2)} USDT [¡Dcto. 5% inc!]</option>
-                    <option value="3_meses">Protocolo 03: 3 Meses por ${preciosEUR["3_meses"].toFixed(2)} USDT [¡Dcto. 10% inc!]</option>
-                    <option value="6_meses">Protocolo 06: 6 Meses por ${preciosEUR["6_meses"].toFixed(2)} USDT [¡Dcto. 15% inc!]</option>
-                    <option value="12_meses">Protocolo 12: 12 Meses por ${preciosEUR["12_meses"].toFixed(2)} USDT [¡Dcto. 20% inc!]</option>
+                    <option value="1_mes">1 Mes por ${preciosEUR["1_mes"].toFixed(2)} USDT [¡Dcto. 5% inc!]</option>
+                    <option value="3_meses">3 Meses por ${preciosEUR["3_meses"].toFixed(2)} USDT [¡Dcto. 10% inc!]</option>
+                    <option value="6_meses">6 Meses por ${preciosEUR["6_meses"].toFixed(2)} USDT [¡Dcto. 15% inc!]</option>
+                    <option value="12_meses">12 Meses por ${preciosEUR["12_meses"].toFixed(2)} USDT [¡Dcto. 20% inc!]</option>
                 `;
             } else { // PayPal / EUR
                 opcionesHTML = `
-                    <option value="1_mes">Protocolo 01: 1 Mes por ${preciosEUR["1_mes"].toFixed(2)}€ [¡Dcto. 5% inc!]</option>
-                    <option value="3_meses">Protocolo 03: 3 Meses por ${preciosEUR["3_meses"].toFixed(2)}€ [¡Dcto. 10% inc!]</option>
-                    <option value="6_meses">Protocolo 06: 6 Meses por ${preciosEUR["6_meses"].toFixed(2)}€ [¡Dcto. 15% inc!]</option>
-                    <option value="12_meses">Protocolo 12: 12 Meses por ${preciosEUR["12_meses"].toFixed(2)}€ [¡Dcto. 20% inc!]</option>
+                    <option value="1_mes">1 Mes por ${preciosEUR["1_mes"].toFixed(2)}€ [¡Dcto. 5% inc!]</option>
+                    <option value="3_meses">3 Meses por ${preciosEUR["3_meses"].toFixed(2)}€ [¡Dcto. 10% inc!]</option>
+                    <option value="6_meses">6 Meses por ${preciosEUR["6_meses"].toFixed(2)}€ [¡Dcto. 15% inc!]</option>
+                    <option value="12_meses">12 Meses por ${preciosEUR["12_meses"].toFixed(2)}€ [¡Dcto. 20% inc!]</option>
                 `;
             }
 
