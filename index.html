@@ -824,17 +824,43 @@ function procesarPagoPremium() {
 
     console.log(`Uplink activado para pasarela: ${urlPasarelaExterna}`);
 
-    // === CONTROL DE ENRUTAMIENTO SEGÚN EL MÉTODO ===
+/// Función unificada que ejecuta la acción al presionar "MEJORAR CON PREMIUM"
+function procesarPagoPremium() {
+    const tg = window.Telegram ? window.Telegram.WebApp : null;
+    if (!tg) {
+        alert("Error: Interfaz de Telegram no detectada.");
+        return;
+    }
+
+    const planSelect = document.getElementById("billing-plan-select");
+    const metodoSelect = document.getElementById("billing-method");
+
+    const planId = planSelect ? planSelect.value : "1_mes"; 
+    const metodoId = metodoSelect ? metodoSelect.value : "paypal"; 
+
+    const botUsername = "ViralBoomBot";
+    
+    // === CONTROL DE ENRUTAMIENTO DIRECTO ===
     if (metodoId === "stars") {
-        // Alternativa ultra-compatible para abrir el bot con el parámetro start
-        const urlAlternativa = `https://t.me/${botUsername}?start=${keywordStart}`;
+        // Generamos el deep link limpio directamente aquí
+        const deepLinkStars = `https://t.me/${botUsername}?start=plan_${planId}_stars`;
+        console.log(`Uplink Estrellas activado: ${deepLinkStars}`);
         
-        // Intentamos primero el método nativo de links de Telegram
         try {
-            tg.openTelegramLink(urlAlternativa);
+            tg.openTelegramLink(deepLinkStars);
         } catch (e) {
-            // Si falla por el entorno, usamos openLink normal que Telegram suele capturar internamente
-            tg.openLink(urlAlternativa);
+            // Salvaguarda por si se ejecuta en navegadores normales o entornos de pruebas
+            window.open(deepLinkStars, '_blank');
+        }
+    } else {
+        // Enrutamiento normal para PayPal y USDT (Pasarelas externas)
+        const urlPasarelaExterna = URL_GATEWAYS[metodoId][planId];
+        console.log(`Uplink activado para pasarela externa: ${urlPasarelaExterna}`);
+
+        if (urlPasarelaExterna) {
+            tg.openLink(urlPasarelaExterna);
+        } else {
+            alert("Error: No se encontró una URL válida para esta pasarela.");
         }
     }
 }
